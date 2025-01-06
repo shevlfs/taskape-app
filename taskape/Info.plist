@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UIAppFonts</key>
+<array>
+    <string>PathwayExtreme-Black.otf</string>
+    <string>PathwayExtreme-BlackCondensed.otf</string>
+    <string>PathwayExtreme-BlackCondIta.otf</string>
+    <string>PathwayExtreme-BlackItalic.otf</string>
+    <string>PathwayExtreme-Bold.otf</string>
+    <string>PathwayExtreme-BoldCondensed.otf</string>
+    <string>PathwayExtreme-BoldCondIta.otf</string>
+    <string>PathwayExtreme-BoldItalic.otf</string>
+    <string>PathwayExtreme-Condensed.otf</string>
+    <string>PathwayExtreme-CondIta.otf</string>
+    <string>PathwayExtreme-ExtBdCond.otf</string>
+    <string>PathwayExtreme-ExtBdCondIta.otf</string>
+    <string>PathwayExtreme-ExtBdIta.otf</string>
+    <string>PathwayExtreme-ExtLtCond.otf</string>
+    <string>PathwayExtreme-ExtLtCondIta.otf</string>
+    <string>PathwayExtreme-ExtLtIta.otf</string>
+    <string>PathwayExtreme-ExtraBold.otf</string>
+    <string>PathwayExtreme-ExtraLight.otf</string>
+    <string>PathwayExtreme-Italic.otf</string>
+    <string>PathwayExtreme-Light.otf</string>
+    <string>PathwayExtreme-LightCondIta.otf</string>
+    <string>PathwayExtreme-LightItalic.otf</string>
+    <string>PathwayExtreme-LigthCondensed.otf</string>
+    <string>PathwayExtreme-MedCond.otf</string>
+    <string>PathwayExtreme-MedCondIta.otf</string>
+    <string>PathwayExtreme-Medium.otf</string>
+    <string>PathwayExtreme-MediumItalic.otf</string>
+    <string>PathwayExtreme-Regular.otf</string>
+    <string>PathwayExtreme-SemBdCond.otf</string>
+    <string>PathwayExtreme-SemBdCondIta.otf</string>
+    <string>PathwayExtreme-SemiBold.otf</string>
+    <string>PathwayExtreme-SemiBoldItalic.otf</string>
+    <string>PathwayExtreme-Thin.otf</string>
+    <string>PathwayExtreme-ThinCondensed.otf</string>
+    <string>PathwayExtreme-ThinCondIta.otf</string>
+    <string>PathwayExtreme-ThinItalic.otf</string>
+</array>
+</dict>
+</plist>

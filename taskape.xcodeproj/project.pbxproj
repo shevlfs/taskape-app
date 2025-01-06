@@ -7,12 +7,25 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		56FA4D6C2D2C102E00C5D8FE /* taskape.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = taskape.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		568228942D2C60650023C192 /* taskape.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = taskape.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		562586EC2D2C5D8C00E90564 /* Exceptions for "taskape" folder in "taskape" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 56FA4D6B2D2C102E00C5D8FE /* taskape */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		56FA4D6E2D2C102E00C5D8FE /* taskape */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				562586EC2D2C5D8C00E90564 /* Exceptions for "taskape" folder in "taskape" target */,
+			);
 			path = taskape;
 			sourceTree = "<group>";
 		};
@@ -33,16 +46,8 @@
 			isa = PBXGroup;
 			children = (
 				56FA4D6E2D2C102E00C5D8FE /* taskape */,
-				56FA4D6D2D2C102E00C5D8FE /* Products */,
+				568228942D2C60650023C192 /* taskape.app */,
 			);
-			sourceTree = "<group>";
-		};
-		56FA4D6D2D2C102E00C5D8FE /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				56FA4D6C2D2C102E00C5D8FE /* taskape.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -52,6 +57,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 56FA4D7C2D2C102F00C5D8FE /* Build configuration list for PBXNativeTarget "taskape" */;
 			buildPhases = (
+				56FA4D902D2C42E400C5D8FE /* ShellScript */,
 				56FA4D682D2C102E00C5D8FE /* Sources */,
 				56FA4D692D2C102E00C5D8FE /* Frameworks */,
 				56FA4D6A2D2C102E00C5D8FE /* Resources */,
@@ -67,7 +73,7 @@
 			packageProductDependencies = (
 			);
 			productName = taskape;
-			productReference = 56FA4D6C2D2C102E00C5D8FE /* taskape.app */;
+			productReference = 568228942D2C60650023C192 /* taskape.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -95,7 +101,7 @@
 			mainGroup = 56FA4D632D2C102E00C5D8FE;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 56FA4D6D2D2C102E00C5D8FE /* Products */;
+			productRefGroup = 56FA4D632D2C102E00C5D8FE;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -113,6 +119,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		56FA4D902D2C42E400C5D8FE /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/zsh;
+			shellScript = "if which swiftformat >/dev/null; then\n    cd \"${SRCROOT}\"\n    /opt/homebrew/bin/swiftformat \"${SRCROOT}/taskape\"\nelse\n    echo \"swiftformat is not installed, source files weren't formatted\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		56FA4D682D2C102E00C5D8FE /* Sources */ = {
@@ -255,6 +281,7 @@
 				DEVELOPMENT_TEAM = PSQFU7KVDQ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = taskape/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -284,6 +311,7 @@
 				DEVELOPMENT_TEAM = PSQFU7KVDQ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = taskape/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
