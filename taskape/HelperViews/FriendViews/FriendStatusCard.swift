@@ -13,28 +13,29 @@ enum FriendCardSize {
     case large
 }
 
-enum event{
+enum eventType: String, Codable {
     case newTasks
-        case completedTasks
+    case completedTasks
     case newUser
 }
 
 struct FriendStatusCard: View {
     var friend: taskapeUser
-
     var friendCardSize: FriendCardSize
     var taskArray: [taskapeTask] = []
     var body: some View {
         switch friendCardSize {
-            case .small:
-            FriendView(friendColor: colorFromString(friend.profileColor), size: .small)
+        case .small:
+            FriendView(
+                friendColor: colorFromString(friend.profileColor), size: .small)
         case .medium:
             FriendView(
-                friendColor:colorFromString(friend.profileColor) ,
+                friendColor: colorFromString(friend.profileColor),
                 size: .medium
             )
         case .large:
-            FriendView(friendColor: colorFromString(friend.profileColor), size: .large)
+            FriendView(
+                friendColor: colorFromString(friend.profileColor), size: .large)
         }
     }
 }
@@ -42,8 +43,8 @@ struct FriendStatusCard: View {
 #Preview {
     FriendStatusCard(
         friend: taskapeUser(
-            id: UUID(),
-            name: "john pork",
+            id: "asda",
+            handle: "john pork",
             bio: "john is called john",
             profileImage: nil,
             profileColor: "blue"

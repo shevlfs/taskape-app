@@ -11,21 +11,21 @@ import SwiftUI
 
 @Model
 final class taskapeUser {
-    var id: UUID = UUID()
-    var name: String
+    var id: String
+    var handle: String
     var bio: String
     var profileImageData: Data?
     var profileColor: String
 
     init(
-        id: UUID,
-        name: String,
+        id: String,
+        handle: String,
         bio: String,
         profileImage: UIImage? = nil,
         profileColor: String
     ) {
         self.id = id
-        self.name = name
+        self.handle = handle
         self.bio = bio
         self.profileImageData = profileImage?.jpegData(compressionQuality: 0.8)
         self.profileColor = profileColor
