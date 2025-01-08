@@ -36,6 +36,5 @@ func colorFromString(_ string: String) -> Color {
     case "purple": return .purple
     case "pink": return .pink
     default: return .gray
-
     }
 }

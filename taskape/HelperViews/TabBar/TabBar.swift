@@ -57,7 +57,7 @@ struct TabBarView: View {
 
                             if index == separatorIndex {
                                 Rectangle()
-                                    .fill(Color.orange)
+                                    .fill(Color.taskapeOrange)
                                     .frame(width: 3.5, height: 16)
                             }
                         }
@@ -77,17 +77,14 @@ struct TabBarView: View {
     }
 }
 
-struct TabBarView_Previews: PreviewProvider {
-    static var previews: some View {
-        TabBarView(
-            tabBarItems: .constant([
-                tabBarItem(title: "settings"),
-                tabBarItem(title: "main"),
-                tabBarItem(title: "group1"),
-                tabBarItem(title: "group2", badgeCount: 2),
-                tabBarItem(title: "group3", badgeCount: 100),
-            ])
-        )
-        .previewLayout(.sizeThatFits)
-    }
+#Preview {
+    TabBarView(
+        tabBarItems: .constant([
+            tabBarItem(title: "settings"),
+            tabBarItem(title: "main"),
+            tabBarItem(title: "group1"),
+            tabBarItem(title: "group2", badgeCount: 2),
+            tabBarItem(title: "group3", badgeCount: 100),
+        ])
+    )
 }
