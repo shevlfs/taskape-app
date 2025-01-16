@@ -12,10 +12,8 @@ struct AuthenticationView: View {
     @State private var isPlaying: Bool = true
 
     var body: some View {
-        LottieView(animation: .named("landingscreen"))
-            .looping()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .scaledToFill()
+        LottieView(animation: .named("taskapescreensmall")).animationSpeed(0.15)
+            .looping().scaledToFill()
             .edgesIgnoringSafeArea(.all)
     }
 }
