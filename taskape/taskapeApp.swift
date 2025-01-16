@@ -12,7 +12,7 @@ import SwiftUI
 struct taskapeApp: App {
     var body: some Scene {
         WindowGroup {
-            RootView()
+            RootView().statusBarHidden(true)
         }
     }
 }
