@@ -26,7 +26,7 @@ struct MenuItem: View {
                         Gradient.Stop(
                             color: mainColor.opacity(0.6), location: 0.31
                         ),
-                        Gradient.Stop(color: .white, location: 0.81),
+                        Gradient.Stop(color: mainColor.opacity(0.25), location: 0.81),
                     ],
                     startPoint: UnitPoint(x: 0.5, y: 1),
                     endPoint: UnitPoint(x: 0.5, y: 0)

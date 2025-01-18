@@ -56,6 +56,9 @@ extension Font {
    static func pathwayBold(_ size: CGFloat) -> Font {
        .custom("PathwayExtreme-Bold", size: size)
    }
+    static func pathwayBlack(_ size: CGFloat) -> Font {
+        .custom("PathwayExtreme-Black", size: size)
+    }
 
     static func pathwaySemiBold(_ size: CGFloat) -> Font {
         .custom("PathwayExtreme-SemiBold", size: size)
