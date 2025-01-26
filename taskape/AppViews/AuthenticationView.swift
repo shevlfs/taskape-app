@@ -37,8 +37,16 @@ struct AuthenticationView: View {
     @Environment(\.colorScheme) var colorScheme
     @State var LandingButtonPressed = false
     var body: some View {
-        ScrollView {
+        GeometryReader { _ in
             ZStack {
+                RegistrationView().ignoresSafeArea(.keyboard)
+                    .opacity(LandingButtonPressed ? 1 : 0)
+                    .animation(
+                        .snappy(duration: 1.0), value: LandingButtonPressed
+                    )
+                    .disabled(
+                        !LandingButtonPressed
+                    )
                 Button(action: {
                     LandingButtonPressed = true
                 }) {
@@ -49,41 +57,38 @@ struct AuthenticationView: View {
                         radius:
                             LandingButtonPressed ? 10 : 0
                     ).animation(
-                        .snappy(duration: 1.0), value: LandingButtonPressed).percentageOffset(y: 2.8)
-
-                RegistrationView()
-                    .opacity(LandingButtonPressed ? 1 : 0)
-                    .animation(
                         .snappy(duration: 1.0), value: LandingButtonPressed
+                    ).percentageOffset(y: 4)
+            }            }.onTapGesture {
+                UIApplication.shared.sendAction(
+                    #selector(UIResponder.resignFirstResponder),
+                    to: nil,
+                    from: nil,
+                    for: nil)
+            }.background(
+                LottieView(
+                    animation: .named(
+                        colorScheme == .dark ? "taskapeblack" : "taskapewhite")
+                ).configuration(
+                    LottieConfiguration(
+                        renderingEngine: .automatic
                     )
-                    .disabled(
-                        !LandingButtonPressed
+                ).looping().backgroundBehavior(.pauseAndRestore).animationSpeed(
+                    LandingButtonPressed ? 0.4 : 1
+                ).scaledToFill()
+                    .edgesIgnoringSafeArea(.all).opacity(
+                        LandingButtonPressed ? 0.5 : 1
                     )
-            }
-        }.scrollDisabled(true).background(
-            LottieView(
-                animation: .named(
-                    colorScheme == .dark ? "taskapeblack" : "taskapewhite")
-            ).configuration(
-                LottieConfiguration(
-                    renderingEngine: .automatic
-                )
-            ).looping().backgroundBehavior(.pauseAndRestore).animationSpeed(
-                LandingButtonPressed ? 0.4 : 1
-            ).scaledToFill()
-                .edgesIgnoringSafeArea(.all).opacity(
-                    LandingButtonPressed ? 0.5 : 1
-                )
-                .blur(
-                    radius:
-                        LandingButtonPressed ? 15 : 0
-                ).animation(
-                    .snappy(
-                        duration: 1.0
-                    ),
-                    value: LandingButtonPressed
-                )
-        )
+                    .blur(
+                        radius:
+                            LandingButtonPressed ? 15 : 0
+                    ).animation(
+                        .snappy(
+                            duration: 1.0
+                        ),
+                        value: LandingButtonPressed
+                    )
+            )
     }
 }
 

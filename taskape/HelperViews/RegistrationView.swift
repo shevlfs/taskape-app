@@ -11,6 +11,7 @@ struct TaskapeNumberField: View {
     @Binding var current_string: String
     let placeholder: String
     let country: CPData
+    @FocusState var isFocused: Bool
 
     func formatPhoneNumber(_ phoneNumber: String) -> String {
         // Remove all non-digit characters
@@ -53,24 +54,25 @@ struct TaskapeNumberField: View {
         TextField(
             placeholder,
             text: $current_string
-        ).onChange(of: current_string) { newValue in
-            let formattedNumber = formatPhoneNumber(newValue)
-            current_string = formattedNumber
-        }
-        .accentColor(.taskapeOrange)
-        .autocorrectionDisabled()
-        .autocapitalization(.none)
-        .multilineTextAlignment(.center)
-        .padding(.horizontal, 15)
-        .padding(.vertical, 15)
-        .frame(maxWidth: 270)
-        .font(.pathwayBlack(20))
-        .background(
-            RoundedRectangle(cornerRadius: 30)
-                .fill(.regularMaterial)
-                .stroke(.thinMaterial, lineWidth: 1)
-        )
-        .keyboardType(.numberPad)
+        ).onChange(of: $current_string.wrappedValue) { newValue in
+            current_string = formatPhoneNumber(newValue)
+        }.padding(15)
+            .focused($isFocused)
+            .accentColor(.taskapeOrange)
+            .autocorrectionDisabled()
+            .autocapitalization(.none)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: 270)
+            .font(.pathwayBlack(20))
+            .background(
+                RoundedRectangle(cornerRadius: 30)
+                    .fill(.regularMaterial)
+                    .stroke(.thinMaterial, lineWidth: 1)
+            )
+            .keyboardType(.numberPad)
+            .onTapGesture {
+                isFocused = true
+            }
     }
 }
 
@@ -79,7 +81,7 @@ struct countrySelectionButton: View {
 
     var body: some View {
         Text("\(country.flag) \(country.dial_code)").font(.pathwayBlack(20))
-            .padding(.horizontal, 15)
+            .frame(minWidth: 120)
             .padding(.vertical, 15)
             .background(
                 RoundedRectangle(cornerRadius: 30).fill(.regularMaterial)
@@ -95,8 +97,9 @@ struct countryPicker: View {
     var body: some View {
         VStack {
             ScrollView {
-                ForEach(countries, id: \.code) { country in
+                ForEach(countries, id: \.id) { country in
                     Button(action: {
+
                         selectedCountry = country
                         onDismiss()
                     }) {
@@ -121,67 +124,70 @@ struct countryPicker: View {
 }
 
 struct RegistrationView: View {
+    @FocusState private var isFocused: Bool
     @State var selectedCountry: CPData = CPData.example
     @State private var current_number: String = ""
     let countries: [CPData] = Bundle.main.decode("CountryNumbers.json")
     @State private var countryPickerActive = false
 
     var body: some View {
-        VStack {
-
+        GeometryReader { geometry in
             ZStack {
                 // Background overlay
-                if countryPickerActive {
-                    Color.black.opacity(0.5)
-                        .ignoresSafeArea()
-                        .onTapGesture {
-                            countryPickerActive = false
-                        }
-                }
+
+                Color.black
+                    .opacity(countryPickerActive ? 0.5 : 0)
+                    .ignoresSafeArea()
+                    .animation(
+                        .easeInOut(duration: 0.25),
+                        value: countryPickerActive
+                    ).onTapGesture {
+                        isFocused = false
+                        countryPickerActive = false
+                    }
 
                 VStack {
-
                     Text("heyyy, so, uh... \n what's your number?")
                         .multilineTextAlignment(.center)
                         .font(.pathway(35))
-                        .padding(.bottom, 150)
+                        .padding(.top, geometry.safeAreaInsets.top + 120)
+                        .padding(.bottom, 160)
 
                     HStack {
-                        // Country selection button
                         Button(action: {
+                            isFocused = false
                             countryPickerActive.toggle()
                         }) {
                             countrySelectionButton(country: selectedCountry)
-                        }.buttonStyle(.plain)
+                        }
+                        .buttonStyle(.plain)
 
-                        // Number input field
                         TaskapeNumberField(
                             current_string: $current_number,
                             placeholder: "banana phone",
-                            country: selectedCountry
+                            country: selectedCountry, isFocused: _isFocused
                         )
                     }
                     .padding(.horizontal)
 
-                    // Country picker
-                    countryPicker(
-                        selectedCountry: $selectedCountry,
-                        countries: countries,
-                        onDismiss: { countryPickerActive = false }
-                    )
-                    .opacity(countryPickerActive ? 1 : 0)
-                    .animation(
-                        .bouncy(duration: 0.25), value: countryPickerActive
-                    )
-                    .offset(x: -40)
+                    if countryPickerActive {
+                        countryPicker(
+                            selectedCountry: $selectedCountry,
+                            countries: countries,
+                            onDismiss: { countryPickerActive = false }
+                        )
+                        .transition(.opacity)
+                        .animation(
+                            .bouncy(duration: 0.25), value: countryPickerActive)
+                    }
 
                     Spacer()
                 }
-                .padding(.top, 80)
-
-                Spacer()
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.clear)
         }
+        .ignoresSafeArea()
     }
 }
 
