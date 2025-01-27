@@ -68,7 +68,7 @@ struct PhoneVerificationView: View {
                 .multilineTextAlignment(.center)
                 .font(.pathway(30))
                 .percentageOffset(y: 1.25)
-                .padding(.bottom, 200)
+                .padding(.bottom, 220)
 
             TaskapeCodeField(
                 current_string: $code,
@@ -101,7 +101,7 @@ struct PhoneVerificationView: View {
             }
             .buttonStyle(.plain)
             .disabled(!isValid)
-            .percentageOffset(y: -1.5)
+            .percentageOffset(y: -1.35)
         }
     }
 

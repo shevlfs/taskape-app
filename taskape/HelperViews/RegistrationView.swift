@@ -171,7 +171,7 @@ struct RegistrationView: View {
                     Text("heyyy, so, uh...\n what's your number?")
                         .multilineTextAlignment(.center)
                         .font(.pathway(30))
-                        .percentageOffset(y: 1.25).padding(.bottom, 200)
+                        .percentageOffset(y: 2).padding(.bottom, 280)
 
                     HStack {
                         Button(action: {
@@ -190,14 +190,14 @@ struct RegistrationView: View {
                         )
                     }.percentageOffset(y: 0.5)
                     Spacer()
-                }.background(countryPicker(
+                }.overlay(countryPicker(
                     selectedCountry: $selectedCountry,
                     countries: countries,
                     onDismiss: { countryPickerActive = false }
                 ).disabled(!countryPickerActive).opacity(
                     countryPickerActive ? 1 : 0
                 )
-                    .percentageOffset(x: -0.15, y: 0.3).transition(.opacity)
+                    .percentageOffset(x: -0.15, y: 0.5).transition(.opacity)
                 .animation(
                     .bouncy(duration: 0.25), value: countryPickerActive))
             }

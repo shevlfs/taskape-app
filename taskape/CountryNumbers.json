@@ -164,7 +164,7 @@
     "flag": "🇧🇿",
     "code": "BZ",
     "dial_code": "+501",
-    "pattern": "#",
+    "pattern": "#### ###",
     "limit": 17
 }, {
     "id": "0024",
