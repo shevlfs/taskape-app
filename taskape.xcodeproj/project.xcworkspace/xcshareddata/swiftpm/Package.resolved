@@ -1,5 +1,5 @@
 {
-  "originHash" : "6b3386dc9ff1f3a74f1534de9c41d47137eae0901cfe819ed442f1b241549359",
+  "originHash" : "af7916a0ba7b420f2fb6c38997bbca11dacd2931f59fc63a15ebd0ccc52b2cde",
   "pins" : [
     {
       "identity" : "lottie-spm",
@@ -8,6 +8,33 @@
       "state" : {
         "revision" : "8c6edf4f0fa84fe9c058600a4295eb0c01661c69",
         "version" : "4.5.1"
+      }
+    },
+    {
+      "identity" : "swift-protobuf",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-protobuf.git",
+      "state" : {
+        "revision" : "ebc7251dd5b37f627c93698e4374084d98409633",
+        "version" : "1.28.2"
+      }
+    },
+    {
+      "identity" : "swiftui-introspect",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/siteline/swiftui-introspect",
+      "state" : {
+        "revision" : "807f73ce09a9b9723f12385e592b4e0aaebd3336",
+        "version" : "1.3.0"
+      }
+    },
+    {
+      "identity" : "swiftui-navigation-transitions",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/davdroman/swiftui-navigation-transitions.git",
+      "state" : {
+        "revision" : "76ae9c621422a1f38c30a07c8b7636994b669484",
+        "version" : "0.14.0"
       }
     }
   ],
