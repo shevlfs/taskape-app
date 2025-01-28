@@ -144,15 +144,7 @@ struct RegistrationView: View {
                         phoneCode = selectedCountry.dial_code
                         phoneNumberReceived = true
                     }) {
-                        Text("continue").padding().frame(maxWidth: 230)
-                            .font(.pathway(21))
-                            .background(
-                                RoundedRectangle(cornerRadius: 30)
-                                    .fill(
-                                        .regularMaterial
-                                    )
-                                    .stroke(.thinMaterial, lineWidth: 1)
-                            )
+                        taskapeContinueButton()
                     }.buttonStyle(.plain).disabled(
                         !numberOk)
                 }.percentageOffset(y: 4)

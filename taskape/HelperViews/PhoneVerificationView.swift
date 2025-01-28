@@ -7,6 +7,20 @@
 
 import SwiftUI
 
+struct taskapeContinueButton : View {
+    var body: some View {
+        Text("continue")
+            .padding()
+            .frame(maxWidth: 230)
+            .font(.pathway(21))
+            .background(
+                RoundedRectangle(cornerRadius: 30)
+                    .fill(.regularMaterial)
+                    .stroke(.thinMaterial, lineWidth: 1)
+            )
+    }
+}
+
 struct TaskapeCodeField: View {
     let formatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -89,15 +103,7 @@ struct PhoneVerificationView: View {
             Button(action: {
                 codeReceived = true
             }) {
-                Text("continue")
-                    .padding()
-                    .frame(maxWidth: 230)
-                    .font(.pathway(21))
-                    .background(
-                        RoundedRectangle(cornerRadius: 30)
-                            .fill(.regularMaterial)
-                            .stroke(.thinMaterial, lineWidth: 1)
-                    )
+                taskapeContinueButton()
             }
             .buttonStyle(.plain)
             .disabled(!isValid)
