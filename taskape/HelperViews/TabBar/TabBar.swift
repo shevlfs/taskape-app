@@ -20,9 +20,18 @@ struct tabBarItem {
     }
 }
 
+struct tabBarItemView: View {
+    @Binding var title: String
+    var body: some View{
+        Text(title).kerning(1)
+            .font(.pathwaySemiBold(18))
+    }
+
+}
+
 struct TabBarView: View {
     @Binding var tabBarItems: [tabBarItem]
-    @State var tabBarViewIndex: Int = 0
+    @Binding var tabBarViewIndex: Int
     var separatorIndex: Int = 1
 
     var body: some View {
@@ -78,13 +87,13 @@ struct TabBarView: View {
 }
 
 #Preview {
-    TabBarView(
-        tabBarItems: .constant([
-            tabBarItem(title: "settings"),
-            tabBarItem(title: "main"),
-            tabBarItem(title: "group1"),
-            tabBarItem(title: "group2", badgeCount: 2),
-            tabBarItem(title: "group3", badgeCount: 100),
-        ])
-    )
+//    TabBarView(
+//        tabBarItems: .constant([
+//            tabBarItem(title: "settings"),
+//            tabBarItem(title: "main"),
+//            tabBarItem(title: "group1"),
+//            tabBarItem(title: "group2", badgeCount: 2),
+//            tabBarItem(title: "group3", badgeCount: 100),
+//        ])
+//    )
 }
