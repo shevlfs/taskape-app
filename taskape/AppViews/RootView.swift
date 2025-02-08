@@ -15,6 +15,11 @@ struct RootView: View {
                 .environmentObject(appState)
         } else {
             AuthenticationView()
+                .onAppear {
+                    Task {
+                        await serverHandShake()
+                    }
+                }
                 .environmentObject(appState)
         }
     }
