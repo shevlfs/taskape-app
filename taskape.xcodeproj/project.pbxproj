@@ -7,15 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		56376EED2D57E3D900553A6E /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 56376EEC2D57E3D900553A6E /* Alamofire */; };
 		56A85DA32D30A1BE008B1623 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 56A85DA22D30A1BE008B1623 /* Lottie */; };
-		56C542052D542B6400B3353E /* GRPCCodeGen in Frameworks */ = {isa = PBXBuildFile; productRef = 56C542042D542B6400B3353E /* GRPCCodeGen */; };
-		56C542072D542B6400B3353E /* GRPCCore in Frameworks */ = {isa = PBXBuildFile; productRef = 56C542062D542B6400B3353E /* GRPCCore */; };
-		56C542092D542B6400B3353E /* GRPCInProcessTransport in Frameworks */ = {isa = PBXBuildFile; productRef = 56C542082D542B6400B3353E /* GRPCInProcessTransport */; };
-		56C542142D55523000B3353E /* GRPCNIOTransportHTTP2 in Frameworks */ = {isa = PBXBuildFile; productRef = 56C542132D55523000B3353E /* GRPCNIOTransportHTTP2 */; };
-		56C542162D55523000B3353E /* GRPCNIOTransportHTTP2Posix in Frameworks */ = {isa = PBXBuildFile; productRef = 56C542152D55523000B3353E /* GRPCNIOTransportHTTP2Posix */; };
-		56C542182D55523000B3353E /* GRPCNIOTransportHTTP2TransportServices in Frameworks */ = {isa = PBXBuildFile; productRef = 56C542172D55523000B3353E /* GRPCNIOTransportHTTP2TransportServices */; };
-		56CBA8D12D47AC0D00C0D7D0 /* NavigationTransitions in Frameworks */ = {isa = PBXBuildFile; productRef = 56CBA8D02D47AC0D00C0D7D0 /* NavigationTransitions */; };
-		56EE244E2D57BA16005A9C16 /* GRPCProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 56EE244D2D57BA16005A9C16 /* GRPCProtobuf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,15 +41,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				56C542072D542B6400B3353E /* GRPCCore in Frameworks */,
 				56A85DA32D30A1BE008B1623 /* Lottie in Frameworks */,
-				56C542182D55523000B3353E /* GRPCNIOTransportHTTP2TransportServices in Frameworks */,
-				56CBA8D12D47AC0D00C0D7D0 /* NavigationTransitions in Frameworks */,
-				56C542092D542B6400B3353E /* GRPCInProcessTransport in Frameworks */,
-				56C542142D55523000B3353E /* GRPCNIOTransportHTTP2 in Frameworks */,
-				56C542052D542B6400B3353E /* GRPCCodeGen in Frameworks */,
-				56C542162D55523000B3353E /* GRPCNIOTransportHTTP2Posix in Frameworks */,
-				56EE244E2D57BA16005A9C16 /* GRPCProtobuf in Frameworks */,
+				56376EED2D57E3D900553A6E /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,14 +79,7 @@
 			name = taskape;
 			packageProductDependencies = (
 				56A85DA22D30A1BE008B1623 /* Lottie */,
-				56CBA8D02D47AC0D00C0D7D0 /* NavigationTransitions */,
-				56C542042D542B6400B3353E /* GRPCCodeGen */,
-				56C542062D542B6400B3353E /* GRPCCore */,
-				56C542082D542B6400B3353E /* GRPCInProcessTransport */,
-				56C542132D55523000B3353E /* GRPCNIOTransportHTTP2 */,
-				56C542152D55523000B3353E /* GRPCNIOTransportHTTP2Posix */,
-				56C542172D55523000B3353E /* GRPCNIOTransportHTTP2TransportServices */,
-				56EE244D2D57BA16005A9C16 /* GRPCProtobuf */,
+				56376EEC2D57E3D900553A6E /* Alamofire */,
 			);
 			productName = taskape;
 			productReference = 568228942D2C60650023C192 /* taskape.app */;
@@ -132,10 +111,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				56A85DA12D30A1BE008B1623 /* XCRemoteSwiftPackageReference "lottie-spm" */,
-				56CBA8CF2D47AC0D00C0D7D0 /* XCRemoteSwiftPackageReference "swiftui-navigation-transitions" */,
-				56C542032D542B6400B3353E /* XCRemoteSwiftPackageReference "grpc-swift" */,
-				56C542122D55523000B3353E /* XCRemoteSwiftPackageReference "grpc-swift-nio-transport" */,
-				56EE244C2D57BA16005A9C16 /* XCRemoteSwiftPackageReference "grpc-swift-protobuf" */,
+				56376EEB2D57E3D900553A6E /* XCRemoteSwiftPackageReference "Alamofire" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 56FA4D632D2C102E00C5D8FE;
@@ -324,6 +300,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -331,9 +308,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = shevlfs.taskape;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -354,6 +335,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -361,9 +343,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = shevlfs.taskape;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -391,6 +377,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		56376EEB2D57E3D900553A6E /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.10.2;
+			};
+		};
 		56A85DA12D30A1BE008B1623 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
@@ -399,85 +393,18 @@
 				minimumVersion = 4.5.1;
 			};
 		};
-		56C542032D542B6400B3353E /* XCRemoteSwiftPackageReference "grpc-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/grpc/grpc-swift.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
-		56C542122D55523000B3353E /* XCRemoteSwiftPackageReference "grpc-swift-nio-transport" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/grpc/grpc-swift-nio-transport.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
-		56CBA8CF2D47AC0D00C0D7D0 /* XCRemoteSwiftPackageReference "swiftui-navigation-transitions" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/davdroman/swiftui-navigation-transitions.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.14.0;
-			};
-		};
-		56EE244C2D57BA16005A9C16 /* XCRemoteSwiftPackageReference "grpc-swift-protobuf" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/grpc/grpc-swift-protobuf.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		56376EEC2D57E3D900553A6E /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56376EEB2D57E3D900553A6E /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
 		56A85DA22D30A1BE008B1623 /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 56A85DA12D30A1BE008B1623 /* XCRemoteSwiftPackageReference "lottie-spm" */;
 			productName = Lottie;
-		};
-		56C542042D542B6400B3353E /* GRPCCodeGen */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 56C542032D542B6400B3353E /* XCRemoteSwiftPackageReference "grpc-swift" */;
-			productName = GRPCCodeGen;
-		};
-		56C542062D542B6400B3353E /* GRPCCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 56C542032D542B6400B3353E /* XCRemoteSwiftPackageReference "grpc-swift" */;
-			productName = GRPCCore;
-		};
-		56C542082D542B6400B3353E /* GRPCInProcessTransport */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 56C542032D542B6400B3353E /* XCRemoteSwiftPackageReference "grpc-swift" */;
-			productName = GRPCInProcessTransport;
-		};
-		56C542132D55523000B3353E /* GRPCNIOTransportHTTP2 */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 56C542122D55523000B3353E /* XCRemoteSwiftPackageReference "grpc-swift-nio-transport" */;
-			productName = GRPCNIOTransportHTTP2;
-		};
-		56C542152D55523000B3353E /* GRPCNIOTransportHTTP2Posix */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 56C542122D55523000B3353E /* XCRemoteSwiftPackageReference "grpc-swift-nio-transport" */;
-			productName = GRPCNIOTransportHTTP2Posix;
-		};
-		56C542172D55523000B3353E /* GRPCNIOTransportHTTP2TransportServices */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 56C542122D55523000B3353E /* XCRemoteSwiftPackageReference "grpc-swift-nio-transport" */;
-			productName = GRPCNIOTransportHTTP2TransportServices;
-		};
-		56CBA8D02D47AC0D00C0D7D0 /* NavigationTransitions */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 56CBA8CF2D47AC0D00C0D7D0 /* XCRemoteSwiftPackageReference "swiftui-navigation-transitions" */;
-			productName = NavigationTransitions;
-		};
-		56EE244D2D57BA16005A9C16 /* GRPCProtobuf */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 56EE244C2D57BA16005A9C16 /* XCRemoteSwiftPackageReference "grpc-swift-protobuf" */;
-			productName = GRPCProtobuf;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

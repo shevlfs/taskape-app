@@ -6,24 +6,9 @@
 //
 
 import Foundation
-import GRPCCore
-import GRPCInProcessTransport
-import GRPCNIOTransportHTTP2
-import GRPCProtobuf
 import SwiftData
 
 func serverHandShake() async -> Bool {
-    var name: String = "app"
-    try? await withGRPCClient(
-        transport: .http2NIOPosix(
-            target: .ipv4(host: "127.0.0.1", port: 50051),
-            transportSecurity: .plaintext
-        )
-    ) { client in
-        let greeter = Hello_Greeter.Client(wrapping: client)
-        let reply = try await greeter.sayHello(.with { $0.name = name })
-        print(reply.message)
-    }
     return true
 }
 
