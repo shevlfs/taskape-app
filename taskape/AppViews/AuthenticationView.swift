@@ -137,28 +137,32 @@ struct AuthenticationView: View {
                 .disabled(
                     !phoneNumberReceived
                 ).onChange(of: phoneNumberReceived) {
-                    sendVerificationCode(
-                        phoneNumber: phoneNumber,
-                        country_code: phoneCode
-                    )
+                    Task {
+                        await sendVerificationCode(
+                            phoneNumber: phoneNumber,
+                            country_code: phoneCode
+                        )
+                    }
                 }.onChange(of: verifyCodeReceived) {
-                    if phoneNumberIsVerified(
-                        phoneNumber: phoneNumber,
-                        country_code: phoneCode,
-                        code: verifyCode
-                    ) {
-                        UserDefaults.standard.set(
-                            true, forKey: "numberIsRegistered")
-                        var user_phone = "\(phoneCode)\(phoneNumber)"
-                        user_phone.replace(" ", with: "")
-                        UserDefaults.standard.set(
-                            user_phone,
-                            forKey:
-                                "userPhoneNumber")
-                        path.append(".profile_creation")
-                    } else {
-                        displayCodeError = true
-                        verifyCodeReceived = false
+                    Task {
+                        if await phoneNumberIsVerified(
+                            phoneNumber: phoneNumber,
+                            country_code: phoneCode,
+                            code: verifyCode
+                        ) {
+                            UserDefaults.standard.set(
+                                true, forKey: "numberIsRegistered")
+                            var user_phone = "\(phoneCode)\(phoneNumber)"
+                            user_phone.replace(" ", with: "")
+                            UserDefaults.standard.set(
+                                user_phone,
+                                forKey:
+                                    "userPhoneNumber")
+                            path.append(".profile_creation")
+                        } else {
+                            displayCodeError = true
+                            verifyCodeReceived = false
+                        }
                     }
                 }
 
