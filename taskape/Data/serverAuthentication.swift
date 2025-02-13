@@ -39,7 +39,7 @@ func sendVerificationCode(phoneNumber: String, country_code: String) async {
             "phone": user_phone
         ]
 
-        let result = await AF.request(
+        _ = await AF.request(
             "http://localhost:8080/sendVerificationCode",
             method: .post, parameters: parameters,
             encoding: JSONEncoding.default
@@ -62,20 +62,24 @@ func phoneNumberIsVerified(
 
         let result = await AF.request(
             "http://localhost:8080/checkVerificationCode",
-            method: .post, parameters: parameters,
+            method: .post,
+            parameters: parameters,
             encoding: JSONEncoding.default
-        ).validate().serializingData().response
+        ).validate().serializingDecodable(VerificationResponse.self).response
 
         switch result.result {
-        case .success:
-            print("Successfully verified phone number")
-            return true
+        case .success(let response):
+            if !response.authToken.isEmpty {
+                UserDefaults.standard.set(
+                    response.authToken, forKey: "auth_token")
+            }
+            return false
+
         case .failure(let error):
             print(
                 "Failed to verify phone number: \(error.localizedDescription)")
             return false
         }
-
     }
 }
 
