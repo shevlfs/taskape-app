@@ -16,6 +16,7 @@ final class taskapeUser {
     var bio: String
     var profileImageData: Data?
     var profileColor: String
+    @Relationship var tasks: [taskapeTask]
 
     init(
         id: String = UUID().uuidString,
@@ -29,5 +30,6 @@ final class taskapeUser {
         self.bio = bio
         self.profileImageData = profileImage?.jpegData(compressionQuality: 0.8)
         self.profileColor = profileColor
+        self.tasks = []
     }
 }

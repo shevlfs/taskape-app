@@ -97,32 +97,32 @@ struct countryPicker: View {
     var onDismiss: () -> Void
 
     var body: some View {
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack{
-                    ForEach(countries, id: \.id) { country in
-                        Button(action: {
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack {
+                ForEach(countries, id: \.id) { country in
+                    Button(action: {
 
-                            selectedCountry = country
-                            onDismiss()
-                        }) {
-                            HStack {
-                                Text(country.flag).font(.pathwayBlack(20))
-                                Text("\(country.dial_code)").font(.pathwayBlack(20))
-                                    .foregroundColor(.secondary)
-                                Text(country.name).font(.pathwayBold(16))
-                                Spacer()
-                            }
-                            .padding(.horizontal)
-                            .padding(.vertical, 8)
+                        selectedCountry = country
+                        onDismiss()
+                    }) {
+                        HStack {
+                            Text(country.flag).font(.pathwayBlack(20))
+                            Text("\(country.dial_code)").font(.pathwayBlack(20))
+                                .foregroundColor(.secondary)
+                            Text(country.name).font(.pathwayBold(16))
+                            Spacer()
                         }
-
+                        .padding(.horizontal)
+                        .padding(.vertical, 8)
                     }
+
                 }
- .shadow(radius: 10)
+            }
+            .shadow(radius: 10)
         }.frame(maxWidth: 300, maxHeight: 350).background(
             RoundedRectangle(cornerRadius: 12).fill(
                 .regularMaterial)
-        ).buttonStyle(.plain) .shadow(radius: 10)
+        ).buttonStyle(.plain).shadow(radius: 10)
     }
 }
 
@@ -182,16 +182,17 @@ struct RegistrationView: View {
                         )
                     }.percentageOffset(y: 0.5)
                     Spacer()
-                }.overlay(countryPicker(
-                    selectedCountry: $selectedCountry,
-                    countries: countries,
-                    onDismiss: { countryPickerActive = false }
-                ).disabled(!countryPickerActive).opacity(
-                    countryPickerActive ? 1 : 0
-                )
+                }.overlay(
+                    countryPicker(
+                        selectedCountry: $selectedCountry,
+                        countries: countries,
+                        onDismiss: { countryPickerActive = false }
+                    ).disabled(!countryPickerActive).opacity(
+                        countryPickerActive ? 1 : 0
+                    )
                     .percentageOffset(x: -0.15, y: 0.5).transition(.opacity)
-                .animation(
-                    .bouncy(duration: 0.25), value: countryPickerActive))
+                    .animation(
+                        .bouncy(duration: 0.25), value: countryPickerActive))
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.clear)

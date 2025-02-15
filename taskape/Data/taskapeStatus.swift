@@ -9,8 +9,7 @@ import Foundation
 import SwiftData
 import SwiftUI
 
-@Model
-final class taskapeStatus {
+final class taskapeStatus: ObservableObject {
     var userID: String
     var userHandle: String
     var type: eventType

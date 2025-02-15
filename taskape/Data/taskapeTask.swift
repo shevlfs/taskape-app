@@ -10,15 +10,19 @@ import SwiftData
 import SwiftUICore
 
 @Model
-final class taskapeTask {
-    var id: UUID = UUID()
+final class taskapeTask: Identifiable {
+    var id: String
     var name: String
     var taskDescription: String
     var author: String
     var createdAt: Date
     var isCompleted: Bool
 
-    init(name: String, taskDescription: String, author: String) {
+    init(
+        id: String = UUID().uuidString, name: String, taskDescription: String,
+        author: String
+    ) {
+        self.id = id
         self.name = name
         self.taskDescription = taskDescription
         self.author = author

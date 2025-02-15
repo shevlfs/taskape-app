@@ -5,8 +5,10 @@
 //  Created by shevlfs on 1/8/25.
 //
 import SwiftUI
+import _SwiftData_SwiftUI
 
 struct UserJungleCard: View {
+    @Bindable var user: taskapeUser
     var body: some View {
         ZStack {
             MenuItem(
@@ -27,17 +29,15 @@ struct UserJungleCard: View {
                 .padding(.top, 16)
                 .padding(.bottom, 8)
 
-
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 5) {
-                        TaskItem(text: "do the dishes")
-                        TaskItem(text: "pick up the couch")
-                        TaskItem(text: "jpeg decoder")
-                        TaskItem(text: "chat in pmi 2024")
-                        TaskItem(text: "???")
+                        ForEach(user.tasks) {
+                            task in
+                            TaskItem(task: task)
+                        }
                     }
                 }.scrollDisabled(true)
-                .padding(.horizontal, 16)
+                    .padding(.horizontal, 16)
 
                 HStack {
                     Spacer()
@@ -57,10 +57,10 @@ struct UserJungleCard: View {
 }
 
 struct TaskItem: View {
-    let text: String
+    @Bindable var task: taskapeTask
     var body: some View {
-        HStack{
-            Text("•  \(text)")
+        HStack {
+            Text("•  \(task.name)")
                 .font(.pathway(14))
                 .lineLimit(1)
             Spacer()
@@ -70,5 +70,5 @@ struct TaskItem: View {
 }
 
 #Preview {
-    UserJungleCard()
+    // UserJungleCard()
 }
