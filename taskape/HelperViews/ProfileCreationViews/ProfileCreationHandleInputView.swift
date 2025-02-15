@@ -56,6 +56,7 @@ struct ProfileCreationHandleInputView: View {
     var body: some View {
 
         VStack {
+            ProfileCreationProgressBar(progress: $progress)
             Text("so, what should your @ be?")
                 .multilineTextAlignment(.center)
                 .font(.pathway(30))

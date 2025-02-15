@@ -8,6 +8,7 @@
 import Alamofire
 import Foundation
 import SwiftData
+import SwiftUI
 
 func serverHandShake() async -> Bool {
     do {
@@ -72,6 +73,7 @@ func phoneNumberIsVerified(
             if !response.authToken.isEmpty {
                 UserDefaults.standard.set(
                     response.authToken, forKey: "auth_token")
+                return true
             }
             return false
 
@@ -84,11 +86,17 @@ func phoneNumberIsVerified(
 }
 
 func addUserHandleSuccess(handle: String) -> Bool {
-    let defaults = UserDefaults.standard
-    let phoneNumberKey = "userPhoneNumber"
-
-    let phone_number = defaults.string(forKey: phoneNumberKey)
-    // debugPrint("phone number is \(phone_number)")
     return true
+}
 
+func addUserBioSuccess(bio: String) -> Bool {
+    return true
+}
+
+func addUserColorSuccess(color: String) -> Bool {
+    return true
+}
+
+func addUserPFPSuccess(image: UIImage?) -> Bool {
+    return true
 }

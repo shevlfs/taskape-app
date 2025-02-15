@@ -6,34 +6,12 @@
 //
 
 import Lottie
+import SwiftData
 import SwiftUI
 
-extension View {
-    func percentageOffset(x: Double = 0, y: Double = 0) -> some View {
-        self
-            .modifier(PercentageOffset(x: x, y: y))
-    }
-}
-
-struct PercentageOffset: ViewModifier {
-
-    let x: Double
-    let y: Double
-
-    @State private var size: CGSize = .zero
-
-    func body(content: Content) -> some View {
-
-        content
-            .background(
-                GeometryReader { geo in Color.clear.onAppear { size = geo.size }
-                }
-            )
-            .offset(x: size.width * x, y: size.height * y)
-    }
-}
-
 struct AuthenticationView: View {
+    @Query private var users: [taskapeUser]
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) var colorScheme
     @State var LandingButtonPressed = false
     @State var phoneNumberReceived: Bool = false
@@ -49,6 +27,31 @@ struct AuthenticationView: View {
 
     @State var userHandle: String = ""
     @State var userBio: String = ""
+
+    @State var userColor: String = ""
+
+    @State var userProfileImageData: UIImage?
+
+    private func createUser() {
+        let newUser = taskapeUser(
+            id: UUID().uuidString,
+            handle: userHandle,
+            bio: userBio, profileImage: userProfileImageData,
+            profileColor: userColor
+        )
+        modelContext.insert(newUser)
+
+        let userPhone: String = "\(phoneCode)\(phoneNumber)"
+            .replacingOccurrences(of: " ", with: "")
+
+        do {
+            try modelContext.save()
+            UserDefaults.standard.set(true, forKey: "numberIsRegistered")
+            UserDefaults.standard.set(userPhone, forKey: "userPhoneNumber")
+        } catch {
+            print("Error saving user: \(error)")
+        }
+    }
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -150,14 +153,6 @@ struct AuthenticationView: View {
                             country_code: phoneCode,
                             code: verifyCode
                         ) {
-                            UserDefaults.standard.set(
-                                true, forKey: "numberIsRegistered")
-                            var user_phone = "\(phoneCode)\(phoneNumber)"
-                            user_phone.replace(" ", with: "")
-                            UserDefaults.standard.set(
-                                user_phone,
-                                forKey:
-                                    "userPhoneNumber")
                             path.append(".profile_creation")
                         } else {
                             displayCodeError = true
@@ -181,6 +176,21 @@ struct AuthenticationView: View {
                             ProfileCreationBioInputView(
                                 bio: $userBio, path: $path, progress: $progress
                             ).navigationBarBackButtonHidden()
+                        case "color_selection":
+                            ProfileCreationColorSelectionView(
+                                color: $userColor,
+                                path: $path,
+                                progress: $progress
+                            ).navigationBarBackButtonHidden()
+                        case "pfp_selection":
+                            ProfileCreationPFPSelectionView(
+                                image: $userProfileImageData,
+                                path: $path,
+                                progress: $progress
+                            )
+                            .navigationBarBackButtonHidden()
+                        case "completion":
+                            EmptyView()
                         default:
                             EmptyView()
                         }

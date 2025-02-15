@@ -18,7 +18,7 @@ final class taskapeUser {
     var profileColor: String
 
     init(
-        id: String,
+        id: String = UUID().uuidString,
         handle: String,
         bio: String,
         profileImage: UIImage? = nil,
