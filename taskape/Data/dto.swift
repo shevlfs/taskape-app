@@ -7,4 +7,11 @@
 
 struct VerificationResponse: Codable {
     let authToken: String
+    let refreshToken: String
+    let profileExists: Bool
+}
+
+struct TokenRefreshResponse: Codable {
+    let authToken: String
+    let refreshToken: String
 }

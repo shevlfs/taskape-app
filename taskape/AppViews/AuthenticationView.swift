@@ -11,6 +11,10 @@ import SwiftUI
 
 struct AuthenticationView: View {
     @Query private var users: [taskapeUser]
+
+    @Binding var phoneNumberExistsInDatabase: Bool
+    @Binding var userAlreadyExists: Bool
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) var colorScheme
     @State var LandingButtonPressed = false
@@ -21,8 +25,7 @@ struct AuthenticationView: View {
     @State var verifyCodeReceived: Bool = false
     @State var numberRegistrationComplete: Bool = false
     @State var displayCodeError: Bool = false
-    @State private var path = NavigationPath()
-
+    @State private var path: NavigationPath = NavigationPath()
     @State var progress: Float = 1 / 5
 
     @State var userHandle: String = ""
@@ -150,19 +153,26 @@ struct AuthenticationView: View {
                     }
                 }.onChange(of: verifyCodeReceived) {
                     Task {
-                        if await phoneNumberIsVerified(
+                        switch await phoneNumberIsVerified(
                             phoneNumber: phoneNumber,
                             country_code: phoneCode,
                             code: verifyCode
                         ) {
-                            path.append(".profile_creation")
-                        } else {
+                        case .failed:
                             displayCodeError = true
                             verifyCodeReceived = false
+                        case .success:
+                            path.append(".profile_creation")
+                        case .userexists:
+                            userAlreadyExists = true
                         }
                     }
                 }
 
+            }.onAppear {
+                if phoneNumberExistsInDatabase {
+                    path.append(".profile_creation")
+                }
             }.navigationBarBackButtonHidden()
                 .navigationDestination(
                     for: String.self,
@@ -201,12 +211,14 @@ struct AuthenticationView: View {
                     }
                 )
         }
-
     }
 }
 
 #Preview {
-    AuthenticationView()
+    AuthenticationView(
+        phoneNumberExistsInDatabase: .constant(false),
+        userAlreadyExists: .constant(false)
+    )
 }
 
 //
