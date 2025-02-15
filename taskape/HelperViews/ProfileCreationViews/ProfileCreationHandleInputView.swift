@@ -77,7 +77,7 @@ struct ProfileCreationHandleInputView: View {
                 action: {
                     if addUserHandleSuccess(handle: handle) {
                         path.append("bio_input")
-                        progress += 1 / 3
+                        progress += 1 / 5
                     } else {
                         displayError = true
                     }

@@ -74,7 +74,7 @@ struct ProfileCreationColorSelectionView: View {
 
                     if addUserColorSuccess(color: color) {
                         path.append("pfp_selection")
-                        progress += 1 / 3
+                        progress += 1 / 5
                     }
                 }) {
                     taskapeContinueButton()

@@ -23,7 +23,7 @@ struct AuthenticationView: View {
     @State var displayCodeError: Bool = false
     @State private var path = NavigationPath()
 
-    @State var progress: Float = 1 / 3
+    @State var progress: Float = 1 / 5
 
     @State var userHandle: String = ""
     @State var userBio: String = ""
@@ -31,6 +31,8 @@ struct AuthenticationView: View {
     @State var userColor: String = ""
 
     @State var userProfileImageData: UIImage?
+
+    @Namespace private var namespace
 
     private func createUser() {
         let newUser = taskapeUser(
@@ -172,6 +174,8 @@ struct AuthenticationView: View {
                                 handle: $userHandle, path: $path,
                                 progress: $progress
                             ).navigationBarBackButtonHidden()
+                                .navigationTransition(
+                                    .zoom(sourceID: "default", in: namespace))
                         case "bio_input":
                             ProfileCreationBioInputView(
                                 bio: $userBio, path: $path, progress: $progress
@@ -190,13 +194,14 @@ struct AuthenticationView: View {
                             )
                             .navigationBarBackButtonHidden()
                         case "completion":
-                            EmptyView()
+                            ProfileCreationProgressBar(progress: $progress)
                         default:
                             EmptyView()
                         }
                     }
                 )
         }
+
     }
 }
 

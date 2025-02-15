@@ -71,7 +71,7 @@ struct ProfileCreationBioInputView: View {
                 action: {
                     if addUserBioSuccess(bio: bio) {
                         path.append("color_selection")
-                        progress += 1 / 3
+                        progress += 1 / 5
                     }
                 }) {
                     taskapeContinueButton()
