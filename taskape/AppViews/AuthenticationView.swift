@@ -204,7 +204,17 @@ struct AuthenticationView: View {
                             )
                             .navigationBarBackButtonHidden()
                         case "completion":
-                            ProfileCreationProgressBar(progress: $progress)
+                            LoadingView(path: $path)
+                                .navigationBarBackButtonHidden()
+                        case "task_addition":
+                            ProfileCreationFirstTaskSetup(
+                                path: $path,
+                                progress: .constant(progress)
+                            ).navigationBarBackButtonHidden()
+                                .navigationTransition(
+                                    .zoom(sourceID: "completion", in: namespace)
+                                )
+                                .modelContext(modelContext)
                         default:
                             EmptyView()
                         }

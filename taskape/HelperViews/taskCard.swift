@@ -15,7 +15,6 @@ struct taskCard: View {
     var body: some View {
         Button(action: { detailIsPresent.toggle() }) {
             HStack {
-                Text("•").font(.headline).padding(.leading, 10)
                 Group {
                     HStack {
                         if !task.name.isEmpty {

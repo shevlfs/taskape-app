@@ -46,7 +46,7 @@ struct taskapeTaskDescriptionField: View {
     }
 }
 
-struct TaskCreationPromptView: View {
+struct ProfileCreationFirstTaskSetup: View {
     @Environment(\.modelContext) private var modelContext
     @Query var currentUser: [taskapeUser]
 
@@ -59,6 +59,10 @@ struct TaskCreationPromptView: View {
     @State private var addTaskAnimation = false
     @State private var scrollOffset: CGFloat = 0
     @State private var scrollViewHeight: CGFloat = 0
+
+    func deleteTask(at indexSet: IndexSet) {
+        tasks.remove(atOffsets: indexSet)
+    }
 
     var body: some View {
         VStack {
@@ -110,24 +114,47 @@ struct TaskCreationPromptView: View {
                     LazyVStack(alignment: .leading, spacing: 12) {
                         ForEach(Array(tasks.enumerated()), id: \.element.id) {
                             index, _ in
-                            taskCard(
-                                task: $tasks[index],
-                                firstLaunch: true
-                            )
-                            .transition(
+                            HStack {
+                                Text("•").font(.headline).padding(.leading, 10)
+                                taskCard(
+                                    task: $tasks[index],
+                                    firstLaunch: true
+                                ).contextMenu {
+                                    Button {
+                                        tasks.remove(at: index)
+
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                            }.transition(
                                 .asymmetric(
                                     insertion: .opacity.combined(
                                         with: .scale(scale: 0.95)
                                     ).animation(
                                         .spring(
-                                            response: 0.4, dampingFraction: 0.8)
+                                            response: 0.4,
+                                            dampingFraction: 0.8)
                                     ),
                                     removal: .opacity.animation(
                                         .easeOut(duration: 0.2))
                                 )
                             )
+
                             .id(tasks[index].id)
-                        }
+                        }.transition(
+                            .asymmetric(
+                                insertion: .opacity.combined(
+                                    with: .scale(scale: 0.95)
+                                ).animation(
+                                    .spring(
+                                        response: 0.4,
+                                        dampingFraction: 0.8)
+                                ),
+                                removal: .opacity.animation(
+                                    .easeOut(duration: 0.2))
+                            )
+                        )
                     }
                     .padding(.vertical, 15)
                     .padding(.horizontal, 6)
@@ -141,7 +168,7 @@ struct TaskCreationPromptView: View {
                                 scrollViewHeight = geo.size.height
                             }
                             .onChange(of: tasks.count) { _, _ in
-                                // Update height when tasks change
+
                                 scrollViewHeight = geo.size.height
                             }
                         }
@@ -236,7 +263,7 @@ struct TaskCreationPromptView: View {
 #Preview {
     @Previewable @State var path = NavigationPath()
     @Previewable @State var progress: Float = 0.8
-    TaskCreationPromptView(
+    ProfileCreationFirstTaskSetup(
         path: .constant(path),
         progress: .constant(progress)
     )
