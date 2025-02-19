@@ -27,15 +27,15 @@ struct FriendStatusCard: View {
         switch friendCardSize {
         case .small:
             FriendView(
-                friendColor: colorFromString(friend.profileColor), size: .small)
+                friendColor: Color(hex: friend.profileColor), size: .small)
         case .medium:
             FriendView(
-                friendColor: colorFromString(friend.profileColor),
+                friendColor: Color(hex: friend.profileColor),
                 size: .medium
             )
         case .large:
             FriendView(
-                friendColor: colorFromString(friend.profileColor), size: .large)
+                friendColor: Color(hex: friend.profileColor), size: .large)
         }
     }
 }
@@ -47,7 +47,7 @@ struct FriendStatusCard: View {
             handle: "john pork",
             bio: "john is called john",
             profileImage: nil,
-            profileColor: "blue"
+            profileColor: "000FFF"
         ),
         friendCardSize: .small
     )

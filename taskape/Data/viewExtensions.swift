@@ -27,6 +27,10 @@ extension Color {
     static var taskapeOrange: Color {
         Color(red: 0.914, green: 0.427, blue: 0.078)
     }
+
+    static var taskapeLightOrange: Color {
+        Color(hex: "FF9500")
+    }
     init(hex: String) {
         let hex = hex.trimmingCharacters(
             in: CharacterSet.alphanumerics.inverted)

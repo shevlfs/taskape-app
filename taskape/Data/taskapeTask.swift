@@ -17,10 +17,12 @@ final class taskapeTask: Identifiable {
     var author: String
     var createdAt: Date
     var isCompleted: Bool
+    var privacy: String
+    var deadline: Date?
 
     init(
         id: String = UUID().uuidString, name: String, taskDescription: String,
-        author: String
+        author: String, privacy: String
     ) {
         self.id = id
         self.name = name
@@ -28,17 +30,6 @@ final class taskapeTask: Identifiable {
         self.author = author
         self.createdAt = Date()
         self.isCompleted = false
-    }
-}
-
-func colorFromString(_ string: String) -> Color {
-    switch string {
-    case "red": return .red
-    case "blue": return .blue
-    case "green": return .green
-    case "yellow": return .yellow
-    case "purple": return .purple
-    case "pink": return .pink
-    default: return .gray
+        self.privacy = privacy
     }
 }
