@@ -85,7 +85,7 @@ struct ProfileCreationPFPSelectionView: View {
             Button(
                 action: {
                     if addUserPFPSuccess(image: image) {
-                        path.append("completion")
+                        path.append("task_addition")
                         progress += 1 / 5
                     }
                 }) {

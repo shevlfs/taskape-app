@@ -66,6 +66,8 @@ struct ProfileCreationFirstTaskSetup: View {
 
     var body: some View {
         VStack {
+            ProfileCreationProgressBar(progress: $progress)
+
             Text("anything you need to get done right now?")
                 .multilineTextAlignment(.center)
                 .font(.pathway(30))

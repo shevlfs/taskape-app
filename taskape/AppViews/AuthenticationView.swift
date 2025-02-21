@@ -162,6 +162,7 @@ struct AuthenticationView: View {
                             displayCodeError = true
                             verifyCodeReceived = false
                         case .success:
+
                             path.append(".profile_creation")
                         case .userexists:
                             userAlreadyExists = true
@@ -203,17 +204,11 @@ struct AuthenticationView: View {
                                 progress: $progress
                             )
                             .navigationBarBackButtonHidden()
-                        case "completion":
-                            LoadingView(path: $path)
-                                .navigationBarBackButtonHidden()
                         case "task_addition":
                             ProfileCreationFirstTaskSetup(
                                 path: $path,
-                                progress: .constant(progress)
+                                progress: $progress
                             ).navigationBarBackButtonHidden()
-                                .navigationTransition(
-                                    .zoom(sourceID: "completion", in: namespace)
-                                )
                                 .modelContext(modelContext)
                         default:
                             EmptyView()
