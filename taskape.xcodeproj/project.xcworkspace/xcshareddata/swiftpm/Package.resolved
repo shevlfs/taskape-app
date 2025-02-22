@@ -1,5 +1,5 @@
 {
-  "originHash" : "1d2c66e2249118962457c964f3d73420d9b4fdbcad7c9c3de0374b7288bb5f0d",
+  "originHash" : "dab3a6b203d2d46984d72d6be9b088f57327ee0e212b13632adcc70fe68fd426",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "8c6edf4f0fa84fe9c058600a4295eb0c01661c69",
         "version" : "4.5.1"
+      }
+    },
+    {
+      "identity" : "swift-dotenv",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/thebarndog/swift-dotenv.git",
+      "state" : {
+        "revision" : "d13062940a3cdb2b13efa22ecc83b07b21c2e8dc",
+        "version" : "2.1.0"
       }
     }
   ],

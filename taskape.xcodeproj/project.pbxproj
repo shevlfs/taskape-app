@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		56376EED2D57E3D900553A6E /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 56376EEC2D57E3D900553A6E /* Alamofire */; };
 		56A85DA32D30A1BE008B1623 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 56A85DA22D30A1BE008B1623 /* Lottie */; };
+		56E7F0CC2D6A7E740064AAA4 /* SwiftDotenv in Frameworks */ = {isa = PBXBuildFile; productRef = 56E7F0CB2D6A7E740064AAA4 /* SwiftDotenv */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +43,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				56A85DA32D30A1BE008B1623 /* Lottie in Frameworks */,
+				56E7F0CC2D6A7E740064AAA4 /* SwiftDotenv in Frameworks */,
 				56376EED2D57E3D900553A6E /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -80,6 +82,7 @@
 			packageProductDependencies = (
 				56A85DA22D30A1BE008B1623 /* Lottie */,
 				56376EEC2D57E3D900553A6E /* Alamofire */,
+				56E7F0CB2D6A7E740064AAA4 /* SwiftDotenv */,
 			);
 			productName = taskape;
 			productReference = 568228942D2C60650023C192 /* taskape.app */;
@@ -112,6 +115,7 @@
 			packageReferences = (
 				56A85DA12D30A1BE008B1623 /* XCRemoteSwiftPackageReference "lottie-spm" */,
 				56376EEB2D57E3D900553A6E /* XCRemoteSwiftPackageReference "Alamofire" */,
+				56E7F0CA2D6A7E740064AAA4 /* XCRemoteSwiftPackageReference "swift-dotenv" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 56FA4D632D2C102E00C5D8FE;
@@ -393,6 +397,14 @@
 				minimumVersion = 4.5.1;
 			};
 		};
+		56E7F0CA2D6A7E740064AAA4 /* XCRemoteSwiftPackageReference "swift-dotenv" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/thebarndog/swift-dotenv.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -405,6 +417,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 56A85DA12D30A1BE008B1623 /* XCRemoteSwiftPackageReference "lottie-spm" */;
 			productName = Lottie;
+		};
+		56E7F0CB2D6A7E740064AAA4 /* SwiftDotenv */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56E7F0CA2D6A7E740064AAA4 /* XCRemoteSwiftPackageReference "swift-dotenv" */;
+			productName = SwiftDotenv;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

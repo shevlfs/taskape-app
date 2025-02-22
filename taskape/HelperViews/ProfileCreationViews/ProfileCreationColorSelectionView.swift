@@ -72,10 +72,10 @@ struct ProfileCreationColorSelectionView: View {
                         color = TaskapeColor.presetColors.first!.hex
                     }
 
-                    if addUserColorSuccess(color: color) {
-                        path.append("pfp_selection")
-                        progress += 1 / 5
-                    }
+                    UserDefaults.standard.set(self.color, forKey: "color")
+                    path.append("pfp_selection")
+                    progress += 1 / 5
+
                 }) {
                     taskapeContinueButton()
                 }.buttonStyle(PlainButtonStyle())

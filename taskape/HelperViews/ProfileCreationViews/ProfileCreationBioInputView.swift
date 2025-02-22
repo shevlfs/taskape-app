@@ -69,10 +69,10 @@ struct ProfileCreationBioInputView: View {
 
             Button(
                 action: {
-                    if addUserBioSuccess(bio: bio) {
-                        path.append("color_selection")
-                        progress += 1 / 5
-                    }
+                    UserDefaults.standard.set(self.bio, forKey: "bio")
+                    path.append("color_selection")
+                    progress += 1 / 5
+
                 }) {
                     taskapeContinueButton()
                 }.buttonStyle(PlainButtonStyle())

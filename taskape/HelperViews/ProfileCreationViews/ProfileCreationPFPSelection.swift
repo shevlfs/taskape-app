@@ -67,6 +67,8 @@ struct ProfileCreationPFPSelectionView: View {
     @Binding var image: UIImage?
     @Binding var path: NavigationPath
     @Binding var progress: Float
+    @State private var isUploading = false
+    @State private var showError = false
 
     var body: some View {
         VStack {
@@ -82,22 +84,80 @@ struct ProfileCreationPFPSelectionView: View {
 
             Spacer()
 
-            Button(
-                action: {
-                    if addUserPFPSuccess(image: image) {
-                        path.append("task_addition")
-                        progress += 1 / 5
-                    }
-                }) {
-                    taskapeContinueButton()
-                }
-                .buttonStyle(PlainButtonStyle())
-                .disabled(image == nil)
+            Button(action: {
+                handleImageUpload()
+            }) {
+                taskapeContinueButton()
+            }.overlay(
+                ProgressView()
+                    .progressViewStyle(
+                        CircularProgressViewStyle()
+                    ).opacity(isUploading ? 1 : 0).offset(y: -50),
+                alignment: .top
+            )
+            .buttonStyle(PlainButtonStyle())
+            .disabled(image == nil || isUploading)
 
             Text("this will help others recognize you\n in the community")
                 .multilineTextAlignment(.center)
                 .font(.pathwayItalic(16))
                 .padding()
+        }
+        .alert("Upload Failed", isPresented: $showError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Failed to upload your profile picture. Please try again.")
+        }
+    }
+
+    private func handleImageUpload() {
+        isUploading = true
+
+        Task {
+            do {
+                print("upload image called")
+                let url = try await uploadImage(image!)
+
+                await MainActor.run {
+                    isUploading = false
+
+                    if !url.isEmpty {
+                        UserDefaults.standard.set(
+                            url, forKey: "profile_picture_url")
+                    } else {
+                        showError = true
+                    }
+                }
+
+                let response = try await registerProfile(
+                    handle: UserDefaults.standard
+                        .string(forKey: "handle") ?? "",
+                    bio: UserDefaults.standard.string(forKey: "bio") ?? "",
+                    color: UserDefaults.standard.string(forKey: "color") ?? "",
+                    profilePictureURL: url,
+                    phone: UserDefaults.standard.string(forKey: "phone") ?? ""
+                )
+
+                await MainActor.run {
+                    isUploading = false
+                    if response.success {
+                        UserDefaults.standard.set(
+                            response.id, forKey: "user_id")
+                        path.append(
+                            "task_addition"
+                        )
+                        progress += 1 / 5
+                    } else {
+                        showError = true
+                    }
+                }
+
+            } catch {
+                await MainActor.run {
+                    isUploading = false
+                    showError = true
+                }
+            }
         }
     }
 }

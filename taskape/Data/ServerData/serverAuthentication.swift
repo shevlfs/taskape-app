@@ -83,8 +83,7 @@ func phoneNumberIsVerified(
                     response.authToken, forKey: "authToken")
                 UserDefaults.standard.set(
                     response.refreshToken, forKey: "refreshToken")
-
-                UserDefaults.standard.set(phoneNumber, forKey: "phone")
+                UserDefaults.standard.set(user_phone, forKey: "phone")
 
                 if response.profileExists {
                     return .userexists
@@ -165,7 +164,40 @@ func refreshTokenRequest(token: String, refreshToken: String, phone: String)
             return false
         }
     }
+}
 
+func registerProfile(
+    handle: String,
+    bio: String,
+    color: String,
+    profilePictureURL: String,
+    phone: String
+) async throws -> RegisterNewProfileResponse {
+    let request = RegisterNewProfileRequest(
+        handle: handle,
+        bio: bio,
+        color: color,
+        profile_picture: profilePictureURL,
+        phone: phone,
+        token: UserDefaults.standard.string(forKey: "authToken") ?? ""
+    )
+    return try await withCheckedThrowingContinuation { continuation in
+        AF.request(
+            "http://localhost:8080/registerNewProfile",
+            method: .post,
+            parameters: request,
+            encoder: JSONParameterEncoder.default
+        )
+        .validate()
+        .responseDecodable(of: RegisterNewProfileResponse.self) { response in
+            switch response.result {
+            case .success(let registerResponse):
+                continuation.resume(returning: registerResponse)
+            case .failure(let error):
+                continuation.resume(throwing: error)
+            }
+        }
+    }
 }
 
 func addUserHandleSuccess(handle: String) -> Bool {

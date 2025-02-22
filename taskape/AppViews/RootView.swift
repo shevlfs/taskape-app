@@ -5,6 +5,7 @@
 //  Created by shevlfs on 1/7/25.
 //
 
+import SwiftDotenv
 import SwiftUI
 
 struct RootView: View {
@@ -45,13 +46,27 @@ struct RootView: View {
     var body: some View {
         Group {
             if isLoading {
-                EmptyView()
+                EmptyView().onAppear {
+                    if let path = Bundle.main.path(forResource: ".env", ofType: nil) {
+                        print("loading dotenv")
+                        try! Dotenv.configure(atPath: path)
+                    } else {
+                        print("dotenv is gone")
+                    }
+                }
             } else {
                 if !isLoggedIn {
                     AuthenticationView(
                         phoneNumberExistsInDatabase: $phoneExistsInDatabase,
                         userAlreadyExists: $userAlreadyExists
-                    ).onChange(
+                    ).onAppear {
+                        if let path = Bundle.main.path(forResource: ".env", ofType: nil) {
+                            print("loading dotenv")
+                            try! Dotenv.configure(atPath: path)
+                        } else {
+                            print("dotenv is gone")
+                        }
+                    }.onChange(
                         of: userAlreadyExists
                     ) {
                         isLoggedIn = true
@@ -70,6 +85,7 @@ struct RootView: View {
                 isLoading = false
             }
         }
+
     }
 }
 

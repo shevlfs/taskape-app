@@ -15,3 +15,17 @@ struct TokenRefreshResponse: Codable {
     let authToken: String
     let refreshToken: String
 }
+
+struct RegisterNewProfileRequest: Codable {
+    let handle: String
+    let bio: String
+    let color: String
+    let profile_picture: String
+    let phone: String
+    let token: String
+}
+
+struct RegisterNewProfileResponse: Codable {
+    let success: Bool
+    let id: Int
+}

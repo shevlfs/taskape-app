@@ -75,12 +75,12 @@ struct ProfileCreationHandleInputView: View {
 
             Button(
                 action: {
-                    if addUserHandleSuccess(handle: handle) {
-                        path.append("bio_input")
-                        progress += 1 / 5
-                    } else {
-                        displayError = true
-                    }
+                    UserDefaults.standard.set(self.handle, forKey: "handle")
+                    path.append("bio_input")
+                    progress += 1 / 5
+                    //                    } else {
+                    //                        displayError = true
+                    //                    }
                 }) {
                     taskapeContinueButton()
                 }.buttonStyle(.plain).disabled(Bool(handle.count < 4))
