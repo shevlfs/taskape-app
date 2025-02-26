@@ -141,8 +141,10 @@ struct ProfileCreationPFPSelectionView: View {
                 await MainActor.run {
                     isUploading = false
                     if response.success {
+                        let userId = String(response.id)
                         UserDefaults.standard.set(
-                            response.id, forKey: "user_id")
+                            userId, forKey: "user_id")
+                        print("Set user_id to: \(userId)")
                         path.append(
                             "task_addition"
                         )

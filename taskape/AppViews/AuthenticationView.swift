@@ -35,9 +35,12 @@ struct AuthenticationView: View {
 
     @State var userProfileImageData: UIImage?
 
+    @State var user_id: String = ""
+
     @Namespace private var namespace
 
     private func createUser() {
+        print("new user was created")
         let newUser = taskapeUser(
             id: UUID().uuidString,
             handle: userHandle,
@@ -208,8 +211,12 @@ struct AuthenticationView: View {
                             ProfileCreationFirstTaskSetup(
                                 path: $path,
                                 progress: $progress,
-                                userAlreadyExists: $userAlreadyExists
-                            ).navigationBarBackButtonHidden()
+                                userAlreadyExists: $userAlreadyExists,
+                                userId: UserDefaults.standard.string(
+                                    forKey: "user_id") ?? user_id
+                            ).onAppear {
+                                createUser()
+                            }.navigationBarBackButtonHidden()
                                 .modelContext(modelContext)
                         default:
                             EmptyView()

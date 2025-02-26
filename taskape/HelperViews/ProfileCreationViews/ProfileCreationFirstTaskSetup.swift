@@ -62,6 +62,8 @@ struct ProfileCreationFirstTaskSetup: View {
     @State private var scrollOffset: CGFloat = 0
     @State private var scrollViewHeight: CGFloat = 0
 
+    var userId: String? = nil
+
     func deleteTask(at indexSet: IndexSet) {
         tasks.remove(atOffsets: indexSet)
     }
@@ -188,12 +190,20 @@ struct ProfileCreationFirstTaskSetup: View {
                 taskapeTaskField(taskName: $taskName)
                 Button(action: {
                     if !taskName.isEmpty {
+                        let uid =
+                            userId ?? UserDefaults.standard.string(
+                                forKey: "user_id") ?? ""
+                        print("Creating task with user_id: \(uid)")
+
                         let newTask = taskapeTask(
+                            id: UUID().uuidString,
+                            user_id: uid,
                             name: taskName,
                             taskDescription: taskDescription,
                             author: currentUser.first?.handle ?? "",
                             privacy: "everyone"
                         )
+
                         withAnimation(
                             .spring(response: 0.3, dampingFraction: 0.85)
                         ) {
@@ -246,16 +256,24 @@ struct ProfileCreationFirstTaskSetup: View {
     }
 
     func saveTasks() {
+        print("saving tasks lol")
         if let user = currentUser.first {
             for task in tasks {
+                task.user_id = userId ?? user.id
                 modelContext.insert(task)
                 user.tasks.append(task)
             }
+            print("got user")
 
             do {
                 try modelContext.save()
+                var tasksToSubmit = tasks
+                for i in 0..<tasksToSubmit.count {
+                    tasksToSubmit[i].user_id = userId ?? user.id
+                }
+
                 Task {
-                    let response = await submitTasksBatch(tasks: tasks)
+                    let response = await submitTasksBatch(tasks: tasksToSubmit)
                     if let response = response, response.success {
                         print("All tasks successfully saved to server")
                         if response.task_ids.count == tasks.count {
