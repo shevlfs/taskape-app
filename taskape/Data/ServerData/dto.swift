@@ -16,6 +16,11 @@ struct TokenRefreshResponse: Codable {
     let refreshToken: String
 }
 
+struct CheckHandleAvailabilityResponse: Codable {
+    let available: Bool
+    let message: String?
+}
+
 struct RegisterNewProfileRequest: Codable {
     let handle: String
     let bio: String

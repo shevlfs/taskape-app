@@ -133,7 +133,9 @@ struct AuthenticationView: View {
                 PhoneVerificationView(
                     code: $verifyCode,
                     codeReceived: $verifyCodeReceived,
-                    displayError: $displayCodeError
+                    displayError: $displayCodeError,
+                    phoneNumber: phoneNumber,
+                    countryCode: phoneCode
                 ).onTapGesture {
                     UIApplication.shared.sendAction(
                         #selector(UIResponder.resignFirstResponder), to: nil,

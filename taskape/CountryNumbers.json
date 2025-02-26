@@ -1,5 +1,29 @@
-[{
+[ {
     "id": "0001",
+    "name": "USA",
+    "flag": "🇺🇸",
+    "code": "US",
+    "dial_code": "+1",
+    "pattern": "### ### ####",
+    "limit": 17
+},{
+    "id": "0002",
+    "name": "Russia",
+    "flag": "🇷🇺",
+    "code": "RU",
+    "dial_code": "+7",
+    "pattern": "### ### ####",
+    "limit": 17
+}, {
+    "id": "0003",
+    "name": "Italy",
+    "flag": "🇮🇹",
+    "code": "IT",
+    "dial_code": "+39",
+    "pattern": "### ### ####",
+    "limit": 17
+},{
+    "id": "0235",
     "name": "Afghanistan",
     "flag": "🇦🇫",
     "code": "AF",
@@ -7,7 +31,7 @@
     "pattern": "### ### ###",
     "limit": 17
 }, {
-    "id": "0003",
+    "id": "0182",
     "name": "Albania",
     "flag": "🇦🇱",
     "code": "AL",
@@ -791,14 +815,6 @@
     "pattern": "## ### ####",
     "limit": 17
 }, {
-    "id": "0108",
-    "name": "Italy",
-    "flag": "🇮🇹",
-    "code": "IT",
-    "dial_code": "+39",
-    "pattern": "### ### ####",
-    "limit": 17
-}, {
     "id": "0109",
     "name": "Jamaica",
     "flag": "🇯🇲",
@@ -1351,14 +1367,6 @@
     "pattern": "### ### ###",
     "limit": 17
 }, {
-    "id": "0182",
-    "name": "Russia",
-    "flag": "🇷🇺",
-    "code": "RU",
-    "dial_code": "+7",
-    "pattern": "### ### ####",
-    "limit": 17
-}, {
     "id": "0183",
     "name": "Rwanda",
     "flag": "🇷🇼",
@@ -1733,14 +1741,6 @@
     "code": "GB",
     "dial_code": "+44",
     "pattern": "#### ######",
-    "limit": 17
-}, {
-    "id": "0235",
-    "name": "USA",
-    "flag": "🇺🇸",
-    "code": "US",
-    "dial_code": "+1",
-    "pattern": "### ### ####",
     "limit": 17
 }, {
     "id": "0236",

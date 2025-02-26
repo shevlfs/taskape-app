@@ -1,13 +1,6 @@
-//
-//  PhoneVerificationView.swift
-//  taskape
-//
-//  Created by shevlfs on 1/27/25.
-//
-
 import SwiftUI
 
-struct taskapeContinueButton : View {
+struct taskapeContinueButton: View {
     var body: some View {
         Text("continue")
             .padding()
@@ -76,13 +69,19 @@ struct PhoneVerificationView: View {
     @State var isValid: Bool = false
     @Binding var codeReceived: Bool
     @Binding var displayError: Bool
+    @State private var isResending: Bool = false
+    @State private var showResendMessage: Bool = false
+
+    var phoneNumber: String
+    var countryCode: String
+
     var body: some View {
         VStack(alignment: .center) {
             Text("uh, sent you a code...\nyada-yada...")
                 .multilineTextAlignment(.center)
                 .font(.pathway(30))
                 .percentageOffset(y: 1.25)
-                .padding(.bottom, 220)
+                .padding(.bottom, 200)
 
             TaskapeCodeField(
                 current_string: $code,
@@ -98,6 +97,39 @@ struct PhoneVerificationView: View {
                     .opacity(displayError ? 1 : 0)
             )
 
+            Button(action: {
+                resendCode()
+            }) {
+                HStack {
+                    Text("didn't get a code?")
+                        .font(.pathway(15))
+                        .foregroundColor(.secondary)
+
+                    Text("resend")
+                        .font(.pathwayBold(15))
+                        .foregroundColor(Color.taskapeOrange)
+                }
+                .padding(.top, 30)
+            }
+            .buttonStyle(.plain)
+            .disabled(isResending)
+
+
+            if showResendMessage {
+                Text("code sent!")
+                    .font(.pathway(14))
+                    .foregroundColor(.green)
+                    .padding(.top, 8)
+                    .transition(.opacity)
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            withAnimation{
+                                showResendMessage = false
+                            }
+                        }
+                    }
+            }
+
             Spacer()
 
             Button(action: {
@@ -111,12 +143,32 @@ struct PhoneVerificationView: View {
         }
     }
 
+    private func resendCode() {
+        isResending = true
+
+        Task {
+            await sendVerificationCode(
+                phoneNumber: phoneNumber,
+                country_code: countryCode
+            )
+
+            await MainActor.run {
+                isResending = false
+                withAnimation {
+                    showResendMessage = true
+                }
+                displayError = false
+            }
+        }
+    }
 }
 
 #Preview {
     PhoneVerificationView(
         code: .constant(""),
         codeReceived: .constant(false),
-        displayError: .constant(false)
+        displayError: .constant(false),
+        phoneNumber: "1234567890",
+        countryCode: "+1"
     )
 }

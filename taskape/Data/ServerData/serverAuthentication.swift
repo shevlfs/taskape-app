@@ -200,18 +200,33 @@ func registerProfile(
     }
 }
 
-func addUserHandleSuccess(handle: String) -> Bool {
-    return true
-}
-
-func addUserBioSuccess(bio: String) -> Bool {
-    return true
-}
-
-func addUserColorSuccess(color: String) -> Bool {
-    return true
-}
-
-func addUserPFPSuccess(image: UIImage?) -> Bool {
-    return true
+func checkHandleAvailability(handle: String) async -> Bool {
+    do {
+        guard !handle.isEmpty else {
+            return false
+        }
+        let parameters: [String: Any] = [
+            "handle": handle,
+            "token": UserDefaults.standard.string(forKey: "authToken") ?? "",
+        ]
+        let result = await AF.request(
+            "http://localhost:8080/checkHandleAvailability",
+            method: .post,
+            parameters: parameters,
+            encoding: JSONEncoding.default
+        )
+        .validate()
+        .serializingDecodable(CheckHandleAvailabilityResponse.self)
+        .response
+        switch result.result {
+        case .success(let response):
+            print("Handle availability: \(response.available)")
+            return response.available
+        case .failure(let error):
+            print(
+                "Failed to check handle availability: \(error.localizedDescription)"
+            )
+            return false
+        }
+    }
 }
