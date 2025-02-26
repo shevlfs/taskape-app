@@ -207,7 +207,8 @@ struct AuthenticationView: View {
                         case "task_addition":
                             ProfileCreationFirstTaskSetup(
                                 path: $path,
-                                progress: $progress
+                                progress: $progress,
+                                userAlreadyExists: $userAlreadyExists
                             ).navigationBarBackButtonHidden()
                                 .modelContext(modelContext)
                         default:

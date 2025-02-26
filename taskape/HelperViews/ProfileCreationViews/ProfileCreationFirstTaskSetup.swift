@@ -53,6 +53,8 @@ struct ProfileCreationFirstTaskSetup: View {
     @Binding var path: NavigationPath
     @Binding var progress: Float
 
+    @Binding var userAlreadyExists: Bool
+
     @State var taskName: String = ""
     @State var taskDescription: String = ""
     @State var tasks: [taskapeTask] = []
@@ -199,7 +201,6 @@ struct ProfileCreationFirstTaskSetup: View {
                             addTaskAnimation = true
                         }
 
-                        // Reset button animation
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             withAnimation {
                                 addTaskAnimation = false
@@ -222,7 +223,6 @@ struct ProfileCreationFirstTaskSetup: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(taskName.isEmpty)
-                // taskapeTaskDescriptionField(taskDescription: $taskDescription)
             }
 
             Spacer()
@@ -231,7 +231,7 @@ struct ProfileCreationFirstTaskSetup: View {
                 action: {
                     if !tasks.isEmpty {
                         saveTasks()
-                        path.append("home_view")
+                        userAlreadyExists = true
                         progress = 1.0
                     }
                 }) {
@@ -267,7 +267,8 @@ struct ProfileCreationFirstTaskSetup: View {
     @Previewable @State var progress: Float = 0.8
     ProfileCreationFirstTaskSetup(
         path: .constant(path),
-        progress: .constant(progress)
+        progress: .constant(progress),
+        userAlreadyExists: .constant(false)
     )
     .modelContainer(for: [taskapeUser.self, taskapeTask.self], inMemory: true)
 }
