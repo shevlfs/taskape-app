@@ -6,7 +6,8 @@ struct taskCard: View {
     @State var detailIsPresent: Bool = false
     @State private var appearAnimation = false
     @State private var foregroundColor: Color = Color.primary
-    @State private var selectedPrivacy: String = "noone"
+    @State private var selectedPrivacyLevel: PrivacySettings.PrivacyLevel =
+        .everyone
 
     @State var firstLaunch: Bool = false
 
@@ -74,8 +75,7 @@ struct taskCard: View {
                 withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
                     appearAnimation = true
                 }
-                selectedPrivacy =
-                    task.privacy == "private" ? "noone" : "everyone"
+                selectedPrivacyLevel = task.privacy.level
             }
         }
         .sheet(isPresented: $detailIsPresent) {
@@ -138,21 +138,21 @@ struct taskCard: View {
                         )
                         .padding(.horizontal)
 
-                    // Privacy Picker
                     HStack {
                         Text("privacy ").font(.pathway(17))
                         Spacer()
 
-                        Picker("privacy", selection: $selectedPrivacy) {
-                            Text("everyone").tag("everyone")
-                            Text("no one").tag("noone")
+                        Picker("privacy", selection: $selectedPrivacyLevel) {
+                            Text("everyone").tag(
+                                PrivacySettings.PrivacyLevel.everyone)
+                            Text("no one").tag(
+                                PrivacySettings.PrivacyLevel.noone)
                         }
                         .pickerStyle(MenuPickerStyle()).accentColor(
                             Color.taskapeOrange
                         )
-                        .onChange(of: selectedPrivacy) { newValue in
-                            task.privacy =
-                                newValue == "noone" ? "private" : "public"
+                        .onChange(of: selectedPrivacyLevel) { newValue in
+                            task.privacy.level = newValue
                         }
                     }
                     .padding()
@@ -211,7 +211,7 @@ struct taskCard: View {
                             author: "shevlfs",
                             privacy: "public"
                         )
-
+                       
                         taskCard(
                             task: .constant(completedTask)
                         )

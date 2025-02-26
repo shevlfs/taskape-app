@@ -78,7 +78,6 @@ struct ProfileCreationFirstTaskSetup: View {
             Spacer()
 
             ZStack(alignment: .top) {
-                // Subtle gradient masks for top and bottom fade effect
                 VStack(spacing: 0) {
                     LinearGradient(
                         gradient: Gradient(colors: [
@@ -255,8 +254,22 @@ struct ProfileCreationFirstTaskSetup: View {
 
             do {
                 try modelContext.save()
+                Task {
+                    let response = await submitTasksBatch(tasks: tasks)
+                    if let response = response, response.success {
+                        print("All tasks successfully saved to server")
+                        if response.task_ids.count == tasks.count {
+                            for i in 0..<tasks.count {
+                                tasks[i].id = response.task_ids[i]
+                            }
+                            try? modelContext.save()
+                        }
+                    } else {
+                        print("Failed to save tasks to server")
+                    }
+                }
             } catch {
-                print("Error saving tasks: \(error)")
+                print("Error saving tasks locally: \(error)")
             }
         }
     }
