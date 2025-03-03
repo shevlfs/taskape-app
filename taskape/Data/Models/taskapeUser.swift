@@ -14,7 +14,7 @@ final class taskapeUser {
     var id: String
     var handle: String
     var bio: String
-    var profileImageData: Data?
+    var profileImageURL: String
     var profileColor: String
     @Relationship var tasks: [taskapeTask]
 
@@ -22,14 +22,43 @@ final class taskapeUser {
         id: String = UUID().uuidString,
         handle: String,
         bio: String,
-        profileImage: UIImage? = nil,
+        profileImage: String,
         profileColor: String
     ) {
         self.id = id
         self.handle = handle
         self.bio = bio
-        self.profileImageData = profileImage?.jpegData(compressionQuality: 0.8)
+        self.profileImageURL = profileImage
         self.profileColor = profileColor
         self.tasks = []
+    }
+}
+
+func fetchAndInsertUser(userId: String, context: ModelContext) async -> taskapeUser? {
+    guard let user = await getUserById(userId: userId) else {
+        return nil
+    }
+
+    let descriptor = FetchDescriptor<taskapeUser>(
+        predicate: #Predicate<taskapeUser> { $0.id == userId }
+    )
+
+    do {
+        let existingUsers = try context.fetch(descriptor)
+        if let existingUser = existingUsers.first {
+            existingUser.handle = user.handle
+            existingUser.bio = user.bio
+            existingUser.profileColor = user.profileColor
+            existingUser.profileImageURL = user.profileImageURL
+            try context.save()
+            return existingUser
+        } else {
+            context.insert(user)
+            try context.save()
+            return user
+        }
+    } catch {
+        print("Failed to fetch or insert user: \(error)")
+        return nil
     }
 }

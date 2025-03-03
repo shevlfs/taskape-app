@@ -46,7 +46,7 @@ struct FriendStatusCard: View {
             id: "asda",
             handle: "john pork",
             bio: "john is called john",
-            profileImage: nil,
+            profileImage: "",
             profileColor: "000FFF"
         ),
         friendCardSize: .small

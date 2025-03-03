@@ -44,7 +44,8 @@ func uploadImage(_ image: UIImage) async throws -> String {
             case .success(let value):
                 if let json = value as? [String: Any],
                     let data = json["data"] as? [String: Any],
-                    let url = data["url"] as? String
+                    let medium = data["thumb"] as? [String: Any],
+                    let url = medium["url"] as? String
                 {
                     continuation.resume(returning: url)
                 } else {

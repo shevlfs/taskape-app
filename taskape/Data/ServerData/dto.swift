@@ -9,11 +9,22 @@ struct VerificationResponse: Codable {
     let authToken: String
     let refreshToken: String
     let profileExists: Bool
+    let userId: Int64
 }
 
 struct TokenRefreshResponse: Codable {
     let authToken: String
     let refreshToken: String
+}
+
+struct UserResponse: Codable {
+    let success: Bool
+    let id: String
+    let handle: String
+    let bio: String
+    let profile_picture: String
+    let color: String
+    let error: String?
 }
 
 struct CheckHandleAvailabilityResponse: Codable {

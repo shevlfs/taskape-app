@@ -47,7 +47,9 @@ struct RootView: View {
         Group {
             if isLoading {
                 EmptyView().onAppear {
-                    if let path = Bundle.main.path(forResource: ".env", ofType: nil) {
+                    if let path = Bundle.main.path(
+                        forResource: ".env", ofType: nil)
+                    {
                         print("loading dotenv")
                         try! Dotenv.configure(atPath: path)
                     } else {
@@ -60,7 +62,9 @@ struct RootView: View {
                         phoneNumberExistsInDatabase: $phoneExistsInDatabase,
                         userAlreadyExists: $userAlreadyExists
                     ).onAppear {
-                        if let path = Bundle.main.path(forResource: ".env", ofType: nil) {
+                        if let path = Bundle.main.path(
+                            forResource: ".env", ofType: nil)
+                        {
                             print("loading dotenv")
                             try! Dotenv.configure(atPath: path)
                         } else {
@@ -72,16 +76,28 @@ struct RootView: View {
                         isLoggedIn = true
                     }
                 } else {
-                    MainView()
+                    MainNavigationView().onAppear {
+                        if let path = Bundle.main.path(
+                            forResource: ".env", ofType: nil)
+                        {
+                            print("loading dotenv")
+                            try! Dotenv.configure(atPath: path)
+                        } else {
+                            print("dotenv is gone")
+                        }
+                    }
                 }
             }
         }.onAppear {
             Task {
-                await serverHandShake()
+                // await serverHandShake()
+                print("lol")
                 isLoggedIn =
                     await tokenIsActive()
                     && UserDefaults.standard.bool(
                         forKey: "profileExists")
+                print(UserDefaults.standard.bool(
+                    forKey: "profileExists"))
                 isLoading = false
             }
         }

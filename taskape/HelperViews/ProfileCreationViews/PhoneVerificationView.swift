@@ -93,7 +93,7 @@ struct PhoneVerificationView: View {
                 Text("that's not quite right...")
                     .foregroundColor(Color.taskapeOrange)
                     .font(.pathway(15))
-                    .offset(y: 80)
+                    .offset(y: 150)
                     .opacity(displayError ? 1 : 0)
             )
 

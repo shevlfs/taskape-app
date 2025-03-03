@@ -33,7 +33,7 @@ struct AuthenticationView: View {
 
     @State var userColor: String = ""
 
-    @State var userProfileImageData: UIImage?
+    @State var userProfileImageData: String = ""
 
     @State var user_id: String = ""
 
@@ -59,6 +59,8 @@ struct AuthenticationView: View {
         } catch {
             print("Error saving user: \(error)")
         }
+
+        UserDefaults.standard.set(true, forKey: "profileExists")
     }
 
     var body: some View {
@@ -170,6 +172,7 @@ struct AuthenticationView: View {
 
                             path.append(".profile_creation")
                         case .userexists:
+
                             userAlreadyExists = true
                         }
                     }
@@ -204,7 +207,7 @@ struct AuthenticationView: View {
                             ).navigationBarBackButtonHidden()
                         case "pfp_selection":
                             ProfileCreationPFPSelectionView(
-                                image: $userProfileImageData,
+                                imageurl: $userProfileImageData,
                                 path: $path,
                                 progress: $progress
                             )

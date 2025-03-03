@@ -1,4 +1,5 @@
 import PhotosUI
+import SwiftData
 import SwiftUI
 
 struct taskapeImagePicker: View {
@@ -64,7 +65,9 @@ struct taskapeImagePicker: View {
 }
 
 struct ProfileCreationPFPSelectionView: View {
-    @Binding var image: UIImage?
+    @Environment(\.modelContext) private var modelContext
+    @Binding var imageurl: String
+    @State var image: UIImage?
     @Binding var path: NavigationPath
     @Binding var progress: Float
     @State private var isUploading = false
@@ -137,6 +140,7 @@ struct ProfileCreationPFPSelectionView: View {
                     profilePictureURL: url,
                     phone: UserDefaults.standard.string(forKey: "phone") ?? ""
                 )
+                imageurl = url
 
                 await MainActor.run {
                     isUploading = false
@@ -164,12 +168,12 @@ struct ProfileCreationPFPSelectionView: View {
     }
 }
 
-#Preview {
-    @Previewable @State var image: UIImage? = nil
-    @Previewable @State var path = NavigationPath()
-    ProfileCreationPFPSelectionView(
-        image: $image,
-        path: $path,
-        progress: .constant(0.3)
-    )
-}
+//#Preview {
+//    @Previewable @State var image: UIImage? = nil
+//    @Previewable @State var path = NavigationPath()
+////    ProfileCreationPFPSelectionView(
+////        image: $image,
+////        path: $path,
+////        progress: .constant(0.3)
+////    )
+//}
