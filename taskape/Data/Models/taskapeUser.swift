@@ -34,7 +34,9 @@ final class taskapeUser {
     }
 }
 
-func fetchAndInsertUser(userId: String, context: ModelContext) async -> taskapeUser? {
+func fetchAndInsertUser(userId: String, context: ModelContext) async
+    -> taskapeUser?
+{
     guard let user = await getUserById(userId: userId) else {
         return nil
     }
@@ -45,18 +47,9 @@ func fetchAndInsertUser(userId: String, context: ModelContext) async -> taskapeU
 
     do {
         let existingUsers = try context.fetch(descriptor)
-        if let existingUser = existingUsers.first {
-            existingUser.handle = user.handle
-            existingUser.bio = user.bio
-            existingUser.profileColor = user.profileColor
-            existingUser.profileImageURL = user.profileImageURL
-            try context.save()
-            return existingUser
-        } else {
-            context.insert(user)
-            try context.save()
-            return user
-        }
+        context.insert(user)
+        try context.save()
+        return user
     } catch {
         print("Failed to fetch or insert user: \(error)")
         return nil

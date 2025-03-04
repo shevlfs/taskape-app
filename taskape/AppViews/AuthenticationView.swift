@@ -172,6 +172,9 @@ struct AuthenticationView: View {
 
                             path.append(".profile_creation")
                         case .userexists:
+                            UserDefaults.standard.set(
+                                true,
+                                forKey: "profileExists")
 
                             userAlreadyExists = true
                         }

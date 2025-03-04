@@ -86,7 +86,7 @@ func phoneNumberIsVerified(
                 UserDefaults.standard.set(user_phone, forKey: "phone")
 
                 if response.profileExists {
-                    UserDefaults.standard.set(response.userId, forKey: "userId")
+                    UserDefaults.standard.set(response.userId, forKey: "user_id")
                     return .userexists
                 }
                 return .success

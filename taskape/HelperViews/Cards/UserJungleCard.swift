@@ -9,6 +9,7 @@ import _SwiftData_SwiftUI
 
 struct UserJungleCard: View {
     @Bindable var user: taskapeUser
+
     var body: some View {
         ZStack {
             MenuItem(
@@ -31,8 +32,8 @@ struct UserJungleCard: View {
 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 5) {
-                        ForEach(user.tasks) {
-                            task in
+                        // Only display the first 3 tasks
+                        ForEach(Array(user.tasks.prefix(3))) { task in
                             TaskItem(task: task)
                         }
                     }
@@ -41,8 +42,10 @@ struct UserJungleCard: View {
 
                 HStack {
                     Spacer()
-                    Text("& 5 others...")
-                        .font(.pathwaySemiBoldCondensed)
+                    if user.tasks.count > 3 {
+                        Text("& \(user.tasks.count - 3) others...")
+                            .font(.pathwaySemiBoldCondensed)
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
