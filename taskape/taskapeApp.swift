@@ -14,7 +14,10 @@ struct taskapeApp: App {
 
     init() {
         do {
-            container = try ModelContainer(for: taskapeUser.self)
+            container = try ModelContainer(
+                for:
+                    taskapeUser.self, taskapeTask.self
+            )
         } catch {
             fatalError("Failed to initialize ModelContainer")
         }

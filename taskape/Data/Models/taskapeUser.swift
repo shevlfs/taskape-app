@@ -33,25 +33,3 @@ final class taskapeUser {
         self.tasks = []
     }
 }
-
-func fetchAndInsertUser(userId: String, context: ModelContext) async
-    -> taskapeUser?
-{
-    guard let user = await getUserById(userId: userId) else {
-        return nil
-    }
-
-    let descriptor = FetchDescriptor<taskapeUser>(
-        predicate: #Predicate<taskapeUser> { $0.id == userId }
-    )
-
-    do {
-        let existingUsers = try context.fetch(descriptor)
-        context.insert(user)
-        try context.save()
-        return user
-    } catch {
-        print("Failed to fetch or insert user: \(error)")
-        return nil
-    }
-}

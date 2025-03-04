@@ -14,6 +14,7 @@ struct MainNavigationView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Query var currentUser: [taskapeUser]
+    @Query var tasks: [taskapeTask]
 
     var body: some View {
         Group {
@@ -29,14 +30,29 @@ struct MainNavigationView: View {
         }
         .onAppear {
             Task {
-                if let userId = UserDefaults.standard.string(forKey: "user_id")
-                {
+                if let userId = UserDefaults.standard.string(forKey: "user_id") {
                     print("fetching user")
-                    _ = await fetchAndInsertUser(
-                        userId: userId, context: modelContext)
-                }
-                await MainActor.run {
-                    isLoading = false
+                    let user = await fetchUser(userId: userId)
+
+                    print("fetching tasks")
+                    let tasks = await fetchTasks(userId: userId)
+
+                    // Update SwiftData on the main thread
+                    await MainActor.run {
+                        if let user = user {
+                            insertUser(user: user, context: modelContext)
+                        }
+
+                        if let tasks = tasks {
+                            insertTasks(tasks: tasks, modelContext: modelContext)
+                        }
+
+                        isLoading = false
+                    }
+                } else {
+                    await MainActor.run {
+                        isLoading = false
+                    }
                 }
             }
         }

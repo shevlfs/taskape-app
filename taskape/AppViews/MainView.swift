@@ -63,6 +63,7 @@ struct MainView: View {
     ]
     @Environment(\.modelContext) private var modelContext
     @Query var currentUser: [taskapeUser]
+    @Query var tasks: [taskapeTask]
 
     var body: some View {
         VStack {
@@ -78,6 +79,10 @@ struct MainView: View {
 
             }
             Spacer()
+        }.onAppear{
+            for i in 0..<currentUser.count {
+                print ("\(currentUser[i].tasks)")
+            }
         }
     }
 }
