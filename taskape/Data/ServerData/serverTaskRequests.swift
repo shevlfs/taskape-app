@@ -8,6 +8,7 @@
 import Alamofire
 import Foundation
 import SwiftData
+import SwiftDotenv
 
 struct BatchTaskSubmissionRequest: Codable {
     let tasks: [TaskSubmission]
@@ -152,7 +153,7 @@ func submitTasksBatch(tasks: [taskapeTask]) async
 
     do {
         let result = await AF.request(
-            "http://localhost:8080/submitTasksBatch",
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/submitTasksBatch",
             method: .post,
             parameters: requestPayload,
             encoder: JSONParameterEncoder.default
@@ -186,7 +187,7 @@ func fetchUserTasks(userId: String) async -> [TaskResponse]? {
 
     do {
         let result = await AF.request(
-            "http://localhost:8080/users/\(userId)/tasks",
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)/tasks",
             method: .get,
             headers: ["Authorization": token]
         )

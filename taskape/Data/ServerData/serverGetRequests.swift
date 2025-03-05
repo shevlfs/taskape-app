@@ -8,6 +8,7 @@
 import Alamofire
 import Foundation
 import SwiftUI
+import SwiftDotenv
 
 func getUserById(userId: String) async -> taskapeUser? {
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
@@ -21,7 +22,7 @@ func getUserById(userId: String) async -> taskapeUser? {
         ]
 
         let result = await AF.request(
-            "http://localhost:8080/users/\(userId)",
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)",
             method: .get,
             headers: headers
         )

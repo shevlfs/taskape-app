@@ -4,6 +4,7 @@ import Alamofire
 import Combine
 import Foundation
 import SwiftData
+import SwiftDotenv
 
 // Fetch function - performs the network request only
 func fetchUser(userId: String) async -> taskapeUser? {
@@ -18,7 +19,7 @@ func fetchUser(userId: String) async -> taskapeUser? {
         ]
 
         let result = await AF.request(
-            "http://localhost:8080/users/\(userId)",
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)",
             method: .get,
             headers: headers
         )
@@ -91,7 +92,7 @@ func fetchTasks(userId: String) async -> [taskapeTask]? {
 
     do {
         let result = await AF.request(
-            "http://localhost:8080/users/\(userId)/tasks",
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)/tasks",
             method: .get,
             headers: ["Authorization": token]
         )

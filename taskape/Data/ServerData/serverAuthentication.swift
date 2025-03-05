@@ -9,10 +9,11 @@ import Alamofire
 import Foundation
 import SwiftData
 import SwiftUI
+import SwiftDotenv
 
 func serverHandShake() async -> Bool {
     do {
-        let result = await AF.request("http://localhost:8080/ping")
+        let result = await AF.request("\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/ping")
             .validate()
             .serializingData()
             .response
@@ -41,7 +42,7 @@ func sendVerificationCode(phoneNumber: String, country_code: String) async {
         ]
 
         _ = await AF.request(
-            "http://localhost:8080/sendVerificationCode",
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/sendVerificationCode",
             method: .post, parameters: parameters,
             encoding: JSONEncoding.default
         ).validate().serializingData().response
@@ -68,7 +69,7 @@ func phoneNumberIsVerified(
         ]
 
         let result = await AF.request(
-            "http://localhost:8080/checkVerificationCode",
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/checkVerificationCode",
             method: .post,
             parameters: parameters,
             encoding: JSONEncoding.default
@@ -105,7 +106,7 @@ func validateToken(token: String) async -> Bool {
     do {
 
         let result = await AF.request(
-            "http://localhost:8080/validateToken",
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/validateToken",
             method: .post,
             parameters: [
                 "token": token
@@ -141,7 +142,7 @@ func refreshTokenRequest(token: String, refreshToken: String, phone: String)
         ]
 
         let result = await AF.request(
-            "http://localhost:8080/refreshToken",
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/refreshToken",
             method: .post, parameters: parameters,
             encoding: JSONEncoding.default
         ).validate().serializingDecodable(
@@ -184,7 +185,7 @@ func registerProfile(
     )
     return try await withCheckedThrowingContinuation { continuation in
         AF.request(
-            "http://localhost:8080/registerNewProfile",
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/registerNewProfile",
             method: .post,
             parameters: request,
             encoder: JSONParameterEncoder.default
@@ -211,7 +212,7 @@ func checkHandleAvailability(handle: String) async -> Bool {
             "token": UserDefaults.standard.string(forKey: "authToken") ?? "",
         ]
         let result = await AF.request(
-            "http://localhost:8080/checkHandleAvailability",
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/checkHandleAvailability",
             method: .post,
             parameters: parameters,
             encoding: JSONEncoding.default

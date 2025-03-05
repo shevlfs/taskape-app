@@ -19,7 +19,15 @@ struct RootView: View {
     @State private var userAlreadyExists: Bool = false
 
     func tokenIsActive() async -> Bool {
-        var token = UserDefaults.standard.string(forKey: "authToken")
+        if let path = Bundle.main.path(
+            forResource: ".env", ofType: nil)
+        {
+            print("loading dotenv")
+            try! Dotenv.configure(atPath: path)
+        } else {
+            print("dotenv is gone")
+        }
+        let token = UserDefaults.standard.string(forKey: "authToken")
         if token != nil {
             if await validateToken(token: token!) {
                 print("token validate success")
@@ -96,8 +104,9 @@ struct RootView: View {
                     await tokenIsActive()
                     && UserDefaults.standard.bool(
                         forKey: "profileExists")
-                print(UserDefaults.standard.bool(
-                    forKey: "profileExists"))
+                print(
+                    UserDefaults.standard.bool(
+                        forKey: "profileExists"))
                 isLoading = false
             }
         }
