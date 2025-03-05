@@ -12,30 +12,36 @@ struct MainView: View {
     @Environment(\.modelContext) private var modelContext
     @Query var users: [taskapeUser]
     @Query var tasks: [taskapeTask]
-    @Namespace private var mainNamespace
+    @Namespace var mainNamespace
 
     @Binding var navigationPath: NavigationPath
     var body: some View {
-        VStack {
-            UserJungleCard(user: users.first!).onTapGesture {
-                navigationPath.append("self_jungle_view")
-            }
-            ScrollView {
+        GeometryReader {
+             geometry in 
+            VStack {
+                Button(action: {navigationPath.append("self_jungle_view")}){
+                    UserJungleCard(user: users.first!).matchedTransitionSource(
+                        id: "jungleCard", in: mainNamespace
+                    )
+                }.buttonStyle(PlainButtonStyle())
+                ScrollView {
 
-            }
-        }.navigationDestination(
-            for: String.self,
-            destination: {
-                route in
-                switch route {
-                case "self_jungle_view":
-                    UserJungleDetailedView()
-                        .modelContext(self.modelContext)
-                        .navigationTransition(.zoom(sourceID: "" , in: mainNamespace))
-                default:
-                    EmptyView()
                 }
-            })
+            }.navigationDestination(
+                for: String.self,
+                destination: {
+                    route in
+                    switch route {
+                    case "self_jungle_view":
+                        UserJungleDetailedView()
+                            .modelContext(self.modelContext)
+                            .navigationTransition(
+                                .zoom(sourceID: "jungleCard", in: mainNamespace))
+                    default:
+                        EmptyView()
+                    }
+                })
+        }
     }
 }
 

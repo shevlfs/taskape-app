@@ -61,7 +61,7 @@ struct RootView: View {
                     AuthenticationView(
                         phoneNumberExistsInDatabase: $phoneExistsInDatabase,
                         userAlreadyExists: $userAlreadyExists
-                    ).onAppear {
+                    ).statusBarHidden(true).onAppear {
                         if let path = Bundle.main.path(
                             forResource: ".env", ofType: nil)
                         {

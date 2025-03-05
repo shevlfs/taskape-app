@@ -25,7 +25,7 @@ struct taskapeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView().statusBarHidden(true).modelContainer(container)
+            RootView().modelContainer(container)
         }
     }
 }

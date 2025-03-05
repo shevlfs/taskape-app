@@ -45,3 +45,8 @@ struct RegisterNewProfileResponse: Codable {
     let success: Bool
     let id: Int
 }
+
+struct TaskSubmissionResponse: Codable {
+    let success: Bool
+    let taskId: Int
+}

@@ -3,96 +3,115 @@ import SwiftUI
 
 struct UserJungleDetailedView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @Query var users: [taskapeUser]
 
     @State private var isRefreshing: Bool = false
     @State private var showCompletedTasks: Bool = true
+    @State private var tabBarItems: [tabBarItem] = [
+        tabBarItem(title: "all"),
+        tabBarItem(title: "incomplete"),
+        tabBarItem(title: "completed")
+    ]
+    @State private var tabBarViewIndex: Int = 0
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
+            // Custom header bar
+            HStack {
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .font(.pathwayBold(20))
+                        .foregroundColor(.black)
+                }
+
+                Spacer()
+
+                Text("your jungle")
+                    .font(.pathwayBlack(24))
+
+                Spacer()
+
+                Button(action: {
+                    // Add new task
+                }) {
+                    Image(systemName: "plus")
+                        .font(.pathwayBold(20))
+                        .foregroundColor(.primary)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+
+            // Custom tab bar for filtering
+            TabBarView(
+                tabBarItems: $tabBarItems,
+                tabBarViewIndex: $tabBarViewIndex
+            )
+
             if let currentUser = users.first {
-                VStack(alignment: .leading) {
-                    HStack {
-                        Text("Your Jungle")
-                            .font(.pathwayBlack(24))
+                if currentUser.tasks.isEmpty {
+                    VStack(spacing: 20) {
                         Spacer()
-                        Menu {
-                            Button(action: {
-                                showCompletedTasks.toggle()
-                            }) {
-                                Label(
-                                    showCompletedTasks ? "Hide Completed Tasks" : "Show Completed Tasks",
-                                    systemImage: showCompletedTasks ? "eye.slash" : "eye"
-                                )
-                            }
-
-                            Button(action: {
-                                refreshTasks()
-                            }) {
-                                Label("Refresh Tasks", systemImage: "arrow.clockwise")
-                            }
-                        } label: {
-                            Image(systemName: "ellipsis.circle")
-                                .font(.system(size: 24))
-                        }
+                        Text("No tasks here yet")
+                            .font(.pathway(18))
+                        Text("Add a new task to start growing your jungle!")
+                            .font(.pathwayItalic(16))
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                        Spacer()
                     }
-                    .padding([.horizontal, .top])
-
-                    if currentUser.tasks.isEmpty {
-                        VStack(spacing: 20) {
-                            Spacer()
-                            Text("No tasks here yet")
-                                .font(.pathway(18))
-                            Text("Add a new task to start growing your jungle!")
-                                .font(.pathwayItalic(16))
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                            Spacer()
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    } else {
-                        ScrollView {
-                            LazyVStack(spacing: 12) {
-                                // Filter tasks based on completion status if needed
-                                ForEach(currentUser.tasks.filter { showCompletedTasks || !$0.completion.isCompleted }) { task in
-                                    taskCard(task: .constant(task))
-                                }
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(filteredTasks(currentUser.tasks)) { task in
+                                taskCard(task: .constant(task))
+                                    .padding(.horizontal, 16)
                             }
-                            .padding()
                         }
+                        .padding(.vertical, 12)
                     }
                 }
-                .overlay(
-                    Group {
-                        if isRefreshing {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle())
-                                .scaleEffect(1.5)
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .background(Color.black.opacity(0.2))
-                        }
-                    }
-                )
             } else {
                 Text("No user profile found")
                     .font(.pathway(18))
                     .padding()
             }
+
+            Spacer()
         }
-        .navigationTitle("Tasks")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    // Add new task
-                }) {
-                    Image(systemName: "plus")
+        .overlay(
+            Group {
+                if isRefreshing {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
+                        .scaleEffect(1.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.black.opacity(0.2))
                 }
             }
-        }
+        )
+        .navigationBarHidden(true)
         .onAppear {
             refreshTasks()
+        }
+    }
+
+    private func filteredTasks(_ tasks: [taskapeTask]) -> [taskapeTask] {
+        switch tabBarViewIndex {
+        case 0: // All tasks
+            return tasks
+        case 1: // Incomplete tasks
+            return tasks.filter { !$0.completion.isCompleted }
+        case 2: // Completed tasks
+            return tasks.filter { $0.completion.isCompleted }
+        default:
+            return tasks
         }
     }
 
@@ -103,7 +122,6 @@ struct UserJungleDetailedView: View {
 
         Task {
             await syncUserTasks(userId: userId, modelContext: modelContext)
-
             await MainActor.run {
                 isRefreshing = false
             }
