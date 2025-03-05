@@ -76,7 +76,7 @@ struct RootView: View {
                         isLoggedIn = true
                     }
                 } else {
-                    MainNavigationView().onAppear {
+                    MainRootView().onAppear {
                         if let path = Bundle.main.path(
                             forResource: ".env", ofType: nil)
                         {
