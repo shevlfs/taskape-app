@@ -12,17 +12,16 @@ struct MainView: View {
     @Environment(\.modelContext) private var modelContext
     @Query var users: [taskapeUser]
     @Query var tasks: [taskapeTask]
+    @Namespace private var mainNamespace
 
-    @State private var mainNavigationPath = NavigationPath()
+    @Binding var navigationPath: NavigationPath
     var body: some View {
-        NavigationStack(path: $mainNavigationPath) {
-            VStack {
-                UserJungleCard(user: users.first!).onTapGesture {
-                    mainNavigationPath.append("self_jungle_view")
-                }
-                ScrollView {
+        VStack {
+            UserJungleCard(user: users.first!).onTapGesture {
+                navigationPath.append("self_jungle_view")
+            }
+            ScrollView {
 
-                }
             }
         }.navigationDestination(
             for: String.self,
@@ -30,7 +29,9 @@ struct MainView: View {
                 route in
                 switch route {
                 case "self_jungle_view":
-                    Text("self jungle view")
+                    UserJungleDetailedView()
+                        .modelContext(self.modelContext)
+                        .navigationTransition(.zoom(sourceID: "" , in: mainNamespace))
                 default:
                     EmptyView()
                 }
@@ -69,7 +70,7 @@ struct MainView: View {
 
         try container.mainContext.save()
 
-        return MainView()
+        return MainView(navigationPath: .constant(NavigationPath()))
             .modelContainer(container)
     } catch {
         return Text("Failed to create preview: \(error.localizedDescription)")

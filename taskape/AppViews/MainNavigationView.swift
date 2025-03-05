@@ -66,25 +66,30 @@ struct MainNavigationView: View {
     @Query var currentUser: [taskapeUser]
     @Query var tasks: [taskapeTask]
 
-    var body: some View {
-        VStack {
-            selfProfileView(
-                user: currentUser.first
-            )
-            TabBarView(
-                tabBarItems: $mainTabBarItems,
-                tabBarViewIndex: $selectedTabIndex
-            )
+    @State private var mainNavigationPath = NavigationPath()
 
-            switch selectedTabIndex {
-            case 0:
-                SettingsView().modelContext(modelContext)
-            case 1:
-                MainView().modelContext(modelContext)
-            default:
-                Text("Unknown")
+    var body: some View {
+        NavigationStack(path: $mainNavigationPath) {
+            VStack {
+                selfProfileView(
+                    user: currentUser.first
+                )
+                TabBarView(
+                    tabBarItems: $mainTabBarItems,
+                    tabBarViewIndex: $selectedTabIndex
+                )
+
+                switch selectedTabIndex {
+                case 0:
+                    SettingsView().modelContext(modelContext)
+                case 1:
+                    MainView(navigationPath: $mainNavigationPath)
+                        .modelContext(modelContext)
+                default:
+                    Text("Unknown")
+                }
+                Spacer()
             }
-            Spacer()
         }
     }
 }
@@ -132,4 +137,3 @@ struct MainNavigationView: View {
         return Text("Failed to create preview: \(error.localizedDescription)")
     }
 }
-
