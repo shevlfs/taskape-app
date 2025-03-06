@@ -10,109 +10,6 @@ import Foundation
 import SwiftData
 import SwiftDotenv
 
-struct BatchTaskSubmissionRequest: Codable {
-    let tasks: [TaskSubmission]
-    let token: String
-}
-
-struct TaskSubmission: Codable {
-    let user_id: String
-    let name: String
-    let description: String
-    let deadline: String?
-    let author: String
-    let group: String?
-    let group_id: String?
-    let assigned_to: [String]
-    let difficulty: String
-    let custom_hours: Int?
-    let privacy_level: String
-    let privacy_except_ids: [String]
-}
-
-
-struct TaskResponse: Codable {
-    let id: String
-    let user_id: String
-    let name: String
-    let description: String
-    let created_at: String
-    let deadline: String?
-    let author: String
-    let group: String?
-    let group_id: String?
-    let assigned_to: [String]
-    let task_difficulty: String
-    let custom_hours: Int?
-    let is_completed: Bool
-    let proof_url: String?
-    let privacy_level: String
-    let privacy_except_ids: [String]
-
-    enum CodingKeys: String, CodingKey {
-        case id, name, description, author, group
-        case user_id = "user_id"
-        case created_at = "created_at"
-        case deadline
-        case group_id = "group_id"
-        case assigned_to = "assigned_to"
-        case task_difficulty = "task_difficulty"
-        case custom_hours = "custom_hours"
-        case is_completed = "is_completed"
-        case proof_url = "proof_url"
-        case privacy_level = "privacy_level"
-        case privacy_except_ids = "privacy_except_ids"
-    }
-
-    // Add an initializer to handle null values
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-
-        id = try container.decode(String.self, forKey: .id)
-        user_id = try container.decode(String.self, forKey: .user_id)
-        name = try container.decode(String.self, forKey: .name)
-        description = try container.decode(String.self, forKey: .description)
-        created_at = try container.decode(String.self, forKey: .created_at)
-        deadline = try container.decodeIfPresent(String.self, forKey: .deadline)
-        author = try container.decode(String.self, forKey: .author)
-        group = try container.decodeIfPresent(String.self, forKey: .group)
-        group_id = try container.decodeIfPresent(String.self, forKey: .group_id)
-
-        // Handle possibly null array
-        if let assignedTo = try? container.decodeIfPresent(
-            [String].self, forKey: .assigned_to)
-        {
-            assigned_to = assignedTo
-        } else {
-            assigned_to = []
-        }
-
-        task_difficulty = try container.decode(
-            String.self, forKey: .task_difficulty)
-        custom_hours = try container.decodeIfPresent(
-            Int.self, forKey: .custom_hours)
-        is_completed = try container.decode(Bool.self, forKey: .is_completed)
-        proof_url = try container.decodeIfPresent(
-            String.self, forKey: .proof_url)
-        privacy_level = try container.decode(
-            String.self, forKey: .privacy_level)
-
-        // Handle possibly null array
-        if let privacyExceptIds = try? container.decodeIfPresent(
-            [String].self, forKey: .privacy_except_ids)
-        {
-            privacy_except_ids = privacyExceptIds
-        } else {
-            privacy_except_ids = []
-        }
-    }
-}
-struct BatchTaskSubmissionResponse: Codable {
-    let success: Bool
-    let task_ids: [String]
-    let message: String?
-}
-
 func submitTasksBatch(tasks: [taskapeTask]) async
     -> BatchTaskSubmissionResponse?
 {
@@ -171,12 +68,6 @@ func submitTasksBatch(tasks: [taskapeTask]) async
             return nil
         }
     }
-}
-
-struct GetTasksResponse: Codable {
-    let success: Bool
-    let tasks: [TaskResponse]
-    let message: String?
 }
 
 func fetchUserTasks(userId: String) async -> [TaskResponse]? {
@@ -300,6 +191,68 @@ func convertToLocalTask(_ taskResponse: TaskResponse) -> taskapeTask {
     task.privacy = privacySettings
 
     return task
+}
+
+func updateTask(task: taskapeTask) async -> Bool {
+    guard let token = UserDefaults.standard.string(forKey: "authToken") else {
+        print("No auth token found")
+        return false
+    }
+
+    let deadlineString: String?
+    if let deadline = task.deadline {
+        let formatter = ISO8601DateFormatter()
+        deadlineString = formatter.string(from: deadline)
+    } else {
+        deadlineString = nil
+    }
+
+    let request = TaskUpdateRequest(
+        id: task.id,
+        userID: task.user_id,
+        name: task.name,
+        description: task.taskDescription,
+        deadline: deadlineString,
+        assignedTo: task.assignedToTask,
+        difficulty: task.task_difficulty.rawValue,
+        customHours: task.custom_hours,
+        isCompleted: task.completion.isCompleted,
+        proofURL: task.completion.proofURL,
+        privacyLevel: task.privacy.level.rawValue,
+        privacyExceptIDs: task.privacy.exceptIDs,
+        token: token
+    )
+
+    do {
+        let result = await AF.request(
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/updateTask",
+            method: .post,
+            parameters: request,
+            encoder: JSONParameterEncoder.default
+        )
+        .validate()
+        .serializingDecodable(TaskUpdateResponse.self)
+        .response
+
+        switch result.result {
+        case .success(let response):
+            print("Task updated successfully: \(response.success)")
+            return response.success
+        case .failure(let error):
+            print("Failed to update task: \(error.localizedDescription)")
+            return false
+        }
+    }
+}
+
+func syncTaskChanges(task: taskapeTask) async {
+    let success = await updateTask(task: task)
+
+    if success {
+        print("Task synced successfully with server")
+    } else {
+        print("Failed to sync task with server")
+    }
 }
 
 func syncUserTasks(userId: String, modelContext: ModelContext) async {

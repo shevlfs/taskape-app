@@ -44,7 +44,7 @@ struct TabBarView: View {
                                 .font(.pathwaySemiBold(18))
                                 .foregroundColor(
                                     tabBarViewIndex == index
-                                        ? .black : Color(.systemGray2)
+                                    ? .primary : Color(.systemGray2)
                                 )
                                 .padding(.horizontal, 2)
                                 .overlay(alignment: .topTrailing) {

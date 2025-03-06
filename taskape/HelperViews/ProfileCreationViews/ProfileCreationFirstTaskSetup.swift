@@ -121,7 +121,7 @@ struct ProfileCreationFirstTaskSetup: View {
                             index, _ in
                             HStack {
                                 Text("•").font(.headline).padding(.leading, 10)
-                                taskCard(
+                                taskCardFirstTimeAddition(
                                     task: $tasks[index],
                                     firstLaunch: true
                                 ).contextMenu {

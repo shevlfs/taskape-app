@@ -1,21 +1,16 @@
-//
-//  taskCard.swift
-//  taskape
-//
-//  Created by shevlfs on 3/6/25.
-//
-
+import SwiftData
 import SwiftUI
 
-struct taskCard: View {
-    @Bindable var task: taskapeTask
+struct taskCardFirstTimeAddition: View {
+    @Binding var task: taskapeTask
     @State var detailIsPresent: Bool = false
     @State private var appearAnimation = false
     @State private var foregroundColor: Color = Color.primary
     @State private var selectedPrivacyLevel: PrivacySettings.PrivacyLevel =
         .everyone
 
-    @Environment(\.modelContext) var modelContext
+    @State var firstLaunch: Bool = false
+
     @FocusState var isFocused: Bool
 
     var body: some View {
@@ -84,28 +79,103 @@ struct taskCard: View {
             }
         }
         .sheet(isPresented: $detailIsPresent) {
-            taskCardDetailView(
-                detailIsPresent: $detailIsPresent,
-                task: task
-            ).onDisappear(){
-                saveTask()
+            Group {
+                VStack {
+                    Button(action: { detailIsPresent.toggle() }) {
+                        Image(systemName: "chevron.down")
+                    }.buttonStyle(PlainButtonStyle())
+                    HStack {
+                        Group {
+                            HStack {
+                                TextField(
+                                    "what needs to be done?", text: $task.name
+                                )
+                                .padding(15)
+                                .accentColor(Color.taskapeOrange)
+                                .foregroundStyle(Color.white)
+                                .autocorrectionDisabled(true)
+                                .autocapitalization(.none)
+                                .multilineTextAlignment(.center)
+                                .font(.pathwayBlack(18))
+
+                                Spacer()
+                            }
+                        }.background(
+                            RoundedRectangle(cornerRadius: 30)
+                                .fill(Color.taskapeOrange.opacity(0.8))
+                                .stroke(.regularMaterial, lineWidth: 1).blur(
+                                    radius: 0.5)
+                        ).padding()
+                    }
+
+                    TextEditor(text: $task.taskDescription)
+                        .font(.pathway(17)).focused($isFocused)
+                        .foregroundColor(foregroundColor)
+                        .padding()
+                        .scrollContentBackground(.hidden)
+                        .accentColor(Color.taskapeOrange)
+                        .background(
+                            RoundedRectangle(cornerRadius: 30).fill(
+                                Color(UIColor.secondarySystemBackground))
+                        )
+                        .frame(maxHeight: 150)
+                        .padding(.horizontal)
+
+                    // DatePicker for the task deadline
+                    DatePicker(
+                        "due date",
+                        selection: Binding(
+                            get: { task.deadline ?? Date() },
+                            set: { task.deadline = $0 }
+                        ),
+                        displayedComponents: [.date, .hourAndMinute]
+                    ).font(.pathway(17))
+                        .padding()
+                        .accentColor(Color.taskapeOrange)
+                        .background(
+                            RoundedRectangle(cornerRadius: 30)
+                                .fill(Color(UIColor.secondarySystemBackground))
+                        )
+                        .padding(.horizontal)
+
+                    HStack {
+                        Text("privacy ").font(.pathway(17))
+                        Spacer()
+
+                        Picker("privacy", selection: $selectedPrivacyLevel) {
+                            Text("everyone").tag(
+                                PrivacySettings.PrivacyLevel.everyone)
+                            Text("no one").tag(
+                                PrivacySettings.PrivacyLevel.noone)
+                        }
+                        .pickerStyle(MenuPickerStyle()).accentColor(
+                            Color.taskapeOrange
+                        )
+                        .onChange(of: selectedPrivacyLevel) { newValue in
+                            task.privacy.level = newValue
+                        }
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 30)
+                            .fill(Color(UIColor.secondarySystemBackground))
+                    )
+                    .padding(.horizontal)
+
+                    if firstLaunch {
+                        Text(
+                            "privacy fine-tuning will be available as soon\nas you connect with your friends on \(Text("taskape").font(.pathway(13)).foregroundColor(Color.taskapeOrange))"
+                        ).multilineTextAlignment(.center).font(
+                            .pathwayItalic(13)
+                        ).padding(.horizontal)
+                    }
+
+                }.padding(.top, 20)
+                Spacer()
             }
+            .presentationDetents([.medium])
         }
         .buttonStyle(PlainButtonStyle())
-    }
-    func saveTask() {
-        do {
-            try modelContext.save()
-        } catch {
-            print("Error saving task locally: \(error)")
-        }
-
-        print("saving edited task")
-
-        Task {
-            await syncTaskChanges(
-                task: task)
-        }
     }
 }
 
@@ -122,15 +192,16 @@ struct taskCard: View {
             VStack(spacing: 20) {
                 ScrollView {
                     VStack(spacing: 10) {
-                        taskCard(
-                            task:
+                        taskCardFirstTimeAddition(
+                            task: .constant(
                                 taskapeTask(
                                     name: "Design new UI",
                                     taskDescription: "Create mockups in Figma",
                                     author: "shevlfs",
                                     privacy: "private"
                                 )
-
+                            ),
+                            firstLaunch: true  // Hex color for orange
                         )
 
                         // Sample completed task
@@ -140,13 +211,13 @@ struct taskCard: View {
                             author: "shevlfs",
                             privacy: "public"
                         )
-
-                        taskCard(
-                            task: completedTask
+                       
+                        taskCardFirstTimeAddition(
+                            task: .constant(completedTask)
                         )
 
-                        taskCard(
-                            task:
+                        taskCardFirstTimeAddition(
+                            task: .constant(
                                 taskapeTask(
                                     name: "",
                                     taskDescription:
@@ -154,18 +225,18 @@ struct taskCard: View {
                                     author: "shevlfs",
                                     privacy: "private"
                                 )
-
+                            )
                         )
 
-                        taskCard(
-                            task:
+                        taskCardFirstTimeAddition(
+                            task: .constant(
                                 taskapeTask(
                                     name: "Write documentation",
                                     taskDescription: "",
                                     author: "collaborator",
                                     privacy: "team"
                                 )
-
+                            )
                         )
                     }
                     .padding()

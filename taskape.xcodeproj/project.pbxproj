@@ -10,6 +10,7 @@
 		56376EED2D57E3D900553A6E /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 56376EEC2D57E3D900553A6E /* Alamofire */; };
 		56A85DA32D30A1BE008B1623 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 56A85DA22D30A1BE008B1623 /* Lottie */; };
 		56E7F0CC2D6A7E740064AAA4 /* SwiftDotenv in Frameworks */ = {isa = PBXBuildFile; productRef = 56E7F0CB2D6A7E740064AAA4 /* SwiftDotenv */; };
+		56F9DDA42D7640A500DA5BBE /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 56F9DDA32D7640A500DA5BBE /* CachedAsyncImage */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +44,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				56A85DA32D30A1BE008B1623 /* Lottie in Frameworks */,
+				56F9DDA42D7640A500DA5BBE /* CachedAsyncImage in Frameworks */,
 				56E7F0CC2D6A7E740064AAA4 /* SwiftDotenv in Frameworks */,
 				56376EED2D57E3D900553A6E /* Alamofire in Frameworks */,
 			);
@@ -83,6 +85,7 @@
 				56A85DA22D30A1BE008B1623 /* Lottie */,
 				56376EEC2D57E3D900553A6E /* Alamofire */,
 				56E7F0CB2D6A7E740064AAA4 /* SwiftDotenv */,
+				56F9DDA32D7640A500DA5BBE /* CachedAsyncImage */,
 			);
 			productName = taskape;
 			productReference = 568228942D2C60650023C192 /* taskape.app */;
@@ -116,6 +119,7 @@
 				56A85DA12D30A1BE008B1623 /* XCRemoteSwiftPackageReference "lottie-spm" */,
 				56376EEB2D57E3D900553A6E /* XCRemoteSwiftPackageReference "Alamofire" */,
 				56E7F0CA2D6A7E740064AAA4 /* XCRemoteSwiftPackageReference "swift-dotenv" */,
+				56F9DDA22D7640A500DA5BBE /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 56FA4D632D2C102E00C5D8FE;
@@ -405,6 +409,14 @@
 				minimumVersion = 2.1.0;
 			};
 		};
+		56F9DDA22D7640A500DA5BBE /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/lorenzofiamingo/swiftui-cached-async-image";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -422,6 +434,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 56E7F0CA2D6A7E740064AAA4 /* XCRemoteSwiftPackageReference "swift-dotenv" */;
 			productName = SwiftDotenv;
+		};
+		56F9DDA32D7640A500DA5BBE /* CachedAsyncImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 56F9DDA22D7640A500DA5BBE /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */;
+			productName = CachedAsyncImage;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

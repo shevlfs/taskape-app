@@ -24,7 +24,7 @@ struct UserJungleDetailedView: View {
                 }) {
                     Image(systemName: "chevron.left")
                         .font(.pathwayBold(20))
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary)
                 }
 
                 Spacer()
@@ -70,7 +70,7 @@ struct UserJungleDetailedView: View {
                     ScrollView {
                         LazyVStack(spacing: 12) {
                             ForEach(filteredTasks(currentUser.tasks)) { task in
-                                taskCard(task: .constant(task))
+                                taskCard(task: task)
                                     .padding(.horizontal, 16)
                             }
                         }
