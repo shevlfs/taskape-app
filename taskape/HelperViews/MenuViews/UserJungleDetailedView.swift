@@ -116,12 +116,16 @@ struct UserJungleDetailedView: View {
     }
 
     private func refreshTasks() {
-        guard let userId = users.first?.id else { return }
+        let userId = UserDefaults.standard.string(forKey: "user_id") ?? ""
 
         isRefreshing = true
 
         Task {
-            await syncUserTasks(userId: userId, modelContext: modelContext)
+            guard let remoteTasks = await fetchTasks(userId: userId) else {
+                print("Failed to fetch remote tasks")
+                return
+            }
+            syncUserTasks(userId: userId, remoteTasks: remoteTasks,modelContext: modelContext)
             await MainActor.run {
                 isRefreshing = false
             }

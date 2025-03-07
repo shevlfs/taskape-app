@@ -31,7 +31,7 @@ func fetchUser(userId: String) async -> taskapeUser? {
         case .success(let response):
             if response.success {
                 let user = taskapeUser(
-                    id: response.id,
+                    id: String(response.id),
                     handle: response.handle,
                     bio: response.bio,
                     profileImage: response.profile_picture,
@@ -89,6 +89,8 @@ func fetchTasks(userId: String) async -> [taskapeTask]? {
         print("No auth token found")
         return nil
     }
+
+    print("USER ID", userId)
 
     do {
         let result = await AF.request(

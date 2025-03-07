@@ -41,7 +41,7 @@ struct BatchTaskSubmissionResponse: Codable {
 
 struct TaskUpdateRequest: Codable {
     let id: String
-    let userID: String
+    let user_id: String
     let name: String
     let description: String
     let deadline: String?

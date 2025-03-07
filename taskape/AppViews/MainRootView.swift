@@ -38,6 +38,7 @@ struct MainRootView: View {
                     let tasks = await fetchTasks(userId: userId)
                     await MainActor.run {
                         if let user = user {
+                            print(user.id)
                             insertUser(user: user, context: modelContext)
                         }
 

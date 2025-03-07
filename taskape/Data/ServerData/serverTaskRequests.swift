@@ -70,58 +70,6 @@ func submitTasksBatch(tasks: [taskapeTask]) async
     }
 }
 
-func fetchUserTasks(userId: String) async -> [TaskResponse]? {
-    guard let token = UserDefaults.standard.string(forKey: "authToken") else {
-        print("No auth token found")
-        return nil
-    }
-
-    do {
-        let result = await AF.request(
-            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)/tasks",
-            method: .get,
-            headers: ["Authorization": token]
-        )
-        .validate()
-        .serializingDecodable(GetTasksResponse.self)
-        .response
-
-        // Log raw response for debugging
-        if let data = result.data,
-            let jsonString = String(data: data, encoding: .utf8)
-        {
-            print("Raw JSON response: \(jsonString)")
-        }
-
-        switch result.result {
-        case .success(let response):
-            if response.success {
-                return response.tasks
-            } else {
-                print(
-                    "Failed to fetch tasks: \(response.message ?? "Unknown error")"
-                )
-                return nil
-            }
-        case .failure(let error):
-            print("Failed to fetch tasks: \(error.localizedDescription)")
-
-            // Try to decode the response in a more lenient way for debugging
-            if let data = result.data {
-                do {
-                    let json = try JSONSerialization.jsonObject(
-                        with: data, options: [])
-                    print("Raw response content: \(json)")
-                } catch {
-                    print("Could not parse response as JSON: \(error)")
-                }
-            }
-
-            return nil
-        }
-    }
-}
-
 func convertToLocalTask(_ taskResponse: TaskResponse) -> taskapeTask {
     let dateFormatter = ISO8601DateFormatter()
 
@@ -209,7 +157,7 @@ func updateTask(task: taskapeTask) async -> Bool {
 
     let request = TaskUpdateRequest(
         id: task.id,
-        userID: task.user_id,
+        user_id: task.user_id,
         name: task.name,
         description: task.taskDescription,
         deadline: deadlineString,
@@ -254,15 +202,7 @@ func syncTaskChanges(task: taskapeTask) async {
         print("Failed to sync task with server")
     }
 }
-
-func syncUserTasks(userId: String, modelContext: ModelContext) async {
-    guard let remoteTasks = await fetchUserTasks(userId: userId) else {
-        print("Failed to fetch remote tasks")
-        return
-    }
-
-    let localTasks = remoteTasks.map { convertToLocalTask($0) }
-
+func syncUserTasks(userId: String, remoteTasks: [taskapeTask], modelContext: ModelContext) {
     let descriptor = FetchDescriptor<taskapeTask>(
         predicate: #Predicate<taskapeTask> { task in
             task.user_id == userId
@@ -271,12 +211,13 @@ func syncUserTasks(userId: String, modelContext: ModelContext) async {
 
     do {
         let existingTasks = try modelContext.fetch(descriptor)
-
         let existingTaskMap = Dictionary(
-            uniqueKeysWithValues: existingTasks.map { ($0.id, $0) })
+            uniqueKeysWithValues: existingTasks.map { ($0.id, $0) }
+        )
 
-        for remoteTask in localTasks {
+        for remoteTask in remoteTasks {
             if let existingTask = existingTaskMap[remoteTask.id] {
+                // Update existing task
                 existingTask.name = remoteTask.name
                 existingTask.taskDescription = remoteTask.taskDescription
                 existingTask.deadline = remoteTask.deadline
@@ -286,12 +227,12 @@ func syncUserTasks(userId: String, modelContext: ModelContext) async {
                 existingTask.task_difficulty = remoteTask.task_difficulty
                 existingTask.custom_hours = remoteTask.custom_hours
             } else {
+                // Insert new task
                 modelContext.insert(remoteTask)
             }
         }
 
         try modelContext.save()
-
     } catch {
         print("Failed to sync tasks: \(error)")
     }
