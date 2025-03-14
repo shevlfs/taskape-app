@@ -74,12 +74,12 @@ struct taskCard: View {
                             radius: 0.25)
                 ).padding(.leading, 5).padding(.trailing, 15)
             }
-            .opacity(appearAnimation ? 1 : 0)
-            .offset(x: appearAnimation ? 0 : -50)
+//            .opacity(appearAnimation ? 1 : 0)
+//            .offset(x: appearAnimation ? 0 : -50)
             .onAppear {
-                withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
-                    appearAnimation = true
-                }
+//                withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+//                    appearAnimation = true
+//                }
                 selectedPrivacyLevel = task.privacy.level
             }
         }

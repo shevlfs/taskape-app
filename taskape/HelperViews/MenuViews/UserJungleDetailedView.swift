@@ -176,11 +176,11 @@ struct UserJungleDetailedView: View {
             name: "",
             taskDescription: "",
             author: currentUser.handle,
-            privacy: "public"
+            privacy: "everyone"
         )
 
         modelContext.insert(task)
-        currentUser.tasks.append(task)
+        currentUser.tasks.insert(task, at: 0)
 
         newTask = task
         saveNewTask()

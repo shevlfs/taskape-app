@@ -61,7 +61,6 @@ struct taskCardDetailView: View {
                     .frame(maxHeight: 150)
                     .padding(.horizontal)
 
-                // DatePicker for the task deadline
                 DatePicker(
                     "due date",
                     selection: Binding(
@@ -87,6 +86,12 @@ struct taskCardDetailView: View {
                             PrivacySettings.PrivacyLevel.everyone)
                         Text("no one").tag(
                             PrivacySettings.PrivacyLevel.noone)
+                        Text("friends only")
+                            .tag(PrivacySettings.PrivacyLevel.friendsOnly)
+                        Text("group")
+                            .tag(PrivacySettings.PrivacyLevel.group)
+                        Text("everyone except...")
+                            .tag(PrivacySettings.PrivacyLevel.except)
                     }
                     .pickerStyle(MenuPickerStyle()).accentColor(
                         Color.taskapeOrange
@@ -102,10 +107,24 @@ struct taskCardDetailView: View {
                 )
                 .padding(.horizontal)
 
+                switch selectedPrivacyLevel {
+                    case .everyone:
+                    EmptyView()
+                case .noone:
+                    EmptyView()
+                case .friendsOnly:
+                    EmptyView()
+                case .group:
+                   Text("group selection")
+                case .except:
+                    Text("except people selection")
+                }
+
+
             }.padding(.top, 20)
             Spacer()
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 }
 

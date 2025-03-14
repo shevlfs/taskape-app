@@ -151,8 +151,8 @@ struct taskCardFirstTimeAddition: View {
                         .pickerStyle(MenuPickerStyle()).accentColor(
                             Color.taskapeOrange
                         )
-                        .onChange(of: selectedPrivacyLevel) { newValue in
-                            task.privacy.level = newValue
+                        .onChange(of: selectedPrivacyLevel) {
+                            task.privacy.level = selectedPrivacyLevel
                         }
                     }
                     .padding()
@@ -210,7 +210,7 @@ struct taskCardFirstTimeAddition: View {
                             author: "shevlfs",
                             privacy: "public"
                         )
-                       
+
                         taskCardFirstTimeAddition(
                             task: .constant(completedTask)
                         )

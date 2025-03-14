@@ -32,12 +32,14 @@ struct PrivacySettings: Codable {
         case friendsOnly = "friends-only"
         case group
         case noone
+        case except
     }
 
     var level: PrivacyLevel
+    var groupID: String?
     var exceptIDs: [String]
 
-    init(level: PrivacyLevel = .everyone, exceptIDs: [String] = []) {
+    init(level: PrivacyLevel = .except, exceptIDs: [String] = []) {
         self.level = level
         self.exceptIDs = exceptIDs
     }
@@ -67,7 +69,7 @@ final class taskapeTask: Identifiable {
         name: String,
         taskDescription: String,
         author: String,
-        privacy: String,
+        privacy: PrivacySettings,
         group: String? = nil,
         group_id: String? = nil,
         assignedToTask: [String] = [],
@@ -88,15 +90,7 @@ final class taskapeTask: Identifiable {
         self.custom_hours = custom_hours
         self.mentioned_in_event = mentioned_in_event
         self.completion = CompletionStatus()
-
-        switch privacy {
-        case "public":
-            self.privacy = PrivacySettings(level: .everyone)
-        case "private":
-            self.privacy = PrivacySettings(level: .noone)
-        default:
-            self.privacy = PrivacySettings(level: .everyone)
-        }
+        self.privacy = privacy
     }
 
     func markAsCompleted(proofURL: String? = nil) {
@@ -114,6 +108,8 @@ final class taskapeTask: Identifiable {
             return "friends-only"
         case .group:
             return "group"
+        case .except:
+            return "except"
         }
     }
 }
