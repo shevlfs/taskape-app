@@ -17,15 +17,21 @@ struct MainView: View {
     @Binding var navigationPath: NavigationPath
     var body: some View {
         GeometryReader {
-             geometry in 
+            geometry in
             VStack {
-                Button(action: {navigationPath.append("self_jungle_view")}){
+                Button(action: { navigationPath.append("self_jungle_view") }) {
                     UserJungleCard(user: users.first!).matchedTransitionSource(
                         id: "jungleCard", in: mainNamespace
                     )
                 }.buttonStyle(PlainButtonStyle())
                 ScrollView {
+                    FriendInvitationButtons(
+                        onApeTap: {
 
+                        },
+                        onNewFriendTap: {
+
+                        })
                 }
             }.navigationDestination(
                 for: String.self,
@@ -36,7 +42,8 @@ struct MainView: View {
                         UserJungleDetailedView()
                             .modelContext(self.modelContext)
                             .navigationTransition(
-                                .zoom(sourceID: "jungleCard", in: mainNamespace))
+                                .zoom(sourceID: "jungleCard", in: mainNamespace)
+                            )
                     default:
                         EmptyView()
                     }
