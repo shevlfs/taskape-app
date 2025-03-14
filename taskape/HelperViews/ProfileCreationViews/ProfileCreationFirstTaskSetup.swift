@@ -201,7 +201,7 @@ struct ProfileCreationFirstTaskSetup: View {
                             name: taskName,
                             taskDescription: taskDescription,
                             author: currentUser.first?.handle ?? "",
-                            privacy: "everyone"
+                            privacy: PrivacySettings(level: .everyone)
                         )
 
                         withAnimation(

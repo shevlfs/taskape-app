@@ -176,7 +176,7 @@ struct UserJungleDetailedView: View {
             name: "",
             taskDescription: "",
             author: currentUser.handle,
-            privacy: "everyone"
+            privacy: PrivacySettings(level: .everyone)
         )
 
         modelContext.insert(task)

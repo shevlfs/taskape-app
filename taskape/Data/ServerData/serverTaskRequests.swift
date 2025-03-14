@@ -27,6 +27,21 @@ func submitTasksBatch(tasks: [taskapeTask]) async
             deadlineString = nil
         }
 
+        // Convert the privacy level enum to string
+        let privacyLevelString: String
+        switch task.privacy.level {
+        case .everyone:
+            privacyLevelString = "everyone"
+        case .noone:
+            privacyLevelString = "noone"
+        case .friendsOnly:
+            privacyLevelString = "friends-only"
+        case .group:
+            privacyLevelString = "group"
+        case .except:
+            privacyLevelString = "except"
+        }
+
         return TaskSubmission(
             id: task.id,
             user_id: task.user_id,
@@ -39,7 +54,7 @@ func submitTasksBatch(tasks: [taskapeTask]) async
             assigned_to: task.assignedToTask,
             difficulty: task.task_difficulty.rawValue,
             custom_hours: task.custom_hours,
-            privacy_level: task.privacy.level.rawValue,
+            privacy_level: privacyLevelString, // Use the converted string value
             privacy_except_ids: task.privacy.exceptIDs
         )
     }
@@ -156,6 +171,21 @@ func updateTask(task: taskapeTask) async -> Bool {
         deadlineString = nil
     }
 
+    // Convert the privacy level enum to string
+    let privacyLevelString: String
+    switch task.privacy.level {
+    case .everyone:
+        privacyLevelString = "everyone"
+    case .noone:
+        privacyLevelString = "noone"
+    case .friendsOnly:
+        privacyLevelString = "friends-only"
+    case .group:
+        privacyLevelString = "group"
+    case .except:
+        privacyLevelString = "except"
+    }
+
     let request = TaskUpdateRequest(
         id: task.id,
         user_id: task.user_id,
@@ -167,7 +197,7 @@ func updateTask(task: taskapeTask) async -> Bool {
         customHours: task.custom_hours,
         isCompleted: task.completion.isCompleted,
         proofURL: task.completion.proofURL,
-        privacyLevel: task.privacy.level.rawValue,
+        privacyLevel: privacyLevelString, // Use the converted string value
         privacyExceptIDs: task.privacy.exceptIDs,
         token: token
     )
