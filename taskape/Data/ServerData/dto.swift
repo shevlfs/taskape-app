@@ -45,13 +45,13 @@ struct TaskUpdateRequest: Codable {
     let name: String
     let description: String
     let deadline: String?
-    let assignedTo: [String]
+    let assigned_to: [String]
     let difficulty: String
     let customHours: Int?
-    let isCompleted: Bool
-    let proofURL: String?
-    let privacyLevel: String
-    let privacyExceptIDs: [String]
+    let is_completed: Bool
+    let proof_url: String?
+    let privacy_level: String
+    let privacy_except_ids: [String]
     let token: String
 }
 

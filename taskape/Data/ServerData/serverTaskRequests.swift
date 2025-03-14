@@ -54,7 +54,7 @@ func submitTasksBatch(tasks: [taskapeTask]) async
             assigned_to: task.assignedToTask,
             difficulty: task.task_difficulty.rawValue,
             custom_hours: task.custom_hours,
-            privacy_level: privacyLevelString, // Use the converted string value
+            privacy_level: privacyLevelString,  // Use the converted string value
             privacy_except_ids: task.privacy.exceptIDs
         )
     }
@@ -97,17 +97,23 @@ func convertToLocalTask(_ taskResponse: TaskResponse) -> taskapeTask {
     let createdAt = dateFormatter.date(from: taskResponse.created_at) ?? Date()
 
     let privacyLevel: PrivacySettings.PrivacyLevel
-    switch taskResponse.privacy_level {
-    case "everyone":
+    if taskResponse.privacy_level.isEmpty {
         privacyLevel = .everyone
-    case "friends-only":
-        privacyLevel = .friendsOnly
-    case "group":
-        privacyLevel = .group
-    case "noone":
-        privacyLevel = .noone
-    default:
-        privacyLevel = .everyone
+    } else {
+        switch taskResponse.privacy_level {
+        case "everyone":
+            privacyLevel = .everyone
+        case "friends-only":
+            privacyLevel = .friendsOnly
+        case "group":
+            privacyLevel = .group
+        case "noone":
+            privacyLevel = .noone
+        case "except":
+            privacyLevel = .except
+        default:
+            privacyLevel = .everyone
+        }
     }
 
     let privacySettings = PrivacySettings(
@@ -173,6 +179,7 @@ func updateTask(task: taskapeTask) async -> Bool {
 
     // Convert the privacy level enum to string
     let privacyLevelString: String
+
     switch task.privacy.level {
     case .everyone:
         privacyLevelString = "everyone"
@@ -184,24 +191,26 @@ func updateTask(task: taskapeTask) async -> Bool {
         privacyLevelString = "group"
     case .except:
         privacyLevelString = "except"
-    }
+    @unknown default:
+        privacyLevelString = "everyone"
 
+    }
     let request = TaskUpdateRequest(
         id: task.id,
         user_id: task.user_id,
         name: task.name,
         description: task.taskDescription,
         deadline: deadlineString,
-        assignedTo: task.assignedToTask,
+        assigned_to: task.assignedToTask,
         difficulty: task.task_difficulty.rawValue,
         customHours: task.custom_hours,
-        isCompleted: task.completion.isCompleted,
-        proofURL: task.completion.proofURL,
-        privacyLevel: privacyLevelString, // Use the converted string value
-        privacyExceptIDs: task.privacy.exceptIDs,
+        is_completed: task.completion.isCompleted,
+        proof_url: task.completion.proofURL,
+        privacy_level: privacyLevelString,  // Use the converted string value
+        privacy_except_ids: task.privacy.exceptIDs,
         token: token
     )
-
+    print(TaskUpdateRequest.self)
     do {
         let result = await AF.request(
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/updateTask",
@@ -233,6 +242,7 @@ func syncTaskChanges(task: taskapeTask) async {
         print("Failed to sync task with server")
     }
 }
+
 func syncUserTasks(
     userId: String, remoteTasks: [taskapeTask], modelContext: ModelContext
 ) {

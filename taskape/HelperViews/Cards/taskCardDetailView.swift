@@ -11,8 +11,6 @@ import SwiftUI
 struct taskCardDetailView: View {
     @Binding var detailIsPresent: Bool
     @Bindable var task: taskapeTask
-    @State private var selectedPrivacyLevel: PrivacySettings.PrivacyLevel =
-        .everyone
     @State private var foregroundColor: Color = Color.primary
 
     @Environment(\.modelContext) var modelContext
@@ -81,7 +79,7 @@ struct taskCardDetailView: View {
                     Text("privacy ").font(.pathway(17))
                     Spacer()
 
-                    Picker("privacy", selection: $selectedPrivacyLevel) {
+                    Picker("privacy", selection: $task.privacy.level) {
                         Text("everyone").tag(
                             PrivacySettings.PrivacyLevel.everyone)
                         Text("no one").tag(
@@ -96,9 +94,7 @@ struct taskCardDetailView: View {
                     .pickerStyle(MenuPickerStyle()).accentColor(
                         Color.taskapeOrange
                     )
-                    .onChange(of: selectedPrivacyLevel) {
-                        task.privacy.level = selectedPrivacyLevel
-                    }
+
                 }
                 .padding()
                 .background(
@@ -107,7 +103,7 @@ struct taskCardDetailView: View {
                 )
                 .padding(.horizontal)
 
-                switch selectedPrivacyLevel {
+                switch task.privacy.level {
                     case .everyone:
                     EmptyView()
                 case .noone:

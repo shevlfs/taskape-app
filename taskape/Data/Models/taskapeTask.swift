@@ -1,10 +1,3 @@
-//
-//  Item.swift
-//  taskape
-//
-//  Created by shevlfs on 1/6/25.
-//
-
 import Foundation
 import SwiftData
 import SwiftUICore
@@ -27,7 +20,7 @@ struct CompletionStatus: Codable {
 }
 
 struct PrivacySettings: Codable {
-    enum PrivacyLevel: String, Codable {
+    enum PrivacyLevel: String, Codable, CaseIterable {
         case everyone = "everyone"
         case friendsOnly = "friends-only"
         case group = "group"
@@ -39,45 +32,48 @@ struct PrivacySettings: Codable {
     var groupID: String?
     var exceptIDs: [String]
 
-    // Custom Codable implementation to ensure proper serialization
     enum CodingKeys: String, CodingKey {
         case level
         case groupID = "group_id"
         case exceptIDs = "except_ids"
     }
 
-    init(level: PrivacyLevel = .everyone, groupID: String? = nil, exceptIDs: [String] = []) {
+    init(
+        level: PrivacyLevel = .everyone, groupID: String? = nil,
+        exceptIDs: [String] = []
+    ) {
         self.level = level
         self.groupID = groupID
         self.exceptIDs = exceptIDs
     }
 
-    // Convenience initializer from string
-    init(from string: String) {
-        switch string.lowercased() {
-        case "everyone", "public":
-            self.level = .everyone
-        case "friends-only", "friends":
-            self.level = .friendsOnly
-        case "group", "team":
-            self.level = .group
-        case "noone", "private":
-            self.level = .noone
-        case "except":
-            self.level = .except
-        default:
-            self.level = .everyone
-        }
-        self.groupID = nil
-        self.exceptIDs = []
-    }
+    // Make sure we handle empty strings by defaulting to a valid value
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
 
-    // String representation for debugging and API
-    func toString() -> String {
-        return level.rawValue
+        // Handle the level with a safe default
+        do {
+            let levelString = try container.decode(String.self, forKey: .level)
+            if let level = PrivacyLevel(rawValue: levelString) {
+                self.level = level
+            } else {
+                self.level = .everyone  // Default if the value can't be decoded properly
+            }
+        } catch {
+            self.level = .everyone  // Default if there's any decoding error
+        }
+
+        self.groupID = try container.decodeIfPresent(
+            String.self, forKey: .groupID)
+
+        do {
+            self.exceptIDs = try container.decode(
+                [String].self, forKey: .exceptIDs)
+        } catch {
+            self.exceptIDs = []  // Default empty array if there's an issue
+        }
     }
 }
-
 
 @Model
 final class taskapeTask: Identifiable {
@@ -95,7 +91,27 @@ final class taskapeTask: Identifiable {
     var custom_hours: Int?
     var mentioned_in_event: Bool
     var completion: CompletionStatus
-    var privacy: PrivacySettings
+
+    var privacyLevel: String = "everyone"
+    var privacyGroupID: String?
+    var privacyExceptIDs: [String] = []
+
+
+    var privacy: PrivacySettings {
+        get {
+            let level =
+                PrivacySettings.PrivacyLevel(rawValue: privacyLevel)
+                ?? .everyone
+            return PrivacySettings(
+                level: level, groupID: privacyGroupID,
+                exceptIDs: privacyExceptIDs)
+        }
+        set {
+            privacyLevel = newValue.level.rawValue
+            privacyGroupID = newValue.groupID
+            privacyExceptIDs = newValue.exceptIDs
+        }
+    }
 
     init(
         id: String = UUID().uuidString,
@@ -179,7 +195,8 @@ extension taskapeTask {
             privacyLevel = .everyone
         }
 
-        let privacySettings = PrivacySettings(level: privacyLevel, exceptIDs: [])
+        let privacySettings = PrivacySettings(
+            level: privacyLevel, exceptIDs: [])
 
         self.init(
             id: id,
@@ -195,32 +212,5 @@ extension taskapeTask {
             custom_hours: custom_hours,
             mentioned_in_event: mentioned_in_event
         )
-    }
-}
-
-// 2. Add helper extension to convert string privacy level to enum
-extension String {
-    func toPrivacyLevel() -> PrivacySettings.PrivacyLevel {
-        switch self.lowercased() {
-        case "everyone", "public":
-            return .everyone
-        case "friends-only", "friends":
-            return .friendsOnly
-        case "group", "team":
-            return .group
-        case "noone", "private":
-            return .noone
-        case "except":
-            return .except
-        default:
-            return .everyone
-        }
-    }
-}
-
-// 3. Add extension for creating PrivacySettings from string
-extension PrivacySettings {
-    static func from(string: String) -> PrivacySettings {
-        return PrivacySettings(level: string.toPrivacyLevel())
     }
 }
