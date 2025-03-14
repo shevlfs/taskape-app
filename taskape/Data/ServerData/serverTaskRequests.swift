@@ -28,6 +28,7 @@ func submitTasksBatch(tasks: [taskapeTask]) async
         }
 
         return TaskSubmission(
+            id: task.id,
             user_id: task.user_id,
             name: task.name,
             description: task.taskDescription,
@@ -202,22 +203,46 @@ func syncTaskChanges(task: taskapeTask) async {
         print("Failed to sync task with server")
     }
 }
-func syncUserTasks(userId: String, remoteTasks: [taskapeTask], modelContext: ModelContext) {
-    let descriptor = FetchDescriptor<taskapeTask>(
+func syncUserTasks(
+    userId: String, remoteTasks: [taskapeTask], modelContext: ModelContext
+) {
+    // First, fetch the user to properly associate tasks
+    let userDescriptor = FetchDescriptor<taskapeUser>(
+        predicate: #Predicate<taskapeUser> { user in
+            user.id == userId
+        }
+    )
+
+    // Fetch all existing tasks for the user
+    let taskDescriptor = FetchDescriptor<taskapeTask>(
         predicate: #Predicate<taskapeTask> { task in
             task.user_id == userId
         }
     )
 
     do {
-        let existingTasks = try modelContext.fetch(descriptor)
-        let existingTaskMap = Dictionary(
-            uniqueKeysWithValues: existingTasks.map { ($0.id, $0) }
+        // Get the user and existing tasks
+        let users = try modelContext.fetch(userDescriptor)
+        guard let user = users.first else {
+            print("Error: No user found with ID \(userId) to sync tasks with")
+            return
+        }
+
+        let existingTasks = try modelContext.fetch(taskDescriptor)
+        print(
+            "Syncing tasks: Found \(existingTasks.count) local tasks and \(remoteTasks.count) remote tasks"
         )
 
-        for remoteTask in remoteTasks {
-            if let existingTask = existingTaskMap[remoteTask.id] {
-                // Update existing task
+        // Create efficient maps for lookup
+        let remoteTaskMap = Dictionary(
+            uniqueKeysWithValues: remoteTasks.map { ($0.id, $0) })
+        let existingTaskMap = Dictionary(
+            uniqueKeysWithValues: existingTasks.map { ($0.id, $0) })
+
+        // 1. Update existing tasks that are also in remote
+        for existingTask in existingTasks {
+            if let remoteTask = remoteTaskMap[existingTask.id] {
+                // Update with remote values
                 existingTask.name = remoteTask.name
                 existingTask.taskDescription = remoteTask.taskDescription
                 existingTask.deadline = remoteTask.deadline
@@ -226,13 +251,50 @@ func syncUserTasks(userId: String, remoteTasks: [taskapeTask], modelContext: Mod
                 existingTask.assignedToTask = remoteTask.assignedToTask
                 existingTask.task_difficulty = remoteTask.task_difficulty
                 existingTask.custom_hours = remoteTask.custom_hours
+                print(
+                    "Updated existing task: \(existingTask.id) - \(existingTask.name)"
+                )
             } else {
-                // Insert new task
-                modelContext.insert(remoteTask)
+                // Only delete if the task has a valid server ID and wasn't just created locally
+                // (assuming newly created tasks awaiting sync have a specific ID pattern or flag)
+                if !existingTask.id.isEmpty && !existingTask.id.contains("temp")
+                {
+                    print(
+                        "Deleting task not present on server: \(existingTask.id) - \(existingTask.name)"
+                    )
+
+                    // Also remove from user's tasks array
+                    if let index = user.tasks.firstIndex(where: {
+                        $0.id == existingTask.id
+                    }) {
+                        user.tasks.remove(at: index)
+                    }
+
+                    modelContext.delete(existingTask)
+                }
             }
         }
 
+        // 2. Insert new remote tasks that don't exist locally
+        for remoteTask in remoteTasks {
+            if existingTaskMap[remoteTask.id] == nil {
+                // This is a new task from the server
+                print(
+                    "Inserting new remote task: \(remoteTask.id) - \(remoteTask.name)"
+                )
+                modelContext.insert(remoteTask)
+
+                // Associate with user
+                if !user.tasks.contains(where: { $0.id == remoteTask.id }) {
+                    user.tasks.append(remoteTask)
+                }
+            }
+        }
+
+        // Save all changes at once
         try modelContext.save()
+        print("Successfully synced tasks for user \(userId)")
+
     } catch {
         print("Failed to sync tasks: \(error)")
     }

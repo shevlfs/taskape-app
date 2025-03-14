@@ -5,7 +5,7 @@
 //  Created by shevlfs on 1/8/25.
 //
 import SwiftUI
-import _SwiftData_SwiftUI
+import SwiftData
 
 struct UserJungleCard: View {
     @Bindable var user: taskapeUser
@@ -32,7 +32,6 @@ struct UserJungleCard: View {
 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 5) {
-                        // Only display the first 3 tasks
                         ForEach(Array(user.tasks.prefix(3))) { task in
                             TaskItem(task: task)
                         }
@@ -63,15 +62,22 @@ struct TaskItem: View {
     @Bindable var task: taskapeTask
     var body: some View {
         HStack {
-            Text("•  \(task.name)")
-                .font(.pathway(14))
-                .lineLimit(1)
-            Spacer()
-            Text("")
+            if task.name != "" {
+                Text("•  \(task.name)")
+                    .font(.pathway(14))
+                    .lineLimit(1)
+                Spacer()
+                Text("")
+            } else {
+                Text("•  new to-do")
+                    .font(.pathway(14)).foregroundStyle(.secondary)
+                    .lineLimit(1)
+                Spacer()
+                Text("")
+            }
         }
     }
 }
 
 #Preview {
-    // UserJungleCard()
 }

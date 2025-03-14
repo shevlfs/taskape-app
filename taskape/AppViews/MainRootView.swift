@@ -43,7 +43,11 @@ struct MainRootView: View {
                         }
 
                         if let tasks = tasks {
-                            insertTasks(tasks: tasks, modelContext: modelContext)
+                            syncUserTasks(
+                                userId: userId,
+                                remoteTasks: tasks,
+                                modelContext: modelContext
+                            )
                         }
 
                         isLoading = false

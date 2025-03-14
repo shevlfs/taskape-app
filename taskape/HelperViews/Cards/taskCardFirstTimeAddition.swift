@@ -204,7 +204,6 @@ struct taskCardFirstTimeAddition: View {
                             firstLaunch: true  // Hex color for orange
                         )
 
-                        // Sample completed task
                         let completedTask = taskapeTask(
                             name: "Implement animations",
                             taskDescription: "Add spring animations to cards",

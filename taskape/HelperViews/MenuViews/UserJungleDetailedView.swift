@@ -11,13 +11,15 @@ struct UserJungleDetailedView: View {
     @State private var tabBarItems: [tabBarItem] = [
         tabBarItem(title: "all"),
         tabBarItem(title: "incomplete"),
-        tabBarItem(title: "completed")
+        tabBarItem(title: "completed"),
     ]
     @State private var tabBarViewIndex: Int = 0
 
+    @State private var newTask: taskapeTask? = nil
+    @State private var showNewTaskDetail: Bool = false
+
     var body: some View {
         VStack(spacing: 0) {
-            // Custom header bar
             HStack {
                 Button(action: {
                     dismiss()
@@ -35,7 +37,7 @@ struct UserJungleDetailedView: View {
                 Spacer()
 
                 Button(action: {
-                    // Add new task
+                    createNewTask()
                 }) {
                     Image(systemName: "plus")
                         .font(.pathwayBold(20))
@@ -100,15 +102,37 @@ struct UserJungleDetailedView: View {
         .onAppear {
             refreshTasks()
         }
+        // Sheet for new task detail view
+        .sheet(isPresented: $showNewTaskDetail) {
+            if let task = newTask {
+                taskCardDetailView(
+                    detailIsPresent: $showNewTaskDetail,
+                    task: task
+                ).onDisappear {
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        print("Error saving task locally: \(error)")
+                    }
+
+                    print("saving edited task")
+
+                    Task {
+                        await syncTaskChanges(
+                            task: task)
+                    }
+                }
+            }
+        }
     }
 
     private func filteredTasks(_ tasks: [taskapeTask]) -> [taskapeTask] {
         switch tabBarViewIndex {
-        case 0: // All tasks
+        case 0:  // All tasks
             return tasks
-        case 1: // Incomplete tasks
+        case 1:  // Incomplete tasks
             return tasks.filter { !$0.completion.isCompleted }
-        case 2: // Completed tasks
+        case 2:  // Completed tasks
             return tasks.filter { $0.completion.isCompleted }
         default:
             return tasks
@@ -123,59 +147,57 @@ struct UserJungleDetailedView: View {
         Task {
             guard let remoteTasks = await fetchTasks(userId: userId) else {
                 print("Failed to fetch remote tasks")
+                await MainActor.run {
+                    isRefreshing = false
+                }
                 return
             }
-            syncUserTasks(userId: userId, remoteTasks: remoteTasks,modelContext: modelContext)
+            syncUserTasks(
+                userId: userId, remoteTasks: remoteTasks,
+                modelContext: modelContext)
             await MainActor.run {
                 isRefreshing = false
             }
         }
     }
-}
 
-#Preview {
-    do {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(
-            for: taskapeUser.self, taskapeTask.self, configurations: config)
+    private func createNewTask() {
+        guard let currentUser = users.first else {
+            print("No user found to associate task with")
+            return
+        }
 
-        let user = taskapeUser(
+        let userId =
+            UserDefaults.standard.string(forKey: "user_id") ?? currentUser.id
+
+        let task = taskapeTask(
             id: UUID().uuidString,
-            handle: "shevlfs",
-            bio: "i am shevlfs",
-            profileImage: "https://static.wikia.nocookie.net/character-stats-and-profiles/images/c/c7/DZuvg1d.png/revision/latest?cb=20181120135131",
-            profileColor: "blue"
+            user_id: userId,
+            name: "",
+            taskDescription: "",
+            author: currentUser.handle,
+            privacy: "public"
         )
 
-        container.mainContext.insert(user)
+        modelContext.insert(task)
+        currentUser.tasks.append(task)
 
-        // Add some sample tasks
-        for i in 1...5 {
-            let task = taskapeTask(
-                id: UUID().uuidString,
-                user_id: user.id,
-                name: "Task \(i)",
-                taskDescription: "This is a description for task \(i)",
-                author: "shevlfs",
-                privacy: "private"
-            )
+        newTask = task
+        saveNewTask()
 
-            // Make some tasks completed
-            if i % 2 == 0 {
-                task.markAsCompleted()
+        showNewTaskDetail = true
+    }
+
+    private func saveNewTask() {
+        guard let task = newTask else { return }
+        do {
+            try modelContext.save()
+            Task {
+                let tasks = [task]
+                _ = await submitTasksBatch(tasks: tasks)
             }
-
-            container.mainContext.insert(task)
-            user.tasks.append(task)
+        } catch {
+            print("Error saving new task: \(error)")
         }
-
-        try container.mainContext.save()
-
-        return NavigationStack {
-            UserJungleDetailedView()
-                .modelContainer(container)
-        }
-    } catch {
-        return Text("Failed to create preview: \(error.localizedDescription)")
     }
 }

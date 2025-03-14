@@ -90,6 +90,7 @@ struct BatchTaskSubmissionRequest: Codable {
 }
 
 struct TaskSubmission: Codable {
+    let id: String
     let user_id: String
     let name: String
     let description: String

@@ -39,7 +39,9 @@ func fetchUser(userId: String) async -> taskapeUser? {
                 )
                 return user
             } else {
-                print("Failed to fetch user: \(response.error ?? "Unknown error")")
+                print(
+                    "Failed to fetch user: \(response.error ?? "Unknown error")"
+                )
                 return nil
             }
         case .failure(let error):
@@ -52,7 +54,9 @@ func fetchUser(userId: String) async -> taskapeUser? {
 // Insert function - handles the SwiftData operations only
 func insertUser(user: taskapeUser, context: ModelContext) {
     let userID = user.id  // Capture the user id in a local constant
-    print("Attempting to insert/update user with ID: \(userID), handle: \(user.handle)")
+    print(
+        "Attempting to insert/update user with ID: \(userID), handle: \(user.handle)"
+    )
 
     let descriptor = FetchDescriptor<taskapeUser>(
         predicate: #Predicate<taskapeUser> { $0.id == userID }
@@ -108,80 +112,14 @@ func fetchTasks(userId: String) async -> [taskapeTask]? {
                 let localTasks = response.tasks.map { convertToLocalTask($0) }
                 return localTasks
             } else {
-                print("Failed to fetch tasks: \(response.message ?? "Unknown error")")
+                print(
+                    "Failed to fetch tasks: \(response.message ?? "Unknown error")"
+                )
                 return nil
             }
         case .failure(let error):
             print("Failed to fetch tasks: \(error.localizedDescription)")
             return nil
         }
-    }
-}
-
-// Insert function - handles the SwiftData operations for tasks
-func insertTasks(tasks: [taskapeTask], modelContext: ModelContext) {
-    print("Attempting to insert/update \(tasks.count) tasks")
-
-    do {
-        // First, make sure we have tasks to process
-        if tasks.isEmpty {
-            print("No tasks to process")
-            return
-        }
-
-        // Get the user ID from the first task
-        let userID = tasks.first!.user_id
-        let userDescriptor = FetchDescriptor<taskapeUser>(
-            predicate: #Predicate<taskapeUser> { user in
-                user.id == userID
-            }
-        )
-
-        let users = try modelContext.fetch(userDescriptor)
-        guard let user = users.first else {
-            print("ERROR: Could not find user with ID: \(userID) to associate tasks with!")
-            return
-        }
-
-        print("Found user: \(user.handle) with ID: \(userID) for task association")
-
-        // Process each task
-        for remoteTask in tasks {
-            let taskID = remoteTask.id
-            print("Processing task with ID: \(taskID), name: \(remoteTask.name)")
-
-            let descriptor = FetchDescriptor<taskapeTask>(
-                predicate: #Predicate<taskapeTask> { task in
-                    task.id == taskID
-                }
-            )
-
-            let existingTasks = try modelContext.fetch(descriptor)
-            print("Found \(existingTasks.count) existing tasks with ID: \(taskID)")
-
-            if let existingTask = existingTasks.first {
-                print("Updating existing task with ID: \(taskID)")
-                existingTask.name = remoteTask.name
-                existingTask.taskDescription = remoteTask.taskDescription
-                existingTask.deadline = remoteTask.deadline
-                existingTask.completion = remoteTask.completion
-                existingTask.privacy = remoteTask.privacy
-                existingTask.assignedToTask = remoteTask.assignedToTask
-                existingTask.task_difficulty = remoteTask.task_difficulty
-                existingTask.custom_hours = remoteTask.custom_hours
-            } else {
-                print("Inserting new task with ID: \(taskID)")
-                modelContext.insert(remoteTask)
-                if !user.tasks.contains(where: { $0.id == remoteTask.id }) {
-                    print("Associating task \(taskID) with user \(user.handle)")
-                    user.tasks.append(remoteTask)
-                }
-            }
-        }
-
-        try modelContext.save()
-        print("Saved changes to context after processing \(tasks.count) tasks")
-    } catch {
-        print("Failed to sync tasks: \(error)")
     }
 }
