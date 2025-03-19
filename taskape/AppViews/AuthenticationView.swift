@@ -1,8 +1,6 @@
 //
-//  AuthenticationView.swift
+//  AuthenticationView.swift - Updated for AppStateManager
 //  taskape
-//
-//  Created by shevlfs on 1/7/25.
 //
 
 import Lottie
@@ -11,6 +9,7 @@ import SwiftUI
 
 struct AuthenticationView: View {
     @Query private var users: [taskapeUser]
+    @EnvironmentObject private var appState: AppStateManager
 
     @Binding var phoneNumberExistsInDatabase: Bool
     @Binding var userAlreadyExists: Bool
@@ -30,23 +29,39 @@ struct AuthenticationView: View {
 
     @State var userHandle: String = ""
     @State var userBio: String = ""
-
     @State var userColor: String = ""
-
     @State var userProfileImageData: String = ""
-
     @State var user_id: String = ""
 
     @Namespace private var namespace
 
     private func createUser() {
-        print("new user was created")
+        print("Creating new user: \(userHandle)")
+
+        // Clean up any existing users first
+        do {
+            let descriptor = FetchDescriptor<taskapeUser>()
+            let existingUsers = try modelContext.fetch(descriptor)
+
+            for user in existingUsers {
+                print("Removing existing user: \(user.handle)")
+                modelContext.delete(user)
+            }
+
+            try modelContext.save()
+        } catch {
+            print("Error clearing existing users: \(error)")
+        }
+
+        // Create the new user
         let newUser = taskapeUser(
-            id: UUID().uuidString,
+            id: UserDefaults.standard.string(forKey: "user_id") ?? user_id,
             handle: userHandle,
-            bio: userBio, profileImage: userProfileImageData,
+            bio: userBio,
+            profileImage: userProfileImageData,
             profileColor: userColor
         )
+
         modelContext.insert(newUser)
 
         let userPhone: String = "\(phoneCode)\(phoneNumber)"
@@ -56,11 +71,13 @@ struct AuthenticationView: View {
             try modelContext.save()
             UserDefaults.standard.set(true, forKey: "numberIsRegistered")
             UserDefaults.standard.set(userPhone, forKey: "userPhoneNumber")
+            print("New user saved successfully with ID: \(newUser.id)")
         } catch {
             print("Error saving user: \(error)")
         }
 
         UserDefaults.standard.set(true, forKey: "profileExists")
+        appState.login()
     }
 
     var body: some View {
@@ -169,18 +186,15 @@ struct AuthenticationView: View {
                             displayCodeError = true
                             verifyCodeReceived = false
                         case .success:
-
                             path.append(".profile_creation")
                         case .userexists:
                             UserDefaults.standard.set(
                                 true,
                                 forKey: "profileExists")
-
                             userAlreadyExists = true
                         }
                     }
                 }
-
             }.onAppear {
                 if phoneNumberExistsInDatabase {
                     path.append(".profile_creation")
@@ -226,6 +240,7 @@ struct AuthenticationView: View {
                                 createUser()
                             }.navigationBarBackButtonHidden()
                                 .modelContext(modelContext)
+                                .environmentObject(appState)
                         default:
                             EmptyView()
                         }
@@ -239,21 +254,5 @@ struct AuthenticationView: View {
     AuthenticationView(
         phoneNumberExistsInDatabase: .constant(false),
         userAlreadyExists: .constant(false)
-    )
+    ).environmentObject(AppStateManager())
 }
-
-//
-//.toolbar {
-//    ToolbarItem(placement: .principal) {
-//        ProfileCreationProgressBar(
-//            progress: $progress
-//        )
-//        .progressViewStyle(.linear)
-//    }
-//}
-
-// what do i do with this...
-//
-// so probably the best idea would be to make the toolbar on the
-// authenticationView and then handle whether we need to show the
-// bar via .toolbar(.hidden) through a boolean variable

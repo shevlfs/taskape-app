@@ -1,98 +1,109 @@
-//
-//  taskCard.swift
-//  taskape
-//
-//  Created by shevlfs on 3/6/25.
-//
-
 import SwiftUI
 
 struct taskCard: View {
     @Bindable var task: taskapeTask
     @State var detailIsPresent: Bool = false
     @State private var appearAnimation = false
+    @State private var isAnimating: Bool = false
     @State private var foregroundColor: Color = Color.primary
-    @State private var selectedPrivacyLevel: PrivacySettings.PrivacyLevel =
-        .everyone
+    @State private var selectedPrivacyLevel: PrivacySettings.PrivacyLevel = .everyone
 
     @Environment(\.modelContext) var modelContext
     @FocusState var isFocused: Bool
 
     var body: some View {
-        Button(action: { detailIsPresent.toggle() }) {
-            HStack {
-                Group {
-                    HStack {
-                        if !task.name.isEmpty {
-                            Text(" \(task.name)")
-                                .font(.pathwayBold(15))
-                                .padding()
-                                .foregroundStyle(Color.white)
-
-                        } else {
-                            Text(" new to-do")
-                                .font(.pathwayBold(15))
-                                .padding()
-                                .foregroundStyle(Color.secondary)
-                        }
-                        Spacer()
-                        if !detailIsPresent {
-                            Image(systemName: "chevron.right")
-                                .resizable()
-                                .frame(width: 5, height: 10)
-                                .foregroundColor(Color.white).padding(
-                                    .trailing, 20
-                                )
-                                .animation(
-                                    Animation
-                                        .easeInOut(
-                                            duration: 0.25
-                                        ),
-                                    value: detailIsPresent
-                                )
-                        } else {
-                            Image(systemName: "chevron.up")
-                                .resizable()
-                                .frame(width: 10, height: 5)
-                                .foregroundColor(Color.white)
-                                .padding(.trailing, 20)
-                                .transition(.opacity)
-                                .animation(
-                                    Animation
-                                        .easeInOut(
-                                            duration: 0.25
-                                        ),
-                                    value: detailIsPresent
-                                )
+        HStack(spacing: 0) {
+            // CheckBoxView
+            CheckBoxView(task: task).padding(.trailing, 5)
+                .onChange(of: task.completion.isCompleted) { oldValue, newValue in
+                    if oldValue != newValue {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isAnimating = true
                         }
 
+                        // Reset animation state after a short delay
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            withAnimation {
+                                isAnimating = false
+                            }
+
+                            // Save changes to the task
+                            saveTask()
+                        }
                     }
-                }.background(
-                    RoundedRectangle(cornerRadius: 30)
-                        .fill(Color.taskapeOrange.opacity(0.8))
-                        .stroke(.regularMaterial, lineWidth: 1).blur(
-                            radius: 0.25)
-                ).padding(.leading, 5).padding(.trailing, 15)
+                }
+
+            Button(action: { detailIsPresent.toggle() }) {
+                HStack {
+                    Group {
+                        HStack {
+                            if !task.name.isEmpty {
+                                Text(" \(task.name)")
+                                    .font(.pathwayBold(15))
+                                    .padding()
+                                    .foregroundStyle(task.completion.isCompleted ? Color.white.opacity(0.7) : Color.white)
+                                    .strikethrough(task.completion.isCompleted)
+
+                            } else {
+                                Text(" new to-do")
+                                    .font(.pathwayBold(15))
+                                    .padding()
+                                    .foregroundStyle(Color.secondary)
+                            }
+                            Spacer()
+
+                            if !detailIsPresent {
+                                Image(systemName: "chevron.right")
+                                    .resizable()
+                                    .frame(width: 5, height: 10)
+                                    .foregroundColor(task.completion.isCompleted ? Color.white.opacity(0.7) : Color.white)
+                                    .padding(.trailing, 20)
+                                    .animation(
+                                        Animation.easeInOut(duration: 0.25),
+                                        value: detailIsPresent
+                                    )
+                            } else {
+                                Image(systemName: "chevron.up")
+                                    .resizable()
+                                    .frame(width: 10, height: 5)
+                                    .foregroundColor(task.completion.isCompleted ? Color.white.opacity(0.7) : Color.white)
+                                    .padding(.trailing, 20)
+                                    .transition(.opacity)
+                                    .animation(
+                                        Animation.easeInOut(duration: 0.25),
+                                        value: detailIsPresent
+                                    )
+                            }
+                        }
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 30)
+                            .fill(task.completion.isCompleted ?
+                                  Color.taskapeOrange.opacity(0.5) :
+                                  Color.taskapeOrange.opacity(0.8))
+                            .stroke(.regularMaterial, lineWidth: 1)
+                            .blur(radius: 0.25)
+                    )
+                    .completedTaskStyle(isCompleted: task.completion.isCompleted, isAnimating: isAnimating)
+                    .padding(.leading, 5)
+                    .padding(.trailing, 15)
+                }
+                .onAppear {
+                    selectedPrivacyLevel = task.privacy.level
+                }
             }
-//            .opacity(appearAnimation ? 1 : 0)
-//            .offset(x: appearAnimation ? 0 : -50)
-            .onAppear {
-//                withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
-//                    appearAnimation = true
-//                }
-                selectedPrivacyLevel = task.privacy.level
+            .sheet(isPresented: $detailIsPresent) {
+                taskCardDetailView(
+                    detailIsPresent: $detailIsPresent,
+                    task: task
+                ).onDisappear {
+                    saveTask()
+                }
             }
+            .buttonStyle(PlainButtonStyle())
         }
-        .sheet(isPresented: $detailIsPresent) {
-            taskCardDetailView(
-                detailIsPresent: $detailIsPresent,
-                task: task
-            ).onDisappear(){
-                saveTask()
-            }
-        }
-        .buttonStyle(PlainButtonStyle())
     }
+
     func saveTask() {
         do {
             try modelContext.save()
@@ -103,8 +114,7 @@ struct taskCard: View {
         print("saving edited task")
 
         Task {
-            await syncTaskChanges(
-                task: task)
+            await syncTaskChanges(task: task)
         }
     }
 }

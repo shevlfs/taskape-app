@@ -11,6 +11,7 @@ import SwiftUI
 @main
 struct taskapeApp: App {
     let container: ModelContainer
+    @StateObject private var appState = AppStateManager()
 
     init() {
         do {
@@ -25,7 +26,9 @@ struct taskapeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView().modelContainer(container)
+            RootView()
+                .modelContainer(container)
+                .environmentObject(appState)
         }
     }
 }

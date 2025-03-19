@@ -9,13 +9,9 @@ import SwiftDotenv
 import SwiftUI
 
 struct RootView: View {
-
-    @State private var isLoggedIn: Bool = false
-
+    @StateObject private var appState = AppStateManager()
     @State private var phoneExistsInDatabase: Bool = false
-
     @State private var isLoading: Bool = true
-
     @State private var userAlreadyExists: Bool = false
 
     func tokenIsActive() async -> Bool {
@@ -46,7 +42,6 @@ struct RootView: View {
                 return true
             }
             print("refresh failed")
-
         }
         return false
     }
@@ -54,63 +49,57 @@ struct RootView: View {
     var body: some View {
         Group {
             if isLoading {
-                EmptyView().onAppear {
-                    if let path = Bundle.main.path(
-                        forResource: ".env", ofType: nil)
-                    {
-                        print("loading dotenv")
-                        try! Dotenv.configure(atPath: path)
-                    } else {
-                        print("dotenv is gone")
+                ProgressView("Loading...")
+                    .onAppear {
+                        loadEnvironment()
                     }
-                }
             } else {
-                if !isLoggedIn {
+                if !appState.isLoggedIn {
                     AuthenticationView(
                         phoneNumberExistsInDatabase: $phoneExistsInDatabase,
                         userAlreadyExists: $userAlreadyExists
-                    ).statusBarHidden(true).onAppear {
-                        if let path = Bundle.main.path(
-                            forResource: ".env", ofType: nil)
-                        {
-                            print("loading dotenv")
-                            try! Dotenv.configure(atPath: path)
-                        } else {
-                            print("dotenv is gone")
-                        }
-                    }.onChange(
-                        of: userAlreadyExists
-                    ) {
-                        isLoggedIn = true
+                    )
+                    .statusBarHidden(true)
+                    .onAppear {
+                        loadEnvironment()
+                    }
+                    .onChange(of: userAlreadyExists) {
+                        appState.login()
                     }
                 } else {
-                    MainRootView().onAppear {
-                        if let path = Bundle.main.path(
-                            forResource: ".env", ofType: nil)
-                        {
-                            print("loading dotenv")
-                            try! Dotenv.configure(atPath: path)
-                        } else {
-                            print("dotenv is gone")
+                    MainRootView()
+                        .onAppear {
+                            loadEnvironment()
                         }
-                    }
+                        .environmentObject(appState)
                 }
             }
-        }.onAppear {
+        }
+        .environmentObject(appState)
+        .onAppear {
             Task {
-                // await serverHandShake()
-                print("lol")
-                isLoggedIn =
-                    await tokenIsActive()
-                    && UserDefaults.standard.bool(
-                        forKey: "profileExists")
-                print(
-                    UserDefaults.standard.bool(
-                        forKey: "profileExists"))
-                isLoading = false
+                let tokenActive = await tokenIsActive()
+                let profileExists = UserDefaults.standard.bool(forKey: "profileExists")
+
+                await MainActor.run {
+                    if tokenActive && profileExists {
+                        appState.isLoggedIn = true
+                    } else {
+                        appState.isLoggedIn = false
+                    }
+                    isLoading = false
+                }
             }
         }
+    }
 
+    private func loadEnvironment() {
+        if let path = Bundle.main.path(forResource: ".env", ofType: nil) {
+            print("loading dotenv")
+            try! Dotenv.configure(atPath: path)
+        } else {
+            print("dotenv is gone")
+        }
     }
 }
 

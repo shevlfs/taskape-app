@@ -54,17 +54,33 @@ func fetchUser(userId: String) async -> taskapeUser? {
 // Insert function - handles the SwiftData operations only
 func insertUser(user: taskapeUser, context: ModelContext) {
     let userID = user.id  // Capture the user id in a local constant
-    print(
-        "Attempting to insert/update user with ID: \(userID), handle: \(user.handle)"
-    )
+    print("Inserting user with ID: \(userID), handle: \(user.handle)")
 
+    // First, check if there's already a user with this ID
     let descriptor = FetchDescriptor<taskapeUser>(
         predicate: #Predicate<taskapeUser> { $0.id == userID }
     )
 
     do {
+        // We'll make sure this user is the only one
+        let allUsersDescriptor = FetchDescriptor<taskapeUser>()
+        let allUsers = try context.fetch(allUsersDescriptor)
+
+        if !allUsers.isEmpty {
+            print(
+                "Found \(allUsers.count) existing users - will ensure only the current user exists"
+            )
+
+            // Delete all users except the one we're adding (if it exists)
+            for existingUser in allUsers {
+                if existingUser.id != userID {
+                    context.delete(existingUser)
+                }
+            }
+        }
+
+        // Now look specifically for our user
         let existingUsers = try context.fetch(descriptor)
-        print("Found \(existingUsers.count) existing users with ID: \(userID)")
 
         if existingUsers.isEmpty {
             print("Inserting new user with ID: \(userID)")

@@ -63,6 +63,7 @@ struct MainNavigationView: View {
     ]
 
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var appState: AppStateManager
     @Query var currentUser: [taskapeUser]
     @Query var tasks: [taskapeTask]
 
@@ -81,7 +82,7 @@ struct MainNavigationView: View {
 
                 switch selectedTabIndex {
                 case 0:
-                    SettingsView().modelContext(modelContext)
+                    SettingsView().modelContext(modelContext).environmentObject(appState)
                 case 1:
                     MainView(navigationPath: $mainNavigationPath)
                         .modelContext(modelContext)
@@ -93,12 +94,6 @@ struct MainNavigationView: View {
         }
     }
 }
-
-//    .onAppear {
-//        for i in 0..<currentUser.count {
-//            print("\(currentUser[i].tasks)")
-//        }
-//    }
 
 #Preview {
     do {
@@ -133,6 +128,7 @@ struct MainNavigationView: View {
 
         return MainNavigationView()
             .modelContainer(container)
+            .environmentObject(AppStateManager())
     } catch {
         return Text("Failed to create preview: \(error.localizedDescription)")
     }
