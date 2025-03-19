@@ -39,22 +39,6 @@ struct BatchTaskSubmissionResponse: Codable {
     let message: String?
 }
 
-struct TaskUpdateRequest: Codable {
-    let id: String
-    let user_id: String
-    let name: String
-    let description: String
-    let deadline: String?
-    let assigned_to: [String]
-    let difficulty: String
-    let customHours: Int?
-    let is_completed: Bool
-    let proof_url: String?
-    let privacy_level: String
-    let privacy_except_ids: [String]
-    let token: String
-}
-
 struct TaskUpdateResponse: Codable {
     let success: Bool
     let message: String?
@@ -122,23 +106,12 @@ struct TaskResponse: Codable {
     let proof_url: String?
     let privacy_level: String
     let privacy_except_ids: [String]
+    let flag_status: Bool
+    let flag_color: String?
+    let flag_name: String?
+    let display_order: Int
 
-    enum CodingKeys: String, CodingKey {
-        case id, name, description, author, group
-        case user_id = "user_id"
-        case created_at = "created_at"
-        case deadline
-        case group_id = "group_id"
-        case assigned_to = "assigned_to"
-        case task_difficulty = "task_difficulty"
-        case custom_hours = "custom_hours"
-        case is_completed = "is_completed"
-        case proof_url = "proof_url"
-        case privacy_level = "privacy_level"
-        case privacy_except_ids = "privacy_except_ids"
-    }
-
-    // Add an initializer to handle null values
+    // Decoder implementation...
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
@@ -179,5 +152,78 @@ struct TaskResponse: Codable {
         } else {
             privacy_except_ids = []
         }
+
+        // New fields
+        flag_status = try container.decodeIfPresent(Bool.self, forKey: .flag_status) ?? false
+        flag_color = try container.decodeIfPresent(String.self, forKey: .flag_color)
+        flag_name = try container.decodeIfPresent(String.self, forKey: .flag_name)
+        display_order = try container.decodeIfPresent(Int.self, forKey: .display_order) ?? 0
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, description, author, group
+        case user_id = "user_id"
+        case created_at = "created_at"
+        case deadline
+        case group_id = "group_id"
+        case assigned_to = "assigned_to"
+        case task_difficulty = "task_difficulty"
+        case custom_hours = "custom_hours"
+        case is_completed = "is_completed"
+        case proof_url = "proof_url"
+        case privacy_level = "privacy_level"
+        case privacy_except_ids = "privacy_except_ids"
+        case flag_status = "flag_status"
+        case flag_color = "flag_color"
+        case flag_name = "flag_name"
+        case display_order = "display_order"
     }
 }
+
+struct TaskOrderUpdateRequest: Codable {
+    let userID: String
+    let tasks: [TaskOrderItem]
+    let token: String
+
+    enum CodingKeys: String, CodingKey {
+        case userID = "user_id"
+        case tasks
+        case token
+    }
+}
+
+struct TaskOrderItem: Codable {
+    let taskID: String
+    let displayOrder: Int
+
+    enum CodingKeys: String, CodingKey {
+        case taskID = "task_id"
+        case displayOrder = "display_order"
+    }
+}
+
+struct TaskOrderUpdateResponse: Codable {
+    let success: Bool
+    let message: String?
+}
+
+struct TaskUpdateRequest: Codable {
+    let id: String
+    let user_id: String
+    let name: String
+    let description: String
+    let deadline: String?
+    let assigned_to: [String]
+    let difficulty: String
+    let customHours: Int?
+    let is_completed: Bool
+    let proof_url: String?
+    let privacy_level: String
+    let privacy_except_ids: [String]
+    let flag_status: Bool
+    let flag_color: String?
+    let flag_name: String?
+    let display_order: Int
+    let token: String
+}
+

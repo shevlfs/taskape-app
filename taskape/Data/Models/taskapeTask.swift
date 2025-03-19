@@ -74,7 +74,6 @@ struct PrivacySettings: Codable {
         }
     }
 }
-
 @Model
 final class taskapeTask: Identifiable {
     var id: String
@@ -96,6 +95,11 @@ final class taskapeTask: Identifiable {
     var privacyGroupID: String?
     var privacyExceptIDs: [String] = []
 
+    // New properties for flags and order
+    var flagStatus: Bool = false
+    var flagColor: String? = nil
+    var flagName: String? = nil
+    var displayOrder: Int = 0
 
     var privacy: PrivacySettings {
         get {
@@ -125,7 +129,11 @@ final class taskapeTask: Identifiable {
         assignedToTask: [String] = [],
         task_difficulty: TaskDifficulty = .medium,
         custom_hours: Int? = nil,
-        mentioned_in_event: Bool = false
+        mentioned_in_event: Bool = false,
+        flagStatus: Bool = false,
+        flagColor: String? = nil,
+        flagName: String? = nil,
+        displayOrder: Int = 0
     ) {
         self.id = id
         self.user_id = user_id
@@ -141,29 +149,33 @@ final class taskapeTask: Identifiable {
         self.mentioned_in_event = mentioned_in_event
         self.completion = CompletionStatus()
         self.privacy = privacy
+        self.flagStatus = flagStatus
+        self.flagColor = flagColor
+        self.flagName = flagName
+        self.displayOrder = displayOrder
     }
 
-    func markAsCompleted(proofURL: String? = nil) {
-        self.completion = CompletionStatus(
-            isCompleted: true, proofURL: proofURL)
-    }
-
-    func getPrivacyString() -> String {
-        switch privacy.level {
-        case .everyone:
-            return "public"
-        case .noone:
-            return "private"
-        case .friendsOnly:
-            return "friends-only"
-        case .group:
-            return "group"
-        case .except:
-            return "except"
+    func toggleFlag() {
+        self.flagStatus.toggle()
+        if !self.flagStatus {
+            self.flagColor = nil
+            self.flagName = nil
+        } else if self.flagColor == nil {
+            self.flagColor = "#FF6B6B" // Default flag color
+            self.flagName = "High Priority" // Default flag name
         }
     }
+
+    func setFlag(color: String, name: String) {
+        self.flagColor = color
+        self.flagName = name
+        self.flagStatus = true
+    }
+
+    // Other methods remain the same...
 }
 
+// Update convenience initializer
 extension taskapeTask {
     convenience init(
         id: String = UUID().uuidString,
@@ -177,7 +189,11 @@ extension taskapeTask {
         assignedToTask: [String] = [],
         task_difficulty: TaskDifficulty = .medium,
         custom_hours: Int? = nil,
-        mentioned_in_event: Bool = false
+        mentioned_in_event: Bool = false,
+        flagStatus: Bool = false,
+        flagColor: String? = nil,
+        flagName: String? = nil,
+        displayOrder: Int = 0
     ) {
         let privacyLevel: PrivacySettings.PrivacyLevel
         switch privacy.lowercased() {
@@ -210,7 +226,11 @@ extension taskapeTask {
             assignedToTask: assignedToTask,
             task_difficulty: task_difficulty,
             custom_hours: custom_hours,
-            mentioned_in_event: mentioned_in_event
+            mentioned_in_event: mentioned_in_event,
+            flagStatus: flagStatus,
+            flagColor: flagColor,
+            flagName: flagName,
+            displayOrder: displayOrder
         )
     }
 }

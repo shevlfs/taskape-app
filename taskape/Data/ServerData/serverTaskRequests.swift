@@ -137,30 +137,72 @@ func convertToLocalTask(_ taskResponse: TaskResponse) -> taskapeTask {
         difficulty = .medium
     }
 
+    
     let task = taskapeTask(
         id: taskResponse.id,
         user_id: taskResponse.user_id,
         name: taskResponse.name,
         taskDescription: taskResponse.description,
         author: taskResponse.author,
-        privacy: taskResponse.privacy_level,
+        privacy: privacySettings,
         group: taskResponse.group,
         group_id: taskResponse.group_id,
         assignedToTask: taskResponse.assigned_to ?? [],
         task_difficulty: difficulty,
         custom_hours: taskResponse.custom_hours,
-        mentioned_in_event: false
+        mentioned_in_event: false,
+        flagStatus: taskResponse.flag_status,
+        flagColor: taskResponse.flag_color,
+        flagName: taskResponse.flag_name,
+        displayOrder: taskResponse.display_order
     )
 
     task.createdAt = createdAt
-
     task.deadline = deadline
-
     task.completion = completionStatus
-
     task.privacy = privacySettings
 
     return task
+}
+
+func updateTaskOrder(userID: String, taskOrders: [(taskID: String, order: Int)])
+    async -> Bool
+{
+    guard let token = UserDefaults.standard.string(forKey: "authToken") else {
+        print("No auth token found")
+        return false
+    }
+
+    let items = taskOrders.map {
+        TaskOrderItem(taskID: $0.taskID, displayOrder: $0.order)
+    }
+
+    let request = TaskOrderUpdateRequest(
+        userID: userID,
+        tasks: items,
+        token: token
+    )
+
+    do {
+        let result = await AF.request(
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/updateTaskOrder",
+            method: .post,
+            parameters: request,
+            encoder: JSONParameterEncoder.default
+        )
+        .validate()
+        .serializingDecodable(TaskOrderUpdateResponse.self)
+        .response
+
+        switch result.result {
+        case .success(let response):
+            print("Task order update success: \(response.success)")
+            return response.success
+        case .failure(let error):
+            print("Failed to update task order: \(error.localizedDescription)")
+            return false
+        }
+    }
 }
 
 func updateTask(task: taskapeTask) async -> Bool {
@@ -193,8 +235,8 @@ func updateTask(task: taskapeTask) async -> Bool {
         privacyLevelString = "except"
     @unknown default:
         privacyLevelString = "everyone"
-
     }
+
     let request = TaskUpdateRequest(
         id: task.id,
         user_id: task.user_id,
@@ -206,11 +248,15 @@ func updateTask(task: taskapeTask) async -> Bool {
         customHours: task.custom_hours,
         is_completed: task.completion.isCompleted,
         proof_url: task.completion.proofURL,
-        privacy_level: privacyLevelString,  // Use the converted string value
+        privacy_level: privacyLevelString,
         privacy_except_ids: task.privacy.exceptIDs,
+        flag_status: task.flagStatus,
+        flag_color: task.flagColor,
+        flag_name: task.flagName,
+        display_order: task.displayOrder,
         token: token
     )
-    print(TaskUpdateRequest.self)
+
     do {
         let result = await AF.request(
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/updateTask",

@@ -52,6 +52,16 @@ struct taskCard: View {
                             }
                             Spacer()
 
+                            // Show flag icon if task is flagged
+                            if task.flagStatus {
+                                if let colorHex = task.flagColor {
+                                    Image(systemName: "flag.fill")
+                                        .foregroundColor(Color(hex: colorHex))
+                                        .font(.system(size: 14))
+                                        .padding(.trailing, 5)
+                                }
+                            }
+
                             if !detailIsPresent {
                                 Image(systemName: "chevron.right")
                                     .resizable()
@@ -101,6 +111,15 @@ struct taskCard: View {
                 }
             }
             .buttonStyle(PlainButtonStyle())
+
+            // Flag button
+            TaskFlagButton(task: task)
+                .onChange(of: task.flagStatus) { _, _ in
+                    saveTask()
+                }
+                .onChange(of: task.flagColor) { _, _ in
+                    saveTask()
+                }
         }
     }
 
@@ -118,74 +137,78 @@ struct taskCard: View {
         }
     }
 }
-
-#Preview {
-    struct PreviewWrapper: View {
-        @State private var sampleTask = taskapeTask(
-            name: "Complete SwiftUI project",
-            taskDescription: "Finish all the views and connect them",
-            author: "shevlfs",
-            privacy: "private"
-        )
-
-        var body: some View {
-            VStack(spacing: 20) {
-                ScrollView {
-                    VStack(spacing: 10) {
-                        taskCard(
-                            task:
-                                taskapeTask(
-                                    name: "Design new UI",
-                                    taskDescription: "Create mockups in Figma",
-                                    author: "shevlfs",
-                                    privacy: "private"
-                                )
-
-                        )
-
-                        // Sample completed task
-                        let completedTask = taskapeTask(
-                            name: "Implement animations",
-                            taskDescription: "Add spring animations to cards",
-                            author: "shevlfs",
-                            privacy: "public"
-                        )
-
-                        taskCard(
-                            task: completedTask
-                        )
-
-                        taskCard(
-                            task:
-                                taskapeTask(
-                                    name: "",
-                                    taskDescription:
-                                        "Fix back button not working properly",
-                                    author: "shevlfs",
-                                    privacy: "private"
-                                )
-
-                        )
-
-                        taskCard(
-                            task:
-                                taskapeTask(
-                                    name: "Write documentation",
-                                    taskDescription: "",
-                                    author: "collaborator",
-                                    privacy: "team"
-                                )
-
-                        )
-                    }
-                    .padding()
-                }
-                .background(Color.black.opacity(0.1))
-            }
-            .padding()
-            .preferredColorScheme(.dark)
-        }
-    }
-
-    return PreviewWrapper()
-}
+//
+//#Preview {
+//    struct PreviewWrapper: View {
+//        @State private var sampleTask = taskapeTask(
+//            name: "Complete SwiftUI project",
+//            taskDescription: "Finish all the views and connect them",
+//            author: "shevlfs",
+//            privacy: "private"
+//        )
+//
+//        var body: some View {
+//            VStack(spacing: 20) {
+//                ScrollView {
+//                    VStack(spacing: 10) {
+//                        taskCard(
+//                            task:
+//                                taskapeTask(
+//                                    name: "Design new UI",
+//                                    taskDescription: "Create mockups in Figma",
+//                                    author: "shevlfs",
+//                                    privacy: "private"
+//                                )
+//
+//                        )
+//
+//                        // Sample completed task
+//                        let completedTask = taskapeTask(
+//                            name: "Implement animations",
+//                            taskDescription: "Add spring animations to cards",
+//                            author: "shevlfs",
+//                            privacy: "public"
+//                        )
+//                        completedTask.completion.isCompleted = true
+//
+//                        taskCard(
+//                            task: completedTask
+//                        )
+//
+//                        // Sample flagged task
+//                        let flaggedTask = taskapeTask(
+//                            name: "High priority task",
+//                            taskDescription: "This is flagged as important",
+//                            author: "shevlfs",
+//                            privacy: "private",
+//                            flagStatus: true,
+//                            flagColor: "#FF6B6B"
+//                        )
+//
+//                        taskCard(
+//                            task: flaggedTask
+//                        )
+//
+//                        taskCard(
+//                            task:
+//                                taskapeTask(
+//                                    name: "",
+//                                    taskDescription:
+//                                        "Fix back button not working properly",
+//                                    author: "shevlfs",
+//                                    privacy: "private"
+//                                )
+//
+//                        )
+//                    }
+//                    .padding()
+//                }
+//                .background(Color.black.opacity(0.1))
+//            }
+//            .padding()
+//            .preferredColorScheme(.dark)
+//        }
+//    }
+//
+//    return PreviewWrapper()
+//}
