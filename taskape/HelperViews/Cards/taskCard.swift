@@ -1,7 +1,6 @@
 import SwiftUI
 import SwiftData
 
-
 struct taskCard: View {
     @Bindable var task: taskapeTask
     @State var detailIsPresent: Bool = false
@@ -9,13 +8,22 @@ struct taskCard: View {
     @State private var isAnimating: Bool = false
     @State private var foregroundColor: Color = Color.primary
     @State private var selectedPrivacyLevel: PrivacySettings.PrivacyLevel = .everyone
+    @State private var disappearAnimation: Bool = false
+    @State private var shouldShow: Bool = true
 
+    // Environment values
     @Environment(\.modelContext) var modelContext
     @FocusState var isFocused: Bool
 
+    // Callback to notify parent after animation completes
+    var onCompletionAnimationFinished: ((taskapeTask) -> Void)?
+
+    @State var newCompletionStatus: Bool = false
+
     var body: some View {
         HStack(spacing: 0) {
-            CheckBoxView(task: task).padding(.trailing, 5)
+            CheckBoxView(task: task, newCompletionStatus: $newCompletionStatus)
+                .padding(.trailing, 5)
                 .onChange(of: task.completion.isCompleted) { oldValue, newValue in
                     if oldValue != newValue {
                         withAnimation(.easeInOut(duration: 0.3)) {
@@ -28,8 +36,28 @@ struct taskCard: View {
                                 isAnimating = false
                             }
 
-                            // Save changes to the task
-                            saveTask()
+                            // If the task was completed, start disappear animation
+                            if newValue == true && oldValue == false {
+                                withAnimation(.easeInOut(duration: 0.4)) {
+                                    disappearAnimation = true
+                                }
+
+                                // After animation completes, notify parent and save
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                    withAnimation {
+                                        shouldShow = false
+                                    }
+
+                                    // Notify parent view if callback exists
+                                    onCompletionAnimationFinished?(task)
+
+                                    // Save changes to the task
+                                    saveTask()
+                                }
+                            } else {
+                                // Save changes to the task
+                                saveTask()
+                            }
                         }
                     }
                 }
@@ -52,15 +80,6 @@ struct taskCard: View {
                                     .foregroundStyle(Color.secondary)
                             }
                             Spacer()
-
-//                            if task.flagStatus {
-//                                if let colorHex = task.flagColor {
-//                                    Image(systemName: "flag.fill")
-//                                        .foregroundColor(Color(hex: colorHex))
-//                                        .font(.system(size: 14))
-//                                        .padding(.trailing, 10)
-//                                }
-//                            }
 
                             if !detailIsPresent {
                                 Image(systemName: "chevron.right")
@@ -124,6 +143,10 @@ struct taskCard: View {
             }
             .buttonStyle(PlainButtonStyle())
         }
+        .opacity(disappearAnimation ? 0 : 1)
+        .offset(x: disappearAnimation ? 50 : 0)
+        .frame(height: shouldShow ? nil : 0, alignment: .top)
+        .opacity(shouldShow ? 1 : 0)
     }
 
     func saveTask() {
@@ -138,6 +161,17 @@ struct taskCard: View {
         Task {
             await syncTaskChanges(task: task)
         }
+    }
+}
+
+// Use this in UserJungleDetailedView
+extension taskCard {
+    // Convenience initializer for the UserJungleDetailedView
+    init(task: taskapeTask, onCompletionAnimationFinished: ((taskapeTask) -> Void)? = nil) {
+        self.task = task
+        self.onCompletionAnimationFinished = onCompletionAnimationFinished
+        self._shouldShow = State(initialValue: true)
+        self._disappearAnimation = State(initialValue: false)
     }
 }
 

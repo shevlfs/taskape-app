@@ -91,34 +91,13 @@ struct UserJungleDetailedView: View {
                     .padding()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    // Task list filtered by the selected tab
                     let tasks = filteredTasks(currentUser.tasks)
                         .sorted { $0.displayOrder < $1.displayOrder }
-
                     ScrollView {
                         LazyVStack(spacing: 12) {
                             ForEach(tasks) { task in
-                                if !(getCurrentTabType() == .incomplete &&
-                                     taskToRemove?.id == task.id &&
-                                     completingAnimation) {
-                                    taskCard(task: task)
-                                        .padding(.horizontal, 16)
-                                        .transition(.opacity.combined(with: .move(edge: .trailing)))
-                                        .animation(.easeInOut(duration: 0.3), value: completingAnimation)
-                                        .onChange(of: task.completion.isCompleted) { oldValue, newValue in
-                                            handleTaskCompletion(task: task, oldValue: oldValue, newValue: newValue)
-                                        }
-                                        .onDrag {
-                                            self.draggingItem = task
-                                            return NSItemProvider(object: task.id as NSString)
-                                        }
-                                        .onDrop(of: [.text], delegate: TaskDropDelegate(
-                                            item: task,
-                                            items: tasks,
-                                            draggedItem: $draggingItem,
-                                            modelContext: modelContext
-                                        ))
-                                }
+                                TaskCardWithCheckbox(task: task)
+                                .padding(.horizontal, 16)
                             }
                         }
                         .padding(.vertical, 12)
@@ -156,9 +135,12 @@ struct UserJungleDetailedView: View {
             print("updating tab bar items")
             updateTabBarItems()
         }
-        .sheet(isPresented: $showNewTaskDetail, onDismiss: {
-            updateTabBarItems() // Update tabs when sheet is dismissed
-        }) {
+        .sheet(
+            isPresented: $showNewTaskDetail,
+            onDismiss: {
+                updateTabBarItems()  // Update tabs when sheet is dismissed
+            }
+        ) {
             if let task = newTask {
                 taskCardDetailView(
                     detailIsPresent: $showNewTaskDetail,
@@ -220,7 +202,11 @@ struct UserJungleDetailedView: View {
         case .all:
             return tasks
         case .incomplete:
-            return tasks.filter { !$0.completion.isCompleted }
+            // Include tasks that are incomplete OR being animated out
+            return tasks.filter {
+                !$0.completion.isCompleted
+                    || (taskToRemove?.id == $0.id && completingAnimation)
+            }
         case .completed:
             return tasks.filter { $0.completion.isCompleted }
         case .flagged:
@@ -237,9 +223,11 @@ struct UserJungleDetailedView: View {
             completingAnimation = true
 
             // Apply a delay before removing the task from view
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                taskToRemove = nil
-                completingAnimation = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                withAnimation {
+                    taskToRemove = nil
+                    completingAnimation = false
+                }
             }
         }
     }
@@ -272,7 +260,8 @@ struct UserJungleDetailedView: View {
             return
         }
 
-        let userId = UserDefaults.standard.string(forKey: "user_id") ?? currentUser.id
+        let userId =
+            UserDefaults.standard.string(forKey: "user_id") ?? currentUser.id
 
         // Calculate the next display order value - place new task at the top
         let maxOrder = currentUser.tasks.map { $0.displayOrder }.max() ?? 0
@@ -313,7 +302,7 @@ struct UserJungleDetailedView: View {
     private func saveTaskChanges(task: taskapeTask) {
         do {
             try modelContext.save()
-            updateTabBarItems() // Update tabs in case flag changed
+            updateTabBarItems()  // Update tabs in case flag changed
 
             Task {
                 await syncTaskChanges(task: task)
@@ -380,7 +369,8 @@ struct TaskDropDelegate: DropDelegate {
             // Update the server with the new task orders
             Task {
                 if let userId = items.first?.user_id, !userId.isEmpty {
-                    let success = await updateTaskOrder(userID: userId, taskOrders: updatedOrders)
+                    let success = await updateTaskOrder(
+                        userID: userId, taskOrders: updatedOrders)
                     if success {
                         print("Task orders successfully updated on server")
                     } else {
@@ -398,12 +388,13 @@ struct TaskDropDelegate: DropDelegate {
 
     func dropEntered(info: DropInfo) {
         guard let draggedItem = self.draggedItem,
-              draggedItem.id != item.id else {
+            draggedItem.id != item.id
+        else {
             return
         }
 
         // Visual feedback handled by SwiftUI
-        withAnimation(.default) { }
+        withAnimation(.default) {}
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {

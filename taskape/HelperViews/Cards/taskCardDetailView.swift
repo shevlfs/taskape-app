@@ -61,7 +61,7 @@ struct TaskDescriptionField: View {
                 RoundedRectangle(cornerRadius: 30)
                     .fill(Color(UIColor.secondarySystemBackground))
             )
-            .frame(maxHeight: 150)
+            .frame(minHeight: 100, maxHeight: 170)
             .padding(.horizontal)
     }
 }
@@ -246,7 +246,7 @@ struct TaskPrivacySelector: View {
                 Text("friends only").tag(PrivacySettings.PrivacyLevel.friendsOnly)
                 Text("group").tag(PrivacySettings.PrivacyLevel.group)
                 Text("everyone except...").tag(PrivacySettings.PrivacyLevel.except)
-            }
+            }.font(.pathwayBold(17))
             .pickerStyle(MenuPickerStyle())
             .accentColor(Color.taskapeOrange)
         }
@@ -270,7 +270,7 @@ struct taskCardDetailView: View {
         Group {
             VStack {
                 // Component 1: Header
-                DetailViewHeader(detailIsPresent: $detailIsPresent)
+                //DetailViewHeader(detailIsPresent: $detailIsPresent)
 
                 // Component 2: Task name field
                 TaskNameField(name: $task.name)
