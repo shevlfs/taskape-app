@@ -58,7 +58,8 @@ struct SettingsView: View {
                     )
             }
             .padding(.bottom, 32)
-            .alert("Logout Confirmation", isPresented: $showLogoutConfirmation) {
+            .alert("Logout Confirmation", isPresented: $showLogoutConfirmation)
+            {
                 Button("Cancel", role: .cancel) {}
                 Button("Logout", role: .destructive) {
                     performLogout()
@@ -95,6 +96,8 @@ struct SettingsView: View {
 
         } catch {
             print("Error clearing user data during logout: \(error)")
+            // Still attempt to logout even if there was an error clearing data
+            appState.logout()
         }
     }
 }

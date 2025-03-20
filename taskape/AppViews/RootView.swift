@@ -62,6 +62,9 @@ struct RootView: View {
                     .statusBarHidden(true)
                     .onAppear {
                         loadEnvironment()
+                        // Reset these flags when auth view appears
+                        phoneExistsInDatabase = false
+                        userAlreadyExists = false
                     }
                     .onChange(of: userAlreadyExists) {
                         appState.login()
@@ -79,7 +82,8 @@ struct RootView: View {
         .onAppear {
             Task {
                 let tokenActive = await tokenIsActive()
-                let profileExists = UserDefaults.standard.bool(forKey: "profileExists")
+                let profileExists = UserDefaults.standard.bool(
+                    forKey: "profileExists")
 
                 await MainActor.run {
                     if tokenActive && profileExists {
