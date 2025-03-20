@@ -1,5 +1,5 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct taskCard: View {
     @Bindable var task: taskapeTask
@@ -7,7 +7,8 @@ struct taskCard: View {
     @State private var appearAnimation = false
     @State private var isAnimating: Bool = false
     @State private var foregroundColor: Color = Color.primary
-    @State private var selectedPrivacyLevel: PrivacySettings.PrivacyLevel = .everyone
+    @State private var selectedPrivacyLevel: PrivacySettings.PrivacyLevel =
+        .everyone
     @State private var disappearAnimation: Bool = false
     @State private var shouldShow: Bool = true
 
@@ -22,10 +23,12 @@ struct taskCard: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            CheckBoxView(task: task, newCompletionStatus: $newCompletionStatus)
+            CheckBoxView(task: task, newCompletionStatus: $newCompletionStatus).modelContext(modelContext)
                 .padding(.trailing, 5)
-                .onChange(of: task.completion.isCompleted) { oldValue, newValue in
+                .onChange(of: task.completion.isCompleted) {
+                    oldValue, newValue in
                     if oldValue != newValue {
+                        newCompletionStatus.toggle()
                         withAnimation(.easeInOut(duration: 0.3)) {
                             isAnimating = true
                         }
@@ -43,20 +46,16 @@ struct taskCard: View {
                                 }
 
                                 // After animation completes, notify parent and save
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                DispatchQueue.main.asyncAfter(
+                                    deadline: .now() + 0.5
+                                ) {
                                     withAnimation {
                                         shouldShow = false
                                     }
 
                                     // Notify parent view if callback exists
                                     onCompletionAnimationFinished?(task)
-
-                                    // Save changes to the task
-                                    saveTask()
                                 }
-                            } else {
-                                // Save changes to the task
-                                saveTask()
                             }
                         }
                     }
@@ -70,8 +69,12 @@ struct taskCard: View {
                                 Text(" \(task.name)")
                                     .font(.pathwayBold(15))
                                     .padding()
-                                    .foregroundStyle(task.completion.isCompleted ? Color.white.opacity(0.7) : Color.white)
-                                    .strikethrough(task.completion.isCompleted)
+                                    .foregroundStyle(
+                                        newCompletionStatus
+                                            ? Color.white.opacity(0.7)
+                                            : Color.white
+                                    )
+                                    .strikethrough(newCompletionStatus)
 
                             } else {
                                 Text(" new to-do")
@@ -85,7 +88,11 @@ struct taskCard: View {
                                 Image(systemName: "chevron.right")
                                     .resizable()
                                     .frame(width: 5, height: 10)
-                                    .foregroundColor(task.completion.isCompleted ? Color.white.opacity(0.7) : Color.white)
+                                    .foregroundColor(
+                                        newCompletionStatus
+                                            ? Color.white.opacity(0.7)
+                                            : Color.white
+                                    )
                                     .padding(.trailing, 20)
                                     .animation(
                                         Animation.easeInOut(duration: 0.25),
@@ -95,7 +102,11 @@ struct taskCard: View {
                                 Image(systemName: "chevron.up")
                                     .resizable()
                                     .frame(width: 10, height: 5)
-                                    .foregroundColor(task.completion.isCompleted ? Color.white.opacity(0.7) : Color.white)
+                                    .foregroundColor(
+                                        newCompletionStatus
+                                            ? Color.white.opacity(0.7)
+                                            : Color.white
+                                    )
                                     .padding(.trailing, 20)
                                     .transition(.opacity)
                                     .animation(
@@ -107,20 +118,25 @@ struct taskCard: View {
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 30)
-                            .fill(task.completion.isCompleted ?
-                                  Color.taskapeOrange.opacity(0.5) :
-                                  Color.taskapeOrange.opacity(0.8))
+                            .fill(
+                                newCompletionStatus
+                                    ? Color.taskapeOrange.opacity(0.5)
+                                    : Color.taskapeOrange.opacity(0.8)
+                            )
                             .stroke(.regularMaterial, lineWidth: 1)
                             .blur(radius: 0.25)
                     )
-                    .completedTaskStyle(isCompleted: task.completion.isCompleted, isAnimating: isAnimating)
+                    .completedTaskStyle(
+                        isCompleted: newCompletionStatus,
+                        isAnimating: isAnimating
+                    )
                     .padding(.leading, 5)
                     .padding(.trailing, 15)
                 }
                 .onAppear {
                     selectedPrivacyLevel = task.privacy.level
                     // Trigger animation if task is already completed
-                    if task.completion.isCompleted && !isAnimating {
+                    if newCompletionStatus && !isAnimating {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             isAnimating = true
                         }
@@ -142,11 +158,11 @@ struct taskCard: View {
                 }
             }
             .buttonStyle(PlainButtonStyle())
-        }
-        .opacity(disappearAnimation ? 0 : 1)
-        .offset(x: disappearAnimation ? 50 : 0)
-        .frame(height: shouldShow ? nil : 0, alignment: .top)
-        .opacity(shouldShow ? 1 : 0)
+        }.onAppear { newCompletionStatus = task.completion.isCompleted }
+            .opacity(disappearAnimation ? 0 : 1)
+            .offset(x: disappearAnimation ? 50 : 0)
+            .frame(height: shouldShow ? nil : 0, alignment: .top)
+            .opacity(shouldShow ? 1 : 0)
     }
 
     func saveTask() {
@@ -167,7 +183,10 @@ struct taskCard: View {
 // Use this in UserJungleDetailedView
 extension taskCard {
     // Convenience initializer for the UserJungleDetailedView
-    init(task: taskapeTask, onCompletionAnimationFinished: ((taskapeTask) -> Void)? = nil) {
+    init(
+        task: taskapeTask,
+        onCompletionAnimationFinished: ((taskapeTask) -> Void)? = nil
+    ) {
         self.task = task
         self.onCompletionAnimationFinished = onCompletionAnimationFinished
         self._shouldShow = State(initialValue: true)
@@ -192,8 +211,8 @@ struct CompletedTaskModifier: ViewModifier {
                 GeometryReader { geometry in
                     if isCompleted {
                         Rectangle()
-                            .fill(Color.gray.opacity(0.5))
-                            .frame(height: 2)
+                            .fill(Color.white)
+                            .frame(height: 1)
                             .offset(y: geometry.size.height / 2)
                             .scaleEffect(
                                 x: isAnimating ? 1 : 0, anchor: .leading
@@ -218,7 +237,8 @@ extension View {
     // Create a proper model container for preview
     do {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: taskapeTask.self, configurations: config)
+        let container = try ModelContainer(
+            for: taskapeTask.self, configurations: config)
 
         // Create sample tasks in the container
         let designTask = taskapeTask(
@@ -269,7 +289,6 @@ extension View {
                 }
                 .padding()
             }
-            .background(Color.black.opacity(0.1))
         }
         .padding()
         .preferredColorScheme(.dark)

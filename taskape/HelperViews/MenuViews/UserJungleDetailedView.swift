@@ -28,8 +28,9 @@ struct UserJungleDetailedView: View {
     @State private var newTask: taskapeTask? = nil
     @State private var showNewTaskDetail: Bool = false
     @State private var draggingItem: taskapeTask?
-    @State private var taskToRemove: taskapeTask? = nil
-    @State private var completingAnimation: Bool = false
+
+    // Animation states for task completion
+    @State private var completingTasks: [String: Bool] = [:]
 
     // Tab types - first the fixed tabs, then dynamic flag tabs
     private enum TabType: Equatable {
@@ -96,11 +97,18 @@ struct UserJungleDetailedView: View {
                     ScrollView {
                         LazyVStack(spacing: 12) {
                             ForEach(tasks) { task in
-                                TaskCardWithCheckbox(task: task)
+                                AnimatedTaskCard(
+                                    task: task,
+                                    isDisappearing: completingTasks[task.id] ?? false,
+                                    onCompletion: { completedTask in
+                                        handleTaskCompletion(task: completedTask)
+                                    }
+                                )
                                 .padding(.horizontal, 16)
                             }
                         }
                         .padding(.vertical, 12)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: tasks.count)
                     }
                 }
             } else {
@@ -132,7 +140,6 @@ struct UserJungleDetailedView: View {
         }
         // Observe the flag manager for changes
         .onChange(of: flagManager.flagChangeCounter) { _, _ in
-            print("updating tab bar items")
             updateTabBarItems()
         }
         .sheet(
@@ -202,10 +209,9 @@ struct UserJungleDetailedView: View {
         case .all:
             return tasks
         case .incomplete:
-            // Include tasks that are incomplete OR being animated out
+            // Include incomplete tasks and tasks that are currently being animated out
             return tasks.filter {
-                !$0.completion.isCompleted
-                    || (taskToRemove?.id == $0.id && completingAnimation)
+                !$0.completion.isCompleted || completingTasks[$0.id] == true
             }
         case .completed:
             return tasks.filter { $0.completion.isCompleted }
@@ -216,17 +222,22 @@ struct UserJungleDetailedView: View {
         }
     }
 
-    // Handle task completion animation
-    private func handleTaskCompletion(task: taskapeTask, oldValue: Bool, newValue: Bool) {
-        if getCurrentTabType() == .incomplete && oldValue == false && newValue == true {
-            taskToRemove = task
-            completingAnimation = true
+    // Handle task completion with animation
+    private func handleTaskCompletion(task: taskapeTask) {
+        if getCurrentTabType() == .incomplete && task.completion.isCompleted {
+            // Mark the task as being animated out
+            withAnimation {
+                completingTasks[task.id] = true
+            }
 
-            // Apply a delay before removing the task from view
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            // After animation completes, remove task from the animating set
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                 withAnimation {
-                    taskToRemove = nil
-                    completingAnimation = false
+                    completingTasks[task.id] = nil
+                }
+                // Save the task changes to the server
+                Task {
+                    await syncTaskChanges(task: task)
                 }
             }
         }
@@ -310,6 +321,42 @@ struct UserJungleDetailedView: View {
         } catch {
             print("Error saving task: \(error)")
         }
+    }
+}
+
+// Animated task card component
+struct AnimatedTaskCard: View {
+    @Bindable var task: taskapeTask
+    var isDisappearing: Bool
+    var onCompletion: (taskapeTask) -> Void
+
+    @State private var taskHeight: CGFloat = 0
+    @State private var opacity: Double = 1
+    @State private var offset: CGFloat = 0
+
+    var body: some View {
+        TaskCardWithCheckbox(task: task)
+            .background(
+                // Measure the height of the task card
+                GeometryReader { geo in
+                    Color.clear.onAppear {
+                        taskHeight = geo.size.height
+                    }
+                }
+            )
+            .onChange(of: task.completion.isCompleted) { oldValue, newValue in
+                if oldValue == false && newValue == true {
+                    onCompletion(task)
+                }
+            }
+            // Apply animations when task is being removed
+            .opacity(isDisappearing ? 0 : 1)
+            .offset(x: isDisappearing ? 50 : 0)
+            .frame(
+                height: isDisappearing ? 0 : nil,
+                alignment: .top
+            )
+            .animation(.spring(response: 0.6, dampingFraction: 0.7), value: isDisappearing)
     }
 }
 

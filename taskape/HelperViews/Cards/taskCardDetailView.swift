@@ -116,7 +116,7 @@ struct TaskPrioritySelector: View {
             }) {
                 HStack {
                     if flagStatus, let colorHex = flagColor {
-                        let priorityLabel = priorityOptions.first { $0.color == colorHex }?.label ?? "Custom"
+                        let priorityLabel = priorityOptions.first { $0.color == colorHex }?.label ?? flagName ?? "Custom"
                         Group{
                             Circle()
                                 .fill(Color(hex: colorHex))
@@ -163,71 +163,199 @@ struct PriorityPickerContent: View {
     let priorityOptions: [(label: String, color: String)]
     @Binding var showPicker: Bool
 
+    @State private var isAddingCustomLabel: Bool = false
+    @State private var customColor: Color = .orange
+    @State private var customLabelName: String = ""
+
     var body: some View {
-        VStack(spacing: 8) {
-            Text("set label")
-                .font(.pathwayBold(16))
-                .padding(.top)
+        if isAddingCustomLabel {
+            // CUSTOM LABEL VIEW
+            VStack(alignment: .leading, spacing: 0) {
+                // Header with back button
+                HStack {
+                    Button(action: {
+                        isAddingCustomLabel = false
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.orange)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .padding(.trailing, 4)
 
-            Divider()
+                    Text("custom label")
+                        .font(.pathway(17))
+                }
+                .padding(.horizontal)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
 
-            ForEach(priorityOptions, id: \.color) { option in
+                // Label name field
+                Text("label name:")
+                    .font(.pathway(16))
+                    .padding(.horizontal)
+                    .padding(.bottom, 8)
+
+                TextField("Enter label name", text: $customLabelName)
+                    .font(.pathway(16))
+                    .padding()
+                    .background(Color(UIColor.systemGray6))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+                    .padding(.bottom, 24)
+
+                // Label color picker
+                Text("label color:")
+                    .font(.pathway(16))
+                    .padding(.horizontal)
+                    .padding(.bottom, 8)
+
+                HStack {
+                    Circle()
+                        .fill(customColor)
+                        .frame(width: 36, height: 36)
+                        .overlay(
+                            ColorPicker("", selection: $customColor)
+                                .labelsHidden()
+                                .opacity(0.01)
+                                .frame(width: 44, height: 44)
+                        )
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 24)
+
+                // Add button
                 Button(action: {
                     withAnimation {
                         flagStatus = true
-                        flagColor = option.color
-                        flagName = option.label
+                        flagColor = customColor.toHex()
+                        flagName = customLabelName.isEmpty ? "Custom" : customLabelName
                         showPicker = false
-
                         FlagManager.shared.flagChanged()
                     }
                 }) {
-                    HStack {
-                        Circle()
-                            .fill(Color(hex: option.color))
-                            .frame(width: 16, height: 16)
-                        Text(option.label)
-                            .font(.pathway(15))
-                        Spacer()
-                        if flagStatus && flagColor == option.color {
-                            Image(systemName: "checkmark")
-                                .foregroundColor(.blue)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
+                    Text("add label")
+                        .font(.pathway(17))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(customLabelName.isEmpty ? Color.gray : Color.orange)
+                        )
                 }
                 .buttonStyle(PlainButtonStyle())
+                .disabled(customLabelName.isEmpty)
+                .padding(.horizontal)
             }
+            .background(Color.white)
+        } else {
+            // LABEL SELECTION VIEW
+            VStack(spacing: 0) {
+                // Header
+                Text("select label")
+                    .font(.pathway(17))
+                    .fontWeight(.medium)
+                    .padding(.top, 16)
+                    .padding(.bottom, 12)
 
-            Divider()
+                Divider()
+                    .padding(.bottom, 8)
 
-            Button(action: {
-                withAnimation {
-                    flagStatus = false
-                    flagColor = nil
-                    flagName = nil
-                    showPicker = false
+                // Standard label options
+                ScrollView {
+                    VStack(spacing: 0) {
+                        ForEach(priorityOptions, id: \.color) { option in
+                            Button(action: {
+                                withAnimation {
+                                    flagStatus = true
+                                    flagColor = option.color
+                                    flagName = option.label
+                                    showPicker = false
+                                    FlagManager.shared.flagChanged()
+                                }
+                            }) {
+                                HStack {
+                                    Circle()
+                                        .fill(Color(hex: option.color))
+                                        .frame(width: 18, height: 18)
 
-                    // Notify that flags have changed
-                    FlagManager.shared.flagChanged()
-                }
-            }) {
-                HStack {
-                    Text("None")
-                        .font(.pathway(15))
-                    Spacer()
-                    if !flagStatus {
-                        Image(systemName: "checkmark")
-                            .foregroundColor(.blue)
+                                    Text(option.label)
+                                        .font(.pathway(17))
+                                        .padding(.leading, 12)
+
+                                    Spacer()
+
+                                    if flagStatus && flagColor == option.color && flagName == option.label {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(.blue)
+                                    }
+                                }
+                                .contentShape(Rectangle())
+                                .padding(.vertical, 14)
+                                .padding(.horizontal)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+
+                        Divider()
+                            .padding(.vertical, 8)
+
+                        // Add custom label button
+                        Button(action: {
+                            withAnimation {
+                                isAddingCustomLabel = true
+                                customLabelName = ""
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundColor(.orange)
+                                    .font(.system(size: 18))
+
+                                Text("add custom label")
+                                    .font(.pathway(17))
+                                    .foregroundColor(.orange)
+                                    .padding(.leading, 8)
+
+                                Spacer()
+                            }
+                            .contentShape(Rectangle())
+                            .padding(.vertical, 14)
+                            .padding(.horizontal)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+
+                        // None option
+                        Button(action: {
+                            withAnimation {
+                                flagStatus = false
+                                flagColor = nil
+                                flagName = nil
+                                showPicker = false
+                                FlagManager.shared.flagChanged()
+                            }
+                        }) {
+                            HStack {
+                                Text("none")
+                                    .font(.pathway(17))
+
+                                Spacer()
+
+                                if !flagStatus {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                            .contentShape(Rectangle())
+                            .padding(.vertical, 14)
+                            .padding(.horizontal)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
             }
-            .buttonStyle(PlainButtonStyle())
+            .background(Color.white)
         }
-        .padding(.vertical)
     }
 }
 
@@ -305,7 +433,7 @@ struct taskCardDetailView: View {
 
             Spacer()
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.medium])
     }
 }
 

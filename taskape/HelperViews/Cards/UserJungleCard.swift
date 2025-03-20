@@ -1,3 +1,4 @@
+import SwiftData
 //
 //  UserJungleView.swift
 //  taskape
@@ -5,7 +6,6 @@
 //  Created by shevlfs on 1/8/25.
 //
 import SwiftUI
-import SwiftData
 
 struct UserJungleCard: View {
     @Bindable var user: taskapeUser
@@ -32,7 +32,11 @@ struct UserJungleCard: View {
 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 5) {
-                        ForEach(Array(user.tasks.prefix(3))) { task in
+                        ForEach(
+                            Array(
+                                user.tasks.filter { !$0.completion.isCompleted }
+                                    .prefix(3))
+                        ) { task in
                             TaskItem(task: task)
                         }
                     }
@@ -41,8 +45,11 @@ struct UserJungleCard: View {
 
                 HStack {
                     Spacer()
-                    if user.tasks.count > 3 {
-                        Text("& \(user.tasks.count - 3) others...")
+                    let uncompletedTasks = user.tasks.filter {
+                        !$0.completion.isCompleted
+                    }
+                    if uncompletedTasks.count > 3 {
+                        Text("& \(uncompletedTasks.count - 3) others...")
                             .font(.pathwaySemiBoldCondensed)
                     }
                 }

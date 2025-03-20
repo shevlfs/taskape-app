@@ -10,7 +10,7 @@ struct FriendInvitationButtons: View {
             Button(action: onApeTap) {
                 ZStack(alignment: .leading) {
                     MenuItem(
-                        mainColor: Color(hex: "#FFD7D7").opacity(0.8),
+                        mainColor: Color(hex: "#FF7AAD"),
                         widthProportion: 0.56,
                         heightProportion: 0.16
                     )
@@ -20,7 +20,7 @@ struct FriendInvitationButtons: View {
                         VStack {
                             Text("🐒")
                                 .font(.system(size: 50))
-                        }.padding(.leading,20)
+                        }.padding(.leading, 20)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text("ape-ify")
@@ -39,24 +39,20 @@ struct FriendInvitationButtons: View {
                 ZStack {
                     // Background using MenuItem component
                     MenuItem(
-                        mainColor: Color(UIColor.systemGray5),
+                        mainColor: Color(hex: "#E97451"),
                         widthProportion: 0.32,
                         heightProportion: 0.16
                     )
 
                     VStack(alignment: .center, spacing: 6) {
 
-
-
-
-                                Image(systemName: "plus.circle")
-                                    .font(.system(size: 45, weight: .medium))
-                                    .foregroundColor(.black)
-
+                        Image(systemName: "plus.circle")
+                            .font(.system(size: 45, weight: .medium))
+                            .foregroundColor(.primary)
 
                         Text("new\nfriend?")
                             .font(.pathwaySemiBold(19))
-                            .foregroundColor(.black)
+                            .foregroundColor(.primary)
                             .multilineTextAlignment(.center)
                     }
                 }
@@ -68,27 +64,20 @@ struct FriendInvitationButtons: View {
     }
 }
 
-// Usage example
-struct FriendInvitationView: View {
-    var body: some View {
-        VStack {
-            Spacer()
-            FriendInvitationButtons(
-                onApeTap: {
-                    print("Ape-ify tapped!")
-                    // Add your action here
-                },
-                onNewFriendTap: {
-                    print("New friend tapped!")
-                    // Add your action here
-                }
-            )
-            Spacer()
-        }
-        .background(Color(UIColor.systemBackground))
-    }
-}
-
 #Preview {
-    FriendInvitationView()
+    VStack {
+        Spacer()
+        FriendInvitationButtons(
+            onApeTap: {
+                print("Ape-ify tapped!")
+                // Add your action here
+            },
+            onNewFriendTap: {
+                print("New friend tapped!")
+                // Add your action here
+            }
+        )
+        Spacer()
+    }
+    .background(Color(UIColor.systemBackground))
 }

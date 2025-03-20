@@ -4,6 +4,7 @@ struct CheckBoxView: View {
     @Bindable var task: taskapeTask
     @State private var isAnimating: Bool = false
     @Binding var newCompletionStatus: Bool
+    @Environment(\.modelContext) var modelContext
     var body: some View {
         Button(action: {
             // Toggle the visual state immediately for responsive UI
@@ -24,6 +25,7 @@ struct CheckBoxView: View {
                 // This will trigger any onChange listeners in parent views
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     task.completion.isCompleted = newCompletionStatus
+                    saveTask()
                 }
             }
         }) {
@@ -62,6 +64,20 @@ struct CheckBoxView: View {
         }
         .buttonStyle(PlainButtonStyle())
     }
+
+    func saveTask() {
+        do {
+            try modelContext.save()
+        } catch {
+            print("Error saving task locally: \(error)")
+        }
+
+        print("saving edited task")
+
+        Task {
+            await syncTaskChanges(task: task)
+        }
+    }
 }
 
 // Modifier to apply the completed task style
@@ -76,11 +92,12 @@ struct TaskCardWithCheckbox: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            CheckBoxView(task: task, newCompletionStatus: $newCompletionStatus).padding(.trailing, 5)
+            CheckBoxView(task: task, newCompletionStatus: $newCompletionStatus)
+                .modelContext(modelContext)
+                .padding(.trailing, 5)
                 .onChange(of: newCompletionStatus) {
                     oldValue, newValue in
                     if oldValue != newValue {
-                        saveTask()
                         withAnimation(.easeInOut(duration: 0.3)) {
                             isAnimating = true
                         }
