@@ -56,44 +56,6 @@ struct CheckBoxView: View {
 }
 
 // Modifier to apply the completed task style
-struct CompletedTaskModifier: ViewModifier {
-    let isCompleted: Bool
-    let isAnimating: Bool
-
-    func body(content: Content) -> some View {
-        content
-            .opacity(isCompleted ? 0.7 : 1.0)
-            .overlay(
-                Rectangle()
-                    .fill(Color.black.opacity(isCompleted ? 0.1 : 0))
-                    .allowsHitTesting(false)
-            )
-            .overlay(
-                GeometryReader { geometry in
-                    if isCompleted {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.5))
-                            .frame(height: 2)
-                            .offset(y: geometry.size.height / 2)
-                            .scaleEffect(
-                                x: isAnimating ? 1 : 0, anchor: .leading
-                            )
-                            .animation(
-                                .easeInOut(duration: 0.3), value: isAnimating)
-                    }
-                }
-            )
-    }
-}
-
-extension View {
-    func completedTaskStyle(isCompleted: Bool, isAnimating: Bool) -> some View {
-        self.modifier(
-            CompletedTaskModifier(
-                isCompleted: isCompleted, isAnimating: isAnimating))
-    }
-}
-
 // Updated taskCard to incorporate the checkbox
 struct TaskCardWithCheckbox: View {
     @Bindable var task: taskapeTask

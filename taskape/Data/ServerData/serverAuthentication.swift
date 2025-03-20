@@ -137,7 +137,7 @@ func refreshTokenRequest(token: String, refreshToken: String, phone: String)
     do {
         let parameters: [String: Any] = [
             "token": token,
-            "refreshToken": refreshToken,
+            "refresh_token": refreshToken,
             "phone": phone,
         ]
 

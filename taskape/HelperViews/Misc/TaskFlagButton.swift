@@ -1,17 +1,9 @@
-//
-//  TaskFlagButton.swift
-//  taskape
-//
-//  Created by shevlfs on 3/19/25.
-//
-
-
 import SwiftUI
 
 struct TaskFlagButton: View {
     @Bindable var task: taskapeTask
     @State private var showFlagPicker = false
-    
+
     // Predefined flag options with colors and names
     private let flagOptions = [
         (name: "High Priority", color: "#FF6B6B"),
@@ -20,13 +12,16 @@ struct TaskFlagButton: View {
         (name: "Info", color: "#118AB2"),
         (name: "Planning", color: "#073B4C")
     ]
-    
+
     var body: some View {
         Button(action: {
             if task.flagStatus {
                 showFlagPicker.toggle()
             } else {
-                task.toggleFlag()
+                withAnimation {
+                    task.toggleFlag()
+                    notifyFlagChanged()
+                }
             }
         }) {
             Image(systemName: task.flagStatus ? "flag.fill" : "flag")
@@ -41,11 +36,14 @@ struct TaskFlagButton: View {
                 Text("Priority")
                     .font(.pathway(18))
                     .padding(.top)
-                
+
                 ForEach(flagOptions, id: \.color) { option in
                     Button(action: {
-                        task.setFlag(color: option.color, name: option.name)
-                        showFlagPicker = false
+                        withAnimation {
+                            task.setFlag(color: option.color, name: option.name)
+                            showFlagPicker = false
+                            notifyFlagChanged()
+                        }
                     }) {
                         HStack {
                             Circle()
@@ -64,12 +62,13 @@ struct TaskFlagButton: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
-                
+
                 Divider()
-                
+
                 Button(action: {
                     task.toggleFlag()
                     showFlagPicker = false
+                    notifyFlagChanged()
                 }) {
                     Text("Remove Flag")
                         .font(.pathway(16))
@@ -87,11 +86,17 @@ struct TaskFlagButton: View {
             .padding()
         }
     }
-    
+
     private func getFlagColor() -> Color {
         if task.flagStatus, let colorHex = task.flagColor {
             return Color(hex: colorHex)
         }
         return Color.gray
+    }
+
+    // New function to notify flag changes
+    private func notifyFlagChanged() {
+        // Use the FlagManager to notify of changes
+        FlagManager.shared.flagChanged()
     }
 }

@@ -108,7 +108,7 @@ struct TaskPrioritySelector: View {
 
     var body: some View {
         HStack {
-            Text("priority").font(.pathway(17))
+            Text("label").font(.pathway(17))
             Spacer()
 
             Button(action: {
@@ -117,19 +117,22 @@ struct TaskPrioritySelector: View {
                 HStack {
                     if flagStatus, let colorHex = flagColor {
                         let priorityLabel = priorityOptions.first { $0.color == colorHex }?.label ?? "Custom"
-                        Circle()
-                            .fill(Color(hex: colorHex))
-                            .frame(width: 12, height: 12)
-                        Text(priorityLabel)
-                            .font(.pathway(15))
+                        Group{
+                            Circle()
+                                .fill(Color(hex: colorHex))
+                                .frame(width: 12, height: 12)
+                            Text(priorityLabel)
+                                .font(.pathway(17))
+                        }.padding(.vertical, 5)
                     } else {
-                        Text("None")
-                            .font(.pathway(15))
-                            .foregroundColor(.secondary)
+                        Group{
+                            Text("None")
+                                .font(.pathway(17))
+                            .foregroundColor(.secondary)}.padding(.vertical, 5)
                     }
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color.taskapeOrange).padding(.trailing,12)
                 }
             }
             .buttonStyle(PlainButtonStyle())
@@ -162,7 +165,7 @@ struct PriorityPickerContent: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Text("Select Priority")
+            Text("set label")
                 .font(.pathwayBold(16))
                 .padding(.top)
 
@@ -170,10 +173,14 @@ struct PriorityPickerContent: View {
 
             ForEach(priorityOptions, id: \.color) { option in
                 Button(action: {
-                    flagStatus = true
-                    flagColor = option.color
-                    flagName = option.label
-                    showPicker = false
+                    withAnimation {
+                        flagStatus = true
+                        flagColor = option.color
+                        flagName = option.label
+                        showPicker = false
+
+                        FlagManager.shared.flagChanged()
+                    }
                 }) {
                     HStack {
                         Circle()
@@ -196,10 +203,15 @@ struct PriorityPickerContent: View {
             Divider()
 
             Button(action: {
-                flagStatus = false
-                flagColor = nil
-                flagName = nil
-                showPicker = false
+                withAnimation {
+                    flagStatus = false
+                    flagColor = nil
+                    flagName = nil
+                    showPicker = false
+
+                    // Notify that flags have changed
+                    FlagManager.shared.flagChanged()
+                }
             }) {
                 HStack {
                     Text("None")
@@ -215,7 +227,6 @@ struct PriorityPickerContent: View {
             }
             .buttonStyle(PlainButtonStyle())
         }
-        .frame(width: 200)
         .padding(.vertical)
     }
 }
@@ -226,7 +237,7 @@ struct TaskPrivacySelector: View {
 
     var body: some View {
         HStack {
-            Text("privacy ").font(.pathway(17))
+            Text("privacy").font(.pathway(17))
             Spacer()
 
             Picker("privacy", selection: $privacyLevel) {

@@ -62,6 +62,8 @@ struct ProfileCreationFirstTaskSetup: View {
     @State private var scrollOffset: CGFloat = 0
     @State private var scrollViewHeight: CGFloat = 0
 
+    @EnvironmentObject private var appState: AppStateManager
+
     var userId: String? = nil
 
     func deleteTask(at indexSet: IndexSet) {
@@ -240,6 +242,8 @@ struct ProfileCreationFirstTaskSetup: View {
                 action: {
                     if !tasks.isEmpty {
                         saveTasks()
+                        UserDefaults.standard.set(true, forKey: "profileExists")
+                        appState.login()
                         userAlreadyExists = true
                         progress = 1.0
                     }

@@ -1,4 +1,6 @@
 import SwiftUI
+import SwiftData
+
 
 struct taskCard: View {
     @Bindable var task: taskapeTask
@@ -13,7 +15,6 @@ struct taskCard: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            // CheckBoxView
             CheckBoxView(task: task).padding(.trailing, 5)
                 .onChange(of: task.completion.isCompleted) { oldValue, newValue in
                     if oldValue != newValue {
@@ -52,15 +53,14 @@ struct taskCard: View {
                             }
                             Spacer()
 
-                            // Show flag icon if task is flagged
-                            if task.flagStatus {
-                                if let colorHex = task.flagColor {
-                                    Image(systemName: "flag.fill")
-                                        .foregroundColor(Color(hex: colorHex))
-                                        .font(.system(size: 14))
-                                        .padding(.trailing, 5)
-                                }
-                            }
+//                            if task.flagStatus {
+//                                if let colorHex = task.flagColor {
+//                                    Image(systemName: "flag.fill")
+//                                        .foregroundColor(Color(hex: colorHex))
+//                                        .font(.system(size: 14))
+//                                        .padding(.trailing, 10)
+//                                }
+//                            }
 
                             if !detailIsPresent {
                                 Image(systemName: "chevron.right")
@@ -100,6 +100,18 @@ struct taskCard: View {
                 }
                 .onAppear {
                     selectedPrivacyLevel = task.privacy.level
+                    // Trigger animation if task is already completed
+                    if task.completion.isCompleted && !isAnimating {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            isAnimating = true
+                        }
+                        // Reset after a delay
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            withAnimation {
+                                isAnimating = false
+                            }
+                        }
+                    }
                 }
             }
             .sheet(isPresented: $detailIsPresent) {
@@ -111,15 +123,6 @@ struct taskCard: View {
                 }
             }
             .buttonStyle(PlainButtonStyle())
-
-            // Flag button
-            TaskFlagButton(task: task)
-                .onChange(of: task.flagStatus) { _, _ in
-                    saveTask()
-                }
-                .onChange(of: task.flagColor) { _, _ in
-                    saveTask()
-                }
         }
     }
 
@@ -137,78 +140,107 @@ struct taskCard: View {
         }
     }
 }
-//
-//#Preview {
-//    struct PreviewWrapper: View {
-//        @State private var sampleTask = taskapeTask(
-//            name: "Complete SwiftUI project",
-//            taskDescription: "Finish all the views and connect them",
-//            author: "shevlfs",
-//            privacy: "private"
-//        )
-//
-//        var body: some View {
-//            VStack(spacing: 20) {
-//                ScrollView {
-//                    VStack(spacing: 10) {
-//                        taskCard(
-//                            task:
-//                                taskapeTask(
-//                                    name: "Design new UI",
-//                                    taskDescription: "Create mockups in Figma",
-//                                    author: "shevlfs",
-//                                    privacy: "private"
-//                                )
-//
-//                        )
-//
-//                        // Sample completed task
-//                        let completedTask = taskapeTask(
-//                            name: "Implement animations",
-//                            taskDescription: "Add spring animations to cards",
-//                            author: "shevlfs",
-//                            privacy: "public"
-//                        )
-//                        completedTask.completion.isCompleted = true
-//
-//                        taskCard(
-//                            task: completedTask
-//                        )
-//
-//                        // Sample flagged task
-//                        let flaggedTask = taskapeTask(
-//                            name: "High priority task",
-//                            taskDescription: "This is flagged as important",
-//                            author: "shevlfs",
-//                            privacy: "private",
-//                            flagStatus: true,
-//                            flagColor: "#FF6B6B"
-//                        )
-//
-//                        taskCard(
-//                            task: flaggedTask
-//                        )
-//
-//                        taskCard(
-//                            task:
-//                                taskapeTask(
-//                                    name: "",
-//                                    taskDescription:
-//                                        "Fix back button not working properly",
-//                                    author: "shevlfs",
-//                                    privacy: "private"
-//                                )
-//
-//                        )
-//                    }
-//                    .padding()
-//                }
-//                .background(Color.black.opacity(0.1))
-//            }
-//            .padding()
-//            .preferredColorScheme(.dark)
-//        }
-//    }
-//
-//    return PreviewWrapper()
-//}
+
+// Fixed CompletedTaskModifier to properly apply greying out
+struct CompletedTaskModifier: ViewModifier {
+    let isCompleted: Bool
+    let isAnimating: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(isCompleted ? 0.7 : 1.0)
+            .overlay(
+                RoundedRectangle(cornerRadius: 25)
+                    .fill(Color.black.opacity(isCompleted ? 0.1 : 0))
+                    .allowsHitTesting(false)
+            )
+            .overlay(
+                GeometryReader { geometry in
+                    if isCompleted {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.5))
+                            .frame(height: 2)
+                            .offset(y: geometry.size.height / 2)
+                            .scaleEffect(
+                                x: isAnimating ? 1 : 0, anchor: .leading
+                            )
+                            .animation(
+                                .easeInOut(duration: 0.3), value: isAnimating)
+                    }
+                }
+            )
+    }
+}
+
+extension View {
+    func completedTaskStyle(isCompleted: Bool, isAnimating: Bool) -> some View {
+        self.modifier(
+            CompletedTaskModifier(
+                isCompleted: isCompleted, isAnimating: isAnimating))
+    }
+}
+
+#Preview {
+    // Create a proper model container for preview
+    do {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: taskapeTask.self, configurations: config)
+
+        // Create sample tasks in the container
+        let designTask = taskapeTask(
+            name: "Design new UI",
+            taskDescription: "Create mockups in Figma",
+            author: "shevlfs",
+            privacy: PrivacySettings(level: .everyone)
+        )
+
+        let completedTask = taskapeTask(
+            name: "Implement animations",
+            taskDescription: "Add spring animations to cards",
+            author: "shevlfs",
+            privacy: PrivacySettings(level: .everyone)
+        )
+        completedTask.completion.isCompleted = true
+
+        let flaggedTask = taskapeTask(
+            name: "High priority task",
+            taskDescription: "This is flagged as important",
+            author: "shevlfs",
+            privacy: PrivacySettings(level: .everyone),
+            flagStatus: true,
+            flagColor: "#FF6B6B"
+        )
+
+        let emptyTask = taskapeTask(
+            name: "",
+            taskDescription: "Fix back button not working properly",
+            author: "shevlfs",
+            privacy: PrivacySettings(level: .noone)
+        )
+
+        // Insert the tasks into the container
+        container.mainContext.insert(designTask)
+        container.mainContext.insert(completedTask)
+        container.mainContext.insert(flaggedTask)
+        container.mainContext.insert(emptyTask)
+
+        // Return the preview with the sample tasks
+        return VStack(spacing: 20) {
+            ScrollView {
+                VStack(spacing: 10) {
+                    taskCard(task: designTask)
+                    taskCard(task: completedTask)
+                    taskCard(task: flaggedTask)
+                    taskCard(task: emptyTask)
+                }
+                .padding()
+            }
+            .background(Color.black.opacity(0.1))
+        }
+        .padding()
+        .preferredColorScheme(.dark)
+        .modelContainer(container)
+    } catch {
+        return Text("Failed to create preview: \(error.localizedDescription)")
+    }
+}

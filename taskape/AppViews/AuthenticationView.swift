@@ -75,9 +75,7 @@ struct AuthenticationView: View {
         } catch {
             print("Error saving user: \(error)")
         }
-
-        UserDefaults.standard.set(true, forKey: "profileExists")
-        appState.login()
+        
     }
 
     var body: some View {
