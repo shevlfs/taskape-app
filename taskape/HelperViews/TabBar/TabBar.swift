@@ -9,9 +9,20 @@ import SwiftUI
 struct tabBarItem {
     let title: String
     var badgeCount: Int? = nil
+    var color: Color? = nil
 
     init(title: String) {
         self.title = title
+    }
+
+    init(title: String, color: String) {
+        self.title = title
+        self.color = Color(hex: color)
+    }
+    init(title: String, badgeCount: Int, color: Color) {
+        self.title = title
+        self.color = color
+        self.badgeCount = badgeCount
     }
 
     init(title: String, badgeCount: Int) {
@@ -22,7 +33,7 @@ struct tabBarItem {
 
 struct tabBarItemView: View {
     @Binding var title: String
-    var body: some View{
+    var body: some View {
         Text(title).kerning(1)
             .font(.pathwaySemiBold(18))
     }
@@ -44,7 +55,7 @@ struct TabBarView: View {
                                 .font(.pathwaySemiBold(18))
                                 .foregroundColor(
                                     tabBarViewIndex == index
-                                    ? .primary : Color(.systemGray2)
+                                        ? .primary : Color(.systemGray2)
                                 )
                                 .padding(.horizontal, 2)
                                 .overlay(alignment: .topTrailing) {
@@ -87,13 +98,13 @@ struct TabBarView: View {
 }
 
 #Preview {
-//    TabBarView(
-//        tabBarItems: .constant([
-//            tabBarItem(title: "settings"),
-//            tabBarItem(title: "main"),
-//            tabBarItem(title: "group1"),
-//            tabBarItem(title: "group2", badgeCount: 2),
-//            tabBarItem(title: "group3", badgeCount: 100),
-//        ])
-//    )
+    //    TabBarView(
+    //        tabBarItems: .constant([
+    //            tabBarItem(title: "settings"),
+    //            tabBarItem(title: "main"),
+    //            tabBarItem(title: "group1"),
+    //            tabBarItem(title: "group2", badgeCount: 2),
+    //            tabBarItem(title: "group3", badgeCount: 100),
+    //        ])
+    //    )
 }

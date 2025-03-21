@@ -64,13 +64,37 @@ extension Color {
     }
 
     func toHex() -> String {
-        guard let components = cgColor?.components else { return "#000000" }
+        #if canImport(UIKit)
+            let uiColor = UIColor(self)
+            var r: CGFloat = 0
+            var g: CGFloat = 0
+            var b: CGFloat = 0
+            var a: CGFloat = 0
 
-        let r = Int(components[0] * 255.0)
-        let g = Int(components[1] * 255.0)
-        let b = Int(components[2] * 255.0)
+            uiColor.getRed(&r, green: &g, blue: &b, alpha: &a)
 
-        return String(format: "#%02X%02X%02X", r, g, b)
+            let rInt = Int(r * 255.0)
+            let gInt = Int(g * 255.0)
+            let bInt = Int(b * 255.0)
+
+            return String(format: "#%02X%02X%02X", rInt, gInt, bInt)
+        #elseif canImport(AppKit)
+            let nsColor = NSColor(self)
+            var r: CGFloat = 0
+            var g: CGFloat = 0
+            var b: CGFloat = 0
+            var a: CGFloat = 0
+
+            nsColor.getRed(&r, green: &g, blue: &b, alpha: &a)
+
+            let rInt = Int(r * 255.0)
+            let gInt = Int(g * 255.0)
+            let bInt = Int(b * 255.0)
+
+            return String(format: "#%02X%02X%02X", rInt, gInt, bInt)
+        #else
+            return "#000000"  // Fallback for unsupported platforms
+        #endif
     }
 }
 

@@ -99,16 +99,20 @@ struct UserJungleDetailedView: View {
                             ForEach(tasks) { task in
                                 AnimatedTaskCard(
                                     task: task,
-                                    isDisappearing: completingTasks[task.id] ?? false,
+                                    isDisappearing: completingTasks[task.id]
+                                        ?? false,
                                     onCompletion: { completedTask in
-                                        handleTaskCompletion(task: completedTask)
+                                        handleTaskCompletion(
+                                            task: completedTask)
                                     }
                                 )
                                 .padding(.horizontal, 16)
                             }
                         }
                         .padding(.vertical, 12)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: tasks.count)
+                        .animation(
+                            .spring(response: 0.3, dampingFraction: 0.7),
+                            value: tasks.count)
                     }
                 }
             } else {
@@ -159,14 +163,42 @@ struct UserJungleDetailedView: View {
         }
     }
 
+    class TaskFlag: Equatable, Hashable, Comparable {
+        var flagName: String
+        var flagColor: String
+
+        init(flagname: String, flagcolor: String) {
+            self.flagName = flagname
+            self.flagColor = flagcolor
+        }
+
+        static func == (lhs: TaskFlag, rhs: TaskFlag) -> Bool {
+            return lhs.flagName == rhs.flagName
+                && lhs.flagColor == rhs.flagColor
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(flagName)
+            hasher.combine(flagColor)
+        }
+
+        static func < (lhs: TaskFlag, rhs: TaskFlag) -> Bool {
+            return lhs.flagName < rhs.flagName
+        }
+
+    }
+
     // Get all unique flag names from user's tasks
-    private func getUserFlagNames() -> [String] {
+    private func getUserFlags() -> [TaskFlag] {
         guard let user = users.first else { return [] }
 
-        var flagNames: Set<String> = []
+        var flagNames: Set<TaskFlag> = []
         for task in user.tasks {
             if let flagName = task.flagName, task.flagStatus {
-                flagNames.insert(flagName)
+                flagNames
+                    .insert(
+                        TaskFlag(flagname: flagName, flagcolor: task.flagColor!)
+                    )
             }
         }
         return Array(flagNames).sorted()
@@ -179,10 +211,10 @@ struct UserJungleDetailedView: View {
             tabBarItem(title: "done"),
         ]
 
-        // Add flag-specific tabs
-        let flagNames = getUserFlagNames()
-        for flagName in flagNames {
-            items.append(tabBarItem(title: flagName))
+        let flags = getUserFlags()
+        for flag in flags {
+            items
+                .append(tabBarItem(title: flag.flagName, color: flag.flagColor))
         }
 
         tabBarItems = items
@@ -356,7 +388,9 @@ struct AnimatedTaskCard: View {
                 height: isDisappearing ? 0 : nil,
                 alignment: .top
             )
-            .animation(.spring(response: 0.6, dampingFraction: 0.7), value: isDisappearing)
+            .animation(
+                .spring(response: 0.6, dampingFraction: 0.7),
+                value: isDisappearing)
     }
 }
 
