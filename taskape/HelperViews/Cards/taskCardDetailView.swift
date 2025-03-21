@@ -99,11 +99,10 @@ struct TaskPrioritySelector: View {
 
     // Predefined flag options
     private let priorityOptions = [
-        (label: "High", color: "#FF6B6B"),
-        (label: "Medium", color: "#FFD166"),
-        (label: "Low", color: "#06D6A0"),
-        (label: "Info", color: "#118AB2"),
-        (label: "Planning", color: "#073B4C")
+        (label: "important", color: "#FF6B6B"),
+        (label: "work", color: "#FFD166"),
+        (label: "study", color: "#06D6A0"),
+        (label: "life", color: "#118AB2"),
     ]
 
     var body: some View {
@@ -116,8 +115,10 @@ struct TaskPrioritySelector: View {
             }) {
                 HStack {
                     if flagStatus, let colorHex = flagColor {
-                        let priorityLabel = priorityOptions.first { $0.color == colorHex }?.label ?? flagName ?? "Custom"
-                        Group{
+                        let priorityLabel =
+                            priorityOptions.first { $0.color == colorHex }?
+                            .label ?? flagName ?? "Custom"
+                        Group {
                             Circle()
                                 .fill(Color(hex: colorHex))
                                 .frame(width: 12, height: 12)
@@ -125,14 +126,16 @@ struct TaskPrioritySelector: View {
                                 .font(.pathway(17))
                         }.padding(.vertical, 5)
                     } else {
-                        Group{
-                            Text("None")
+                        Group {
+                            Text("none")
                                 .font(.pathway(17))
-                            .foregroundColor(.secondary)}.padding(.vertical, 5)
+                                .foregroundColor(.secondary)
+                        }.padding(.vertical, 5)
                     }
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12))
-                        .foregroundColor(Color.taskapeOrange).padding(.trailing,12)
+                        .foregroundColor(Color.taskapeOrange).padding(
+                            .trailing, 12)
                 }
             }
             .buttonStyle(PlainButtonStyle())
@@ -143,7 +146,7 @@ struct TaskPrioritySelector: View {
                     flagName: $flagName,
                     priorityOptions: priorityOptions,
                     showPicker: $showPriorityPicker
-                )
+                ).presentationDetents([.medium])
             }
         }
         .padding()
@@ -167,11 +170,13 @@ struct PriorityPickerContent: View {
     @State private var customColor: Color = .orange
     @State private var customLabelName: String = ""
 
+    private let defaultColors: [Color] = [
+        .red, .orange, .yellow, .green, .blue, .purple, .pink,
+    ]
+
     var body: some View {
         if isAddingCustomLabel {
-            // CUSTOM LABEL VIEW
-            VStack(alignment: .leading, spacing: 0) {
-                // Header with back button
+            VStack(alignment: .center, spacing: 0) {
                 HStack {
                     Button(action: {
                         isAddingCustomLabel = false
@@ -180,14 +185,22 @@ struct PriorityPickerContent: View {
                             .foregroundColor(.orange)
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .padding(.trailing, 4)
+                    .padding(.leading, 10)
+                    Spacer()
 
-                    Text("custom label")
+                    Text("new label")
                         .font(.pathway(17))
+                        .fontWeight(.medium)
+                        .padding(.top, 16)
+                        .padding(.bottom, 12).offset(x: -10)
+
+                    Spacer()
                 }
-                .padding(.horizontal)
-                .padding(.top, 16)
-                .padding(.bottom, 12)
+
+                Divider()
+                    .padding(.bottom, 8)
+
+                Spacer()
 
                 // Label name field
                 Text("label name:")
@@ -195,7 +208,8 @@ struct PriorityPickerContent: View {
                     .padding(.horizontal)
                     .padding(.bottom, 8)
 
-                TextField("Enter label name", text: $customLabelName)
+                TextField("enter label name", text: $customLabelName)
+                    .autocorrectionDisabled()
                     .font(.pathway(16))
                     .padding()
                     .background(Color(UIColor.systemGray6))
@@ -203,32 +217,41 @@ struct PriorityPickerContent: View {
                     .padding(.horizontal)
                     .padding(.bottom, 24)
 
-                // Label color picker
                 Text("label color:")
                     .font(.pathway(16))
                     .padding(.horizontal)
                     .padding(.bottom, 8)
-
-                HStack {
-                    Circle()
-                        .fill(customColor)
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            ColorPicker("", selection: $customColor)
-                                .labelsHidden()
-                                .opacity(0.01)
-                                .frame(width: 44, height: 44)
-                        )
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ColorPicker("", selection: $customColor)
+                            .labelsHidden()
+                            .frame(width: 30, height: 30)
+                        ForEach(defaultColors, id: \.self) { color in
+                            Circle()
+                                .fill(color)
+                                .frame(width: 35, height: 35)
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            customColor == color
+                                                ? Color.gray : Color.clear,
+                                            lineWidth: 2)
+                                )
+                                .onTapGesture {
+                                    customColor = color
+                                }
+                        }
+                    }
+                    .padding(8)
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 24)
-
-                // Add button
                 Button(action: {
                     withAnimation {
                         flagStatus = true
                         flagColor = customColor.toHex()
-                        flagName = customLabelName.isEmpty ? "Custom" : customLabelName
+                        flagName =
+                            customLabelName.isEmpty ? "Custom" : customLabelName
                         showPicker = false
                         FlagManager.shared.flagChanged()
                     }
@@ -240,7 +263,9 @@ struct PriorityPickerContent: View {
                         .padding(.vertical, 14)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(customLabelName.isEmpty ? Color.gray : Color.orange)
+                                .fill(
+                                    customLabelName.isEmpty
+                                        ? Color.gray : Color.orange)
                         )
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -285,17 +310,52 @@ struct PriorityPickerContent: View {
 
                                     Spacer()
 
-                                    if flagStatus && flagColor == option.color && flagName == option.label {
+                                    if flagStatus && flagColor == option.color
+                                        && flagName == option.label
+                                    {
                                         Image(systemName: "checkmark")
                                             .foregroundColor(.blue)
                                     }
                                 }
                                 .contentShape(Rectangle())
                                 .padding(.vertical, 14)
-                                .padding(.horizontal)
+                                .padding(.horizontal, 25)
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
+
+                        Button(action: {
+                            withAnimation {
+                                flagStatus = false
+                                flagColor = nil
+                                flagName = nil
+                                showPicker = false
+                                FlagManager.shared.flagChanged()
+                            }
+                        }) {
+                            HStack {
+                                Circle()
+                                    .fill(Color(.gray))
+                                    .frame(width: 18, height: 18)
+
+                                Text("none")
+                                    .font(.pathway(17))
+                                    .padding(.leading, 12)
+
+                                Spacer()
+
+                                if !flagStatus && flagColor == nil
+                                    && flagName == nil
+                                {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.blue)
+                                }
+                            }
+                            .contentShape(Rectangle())
+                            .padding(.vertical, 14)
+                            .padding(.horizontal, 25)
+                        }
+                        .buttonStyle(PlainButtonStyle())
 
                         Divider()
                             .padding(.vertical, 8)
@@ -310,45 +370,19 @@ struct PriorityPickerContent: View {
                             HStack {
                                 Image(systemName: "plus.circle.fill")
                                     .foregroundColor(.orange)
-                                    .font(.system(size: 18))
+                                    .font(.system(size: 18)).frame(
+                                        width: 18, height: 18)
 
                                 Text("add custom label")
                                     .font(.pathway(17))
                                     .foregroundColor(.orange)
-                                    .padding(.leading, 8)
+                                    .padding(.leading, 12)
 
                                 Spacer()
                             }
                             .contentShape(Rectangle())
                             .padding(.vertical, 14)
-                            .padding(.horizontal)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-
-                        // None option
-                        Button(action: {
-                            withAnimation {
-                                flagStatus = false
-                                flagColor = nil
-                                flagName = nil
-                                showPicker = false
-                                FlagManager.shared.flagChanged()
-                            }
-                        }) {
-                            HStack {
-                                Text("none")
-                                    .font(.pathway(17))
-
-                                Spacer()
-
-                                if !flagStatus {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.blue)
-                                }
-                            }
-                            .contentShape(Rectangle())
-                            .padding(.vertical, 14)
-                            .padding(.horizontal)
+                            .padding(.horizontal, 25)
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
@@ -371,12 +405,14 @@ struct TaskPrivacySelector: View {
             Picker("privacy", selection: $privacyLevel) {
                 Text("everyone").tag(PrivacySettings.PrivacyLevel.everyone)
                 Text("no one").tag(PrivacySettings.PrivacyLevel.noone)
-                Text("friends only").tag(PrivacySettings.PrivacyLevel.friendsOnly)
+                Text("friends only").tag(
+                    PrivacySettings.PrivacyLevel.friendsOnly)
                 Text("group").tag(PrivacySettings.PrivacyLevel.group)
-                Text("everyone except...").tag(PrivacySettings.PrivacyLevel.except)
+                Text("everyone except...").tag(
+                    PrivacySettings.PrivacyLevel.except)
             }.font(.pathwayBold(17))
-            .pickerStyle(MenuPickerStyle())
-            .accentColor(Color.taskapeOrange)
+                .pickerStyle(MenuPickerStyle())
+                .accentColor(Color.taskapeOrange)
         }
         .padding()
         .background(
@@ -404,7 +440,8 @@ struct taskCardDetailView: View {
                 TaskNameField(name: $task.name)
 
                 // Component 3: Task description field
-                TaskDescriptionField(description: $task.taskDescription, isFocused: _isFocused)
+                TaskDescriptionField(
+                    description: $task.taskDescription, isFocused: _isFocused)
 
                 // Component 4: Deadline picker
                 TaskDeadlinePicker(deadline: $task.deadline)
