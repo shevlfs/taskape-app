@@ -166,7 +166,11 @@ struct TaskCardWithCheckbox: View {
                 taskCardDetailView(
                     detailIsPresent: $detailIsPresent,
                     task: task
-                ).onDisappear {
+                ).transition(.opacity)
+                    .animation(
+                        Animation.easeInOut(duration: 0.25),
+                        value: detailIsPresent
+                    ).onDisappear {
                     saveTask()
                 }
             }.onAppear {

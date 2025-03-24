@@ -14,6 +14,8 @@ struct MainView: View {
     @Query var tasks: [taskapeTask]
     @Namespace var mainNamespace
 
+    @State var showFriendInvitationSheet: Bool = false
+
     @Binding var navigationPath: NavigationPath
     var body: some View {
         GeometryReader {
@@ -27,12 +29,13 @@ struct MainView: View {
                 ScrollView {
                     FriendInvitationButtons(
                         onApeTap: {
-
                         },
                         onNewFriendTap: {
-
+                            showFriendInvitationSheet = true
                         })
                 }
+            }.sheet(isPresented: $showFriendInvitationSheet) {
+                FriendSearchSheet().modelContext(modelContext)
             }.navigationDestination(
                 for: String.self,
                 destination: {

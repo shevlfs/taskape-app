@@ -5,6 +5,8 @@
 //  Created by shevlfs on 2/14/25.
 //
 
+import Foundation
+
 struct VerificationResponse: Codable {
     let authToken: String
     let refreshToken: String
@@ -24,7 +26,31 @@ struct UserResponse: Codable {
     let bio: String
     let profile_picture: String
     let color: String
+    let friends: [Friend]?
+    let incoming_requests: [FriendRequest]?
+    let outgoing_requests: [FriendRequest]?
     let error: String?
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        success = try container.decode(Bool.self, forKey: .success)
+        id = try container.decode(String.self, forKey: .id)
+        handle = try container.decode(String.self, forKey: .handle)
+        bio = try container.decode(String.self, forKey: .bio)
+        profile_picture = try container.decode(
+            String.self, forKey: .profile_picture)
+        color = try container.decode(String.self, forKey: .color)
+        error = try container.decodeIfPresent(String.self, forKey: .error)
+        friends =
+            try container.decodeIfPresent([Friend].self, forKey: .friends) ?? []
+        incoming_requests =
+            try container.decodeIfPresent(
+                [FriendRequest].self, forKey: .incoming_requests) ?? []
+        outgoing_requests =
+            try container.decodeIfPresent(
+                [FriendRequest].self, forKey: .outgoing_requests) ?? []
+    }
 }
 
 struct GetTasksResponse: Codable {
@@ -154,10 +180,15 @@ struct TaskResponse: Codable {
         }
 
         // New fields
-        flag_status = try container.decodeIfPresent(Bool.self, forKey: .flag_status) ?? false
-        flag_color = try container.decodeIfPresent(String.self, forKey: .flag_color)
-        flag_name = try container.decodeIfPresent(String.self, forKey: .flag_name)
-        display_order = try container.decodeIfPresent(Int.self, forKey: .display_order) ?? 0
+        flag_status =
+            try container.decodeIfPresent(Bool.self, forKey: .flag_status)
+            ?? false
+        flag_color = try container.decodeIfPresent(
+            String.self, forKey: .flag_color)
+        flag_name = try container.decodeIfPresent(
+            String.self, forKey: .flag_name)
+        display_order =
+            try container.decodeIfPresent(Int.self, forKey: .display_order) ?? 0
     }
 
     enum CodingKeys: String, CodingKey {
@@ -227,3 +258,65 @@ struct TaskUpdateRequest: Codable {
     let token: String
 }
 
+struct Friend: Codable {
+    let id: String
+    let handle: String
+    let profile_picture: String
+    let color: String
+}
+
+struct FriendRequest: Codable {
+    let id: String
+    let sender_id: String
+    let sender_handle: String
+    let receiver_id: String
+    let status: String
+    let created_at: String
+
+    var isIncoming: Bool {
+        return UserDefaults.standard.string(forKey: "user_id") == receiver_id
+    }
+}
+
+struct SearchUsersRequest: Codable {
+    let query: String
+    let limit: Int
+    let token: String
+}
+
+struct SearchUsersResponse: Codable {
+    let success: Bool
+    let users: [UserSearchResult]
+    let message: String?
+}
+
+struct UserSearchResult: Codable {
+    let id: String
+    let handle: String
+    let profile_picture: String
+    let color: String
+}
+
+struct SendFriendRequestRequest: Codable {
+    let sender_id: String
+    let receiver_id: String
+    let token: String
+}
+
+struct SendFriendRequestResponse: Codable {
+    let success: Bool
+    let request_id: String?
+    let message: String?
+}
+
+struct RespondToFriendRequestRequest: Codable {
+    let request_id: String
+    let user_id: String
+    let response: String  // "accept" or "reject"
+    let token: String
+}
+
+struct RespondToFriendRequestResponse: Codable {
+    let success: Bool
+    let message: String?
+}

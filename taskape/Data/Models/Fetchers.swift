@@ -1,12 +1,9 @@
-// Fixed Fetchers.swift
-
 import Alamofire
 import Combine
 import Foundation
 import SwiftData
 import SwiftDotenv
 
-// Fetch function - performs the network request only
 func fetchUser(userId: String) async -> taskapeUser? {
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
         print("No auth token found")
@@ -37,6 +34,14 @@ func fetchUser(userId: String) async -> taskapeUser? {
                     profileImage: response.profile_picture,
                     profileColor: response.color
                 )
+
+                // Store friend data
+                if let friends = response.friends, !friends.isEmpty {
+                    // You might want to create a method to store friends in your data model
+                    // For now, we'll leave this commented as we need to update the taskapeUser model
+                    // storeFriends(user: user, friends: friends)
+                }
+
                 return user
             } else {
                 print(

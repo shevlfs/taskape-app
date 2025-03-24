@@ -215,7 +215,6 @@ struct PriorityPickerContent: View {
                     .background(Color(UIColor.systemGray6))
                     .cornerRadius(8)
                     .padding(.horizontal)
-                    .padding(.bottom, 24)
 
                 Text("label color:")
                     .font(.pathway(16))
@@ -246,6 +245,8 @@ struct PriorityPickerContent: View {
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 24)
+
+                Spacer()
                 Button(action: {
                     withAnimation {
                         flagStatus = true
@@ -262,17 +263,16 @@ struct PriorityPickerContent: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                         .background(
-                            RoundedRectangle(cornerRadius: 8)
+                            RoundedRectangle(cornerRadius: 30)
                                 .fill(
                                     customLabelName.isEmpty
-                                        ? Color.gray : Color.orange)
+                                        ? Color.gray : Color.taskapeOrange)
                         )
-                }
+                }.padding(.bottom,10)
                 .buttonStyle(PlainButtonStyle())
                 .disabled(customLabelName.isEmpty)
                 .padding(.horizontal)
             }
-            .background(Color.white)
         } else {
             // LABEL SELECTION VIEW
             VStack(spacing: 0) {
@@ -388,7 +388,6 @@ struct PriorityPickerContent: View {
                     }
                 }
             }
-            .background(Color.white)
         }
     }
 }
