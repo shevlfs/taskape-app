@@ -9,26 +9,23 @@ import SwiftData
 import SwiftUI
 
 @main
-struct taskapeApp: App {
-    let container: ModelContainer
+struct taskapeApp: App {    
     @StateObject private var appState = AppStateManager()
-
-    init() {
-        do {
-            container = try ModelContainer(
-                for:
-                    taskapeUser.self, taskapeTask.self
-            )
-        } catch {
-            fatalError("Failed to initialize ModelContainer")
-        }
-    }
-
     var body: some Scene {
         WindowGroup {
             RootView()
-                .modelContainer(container)
+                .modelContainer(ModelContainer.shared)
                 .environmentObject(appState)
         }
     }
+}
+
+extension ModelContainer {
+    static let shared: ModelContainer = {
+        do {
+            return try ModelContainer(for: taskapeUser.self, taskapeTask.self)
+        } catch {
+            fatalError("Failed to create ModelContainer: \(error)")
+        }
+    }()
 }

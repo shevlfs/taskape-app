@@ -10,7 +10,8 @@ import SwiftData
 import SwiftUI
 
 struct userGreetingCard: View {
-    @State var user: taskapeUser?
+    @Environment(\.modelContext) private var modelContext
+    @State private var user: taskapeUser?
 
     var body: some View {
         HStack {
@@ -52,6 +53,9 @@ struct userGreetingCard: View {
             }
             Spacer()
         }
+        .onAppear {
+            user = UserManager.shared.getCurrentUser(context: modelContext)
+        }
     }
 }
 
@@ -64,7 +68,7 @@ struct MainNavigationView: View {
 
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var appState: AppStateManager
-    @Query var currentUser: [taskapeUser]
+    @State private var currentUser: taskapeUser?
     @Query var tasks: [taskapeTask]
 
     @State private var mainNavigationPath = NavigationPath()
@@ -72,9 +76,7 @@ struct MainNavigationView: View {
     var body: some View {
         NavigationStack(path: $mainNavigationPath) {
             VStack {
-                userGreetingCard(
-                    user: currentUser.first
-                )
+                userGreetingCard()
                 TabBarView(
                     tabBarItems: $mainTabBarItems,
                     tabBarViewIndex: $selectedTabIndex
@@ -91,6 +93,9 @@ struct MainNavigationView: View {
                 }
                 Spacer()
             }
+        }
+        .onAppear {
+            currentUser = UserManager.shared.getCurrentUser(context: modelContext)
         }
     }
 }

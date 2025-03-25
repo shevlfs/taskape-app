@@ -12,10 +12,17 @@ class AppStateManager: ObservableObject {
     @Published var isLoggedIn: Bool
 
     init() {
-        // Initialize based on stored values
-        self.isLoggedIn =
-            UserDefaults.standard.bool(forKey: "profileExists")
-            && UserDefaults.standard.string(forKey: "authToken") != nil
+        // Check if we have both a profile and auth token
+        let profileExists = UserDefaults.standard.bool(forKey: "profileExists")
+        let hasToken = UserDefaults.standard.string(forKey: "authToken") != nil
+        let hasUserId = !UserManager.shared.currentUserId.isEmpty
+
+        self.isLoggedIn = profileExists && hasToken && hasUserId
+
+        print("AppStateManager initialized with isLoggedIn: \(self.isLoggedIn)")
+        print("- profileExists: \(profileExists)")
+        print("- hasToken: \(hasToken)")
+        print("- hasUserId: \(hasUserId)")
     }
 
     func logout() {
@@ -34,6 +41,9 @@ class AppStateManager: ObservableObject {
         UserDefaults.standard.set(false, forKey: "numberIsRegistered")
         UserDefaults.standard.removeObject(forKey: "userPhoneNumber")
 
+        // Clear UserManager current ID
+        UserManager.shared.setCurrentUser(userId: "")
+
         // Update the published state
         DispatchQueue.main.async {
             self.isLoggedIn = false
@@ -41,6 +51,11 @@ class AppStateManager: ObservableObject {
     }
 
     func login() {
+        // Ensure UserManager has the user ID when logging in
+        if let userId = UserDefaults.standard.string(forKey: "user_id"), !userId.isEmpty {
+            UserManager.shared.setCurrentUser(userId: userId)
+        }
+
         DispatchQueue.main.async {
             self.isLoggedIn = true
         }

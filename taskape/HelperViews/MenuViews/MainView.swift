@@ -10,29 +10,32 @@ import SwiftUI
 
 struct MainView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query var users: [taskapeUser]
-    @Query var tasks: [taskapeTask]
+    @State private var currentUser: taskapeUser?
     @Namespace var mainNamespace
 
     @State var showFriendInvitationSheet: Bool = false
 
     @Binding var navigationPath: NavigationPath
+
     var body: some View {
-        GeometryReader {
-            geometry in
+        GeometryReader { geometry in
             VStack {
-                Button(action: { navigationPath.append("self_jungle_view") }) {
-                    UserJungleCard(user: users.first!).matchedTransitionSource(
-                        id: "jungleCard", in: mainNamespace
-                    )
-                }.buttonStyle(PlainButtonStyle())
-                ScrollView {
-                    FriendInvitationButtons(
-                        onApeTap: {
-                        },
-                        onNewFriendTap: {
-                            showFriendInvitationSheet = true
-                        })
+                if let user = currentUser {
+                    Button(action: { navigationPath.append("self_jungle_view") }) {
+                        UserJungleCard(user: user).matchedTransitionSource(
+                            id: "jungleCard", in: mainNamespace
+                        )
+                    }.buttonStyle(PlainButtonStyle())
+                    ScrollView {
+                        FriendInvitationButtons(
+                            onApeTap: {
+                            },
+                            onNewFriendTap: {
+                                showFriendInvitationSheet = true
+                            })
+                    }
+                } else {
+                    ProgressView("Loading your jungle...")
                 }
             }.sheet(isPresented: $showFriendInvitationSheet) {
                 FriendSearchSheet().modelContext(modelContext)
@@ -51,6 +54,9 @@ struct MainView: View {
                         EmptyView()
                     }
                 })
+                .onAppear {
+                    currentUser = UserManager.shared.getCurrentUser(context: modelContext)
+                }
         }
     }
 }

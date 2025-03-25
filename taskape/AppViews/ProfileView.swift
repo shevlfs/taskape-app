@@ -22,9 +22,7 @@ struct SelfProfileView: View {
                         .foregroundColor(Color(hex: user.profileColor))
                         .frame(maxWidth: .infinity, maxHeight: 250)
 
-                    // Profile content on the colored background
                     VStack(alignment: .center, spacing: 16) {
-                        // Profile picture
                         if !user.profileImageURL.isEmpty {
                             CachedAsyncImage(
                                 url: URL(string: user.profileImageURL)
@@ -77,93 +75,71 @@ struct SelfProfileView: View {
                     }
                     .padding(.vertical, 30)
                 }
+                if user.bio != "" {
+                    ZStack {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("about me")
+                                .font(.pathwayBold(18))
+                                .foregroundColor(.white)
+                                .padding(.top, 30)
+                                .padding(.leading, 16)
 
-                ZStack {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("about me:")
-                            .font(.pathwayBold(18))
-                            .foregroundColor(.white)
-                            .padding(.top, 30)
-                            .padding(.leading, 16)
-
-                        Text(
-                            user.bio
-                        )
-                        .font(.pathway(16))
-                        .foregroundColor(.white.opacity(0.8))
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 20)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(
-                        // Use a shape with only bottom corners rounded
-                        CustomRoundedRectangle(
-                            topLeadingRadius: 0, topTrailingRadius: 0,
-                            bottomLeadingRadius: 16, bottomTrailingRadius: 16
-                        )
-                        .fill(Color.clear)
-                        .overlay(
-                            // Very subtle inner glow instead of a distinct outline
+                            Text(
+                                user.bio
+                            )
+                            .font(.pathway(16))
+                            .foregroundColor(.white.opacity(0.8))
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 20)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            // Use a shape with only bottom corners rounded
                             CustomRoundedRectangle(
                                 topLeadingRadius: 0, topTrailingRadius: 0,
                                 bottomLeadingRadius: 16,
                                 bottomTrailingRadius: 16
                             )
-                            .stroke(
-                                Color(hex: user.profileColor),
-                                lineWidth: 1
+                            .fill(Color.clear)
+                            .overlay(
+                                // Very subtle inner glow instead of a distinct outline
+                                CustomRoundedRectangle(
+                                    topLeadingRadius: 0, topTrailingRadius: 0,
+                                    bottomLeadingRadius: 16,
+                                    bottomTrailingRadius: 16
+                                )
+                                .stroke(
+                                    Color(hex: user.profileColor),
+                                    lineWidth: 1
+                                )
+                                .blur(radius: 0.5)
                             )
-                            .blur(radius: 0.5)
                         )
-                    )
+                    }
+                    .offset(y: -16)
                 }
-                .offset(y: -16)
 
-                //                if !user.bio.isEmpty {
-                //                    Group {
-                //                        VStack(alignment: .leading, spacing: 8) {
-                //                            Text("about me:")
-                //                                .font(.pathwayBold(18))
-                //                                .padding(.top, 20)
-                //
-                //                            Text(user.bio)
-                //                                .font(.pathway(16))
-                //                                .multilineTextAlignment(.center)
-                //                                .fixedSize(horizontal: false, vertical: true)
-                //                        }
-                //                        .frame(maxWidth: .infinity, alignment: .leading)
-                //                        .padding(.horizontal)
-                //                    }.background(
-                //                        RoundedRectangle(cornerRadius: 9).stroke(
-                //                            Color.white, lineWidth: 2
-                //                        ).foregroundColor(
-                //                            Color.clear
-                //                        ))
-                //                }
-
-                // Stats or task summary
                 VStack(alignment: .leading, spacing: 16) {
 
-                    HStack {
+                    HStack(spacing: 0) {
                         StatItem(
                             title: "tasks", value: "\(user.tasks.count)",
                             userColor: Color(hex: user.profileColor)
                         )
-                        .padding(.horizontal)
-                        Spacer()
+
                         StatItem(
                             title: "completed",
                             value:
                                 "\(user.tasks.filter { $0.completion.isCompleted }.count)",
                             userColor: Color(hex: user.profileColor)
-                        ).padding(.horizontal)
-                        Spacer()
+                        )
+
                         StatItem(
                             title: "pending",
                             value:
                                 "\(user.tasks.filter { !$0.completion.isCompleted }.count)",
                             userColor: Color(hex: user.profileColor)
-                        ).padding(.horizontal)
+                        )
                     }
                     .padding(.vertical, 10)
                 }
@@ -171,13 +147,205 @@ struct SelfProfileView: View {
                 .padding(.horizontal)
 
                 Spacer(minLength: 40)
+
             }
         }
         .edgesIgnoringSafeArea(.top)
     }
 }
 
-// Helper view for stats items
+struct UserProfileView: View {
+    @Environment(\.modelContext) var modelContext
+    @Environment(\.colorScheme) var colorScheme
+
+    let userId: String
+    @State private var user: taskapeUser?
+    @State private var isLoading = true
+
+    var body: some View {
+        Group {
+            if isLoading {
+                ProgressView("Loading profile...")
+            } else if let user = user {
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // Header with colored background
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 9)
+                                .foregroundColor(Color(hex: user.profileColor))
+                                .frame(maxWidth: .infinity, maxHeight: 250)
+
+                            // Profile content on the colored background
+                            VStack(alignment: .center, spacing: 16) {
+                                // Profile picture
+                                if !user.profileImageURL.isEmpty {
+                                    CachedAsyncImage(
+                                        url: URL(string: user.profileImageURL)
+                                    ) { phase in
+                                        switch phase {
+                                        case .success(let image):
+                                            image
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fill)
+                                                .frame(width: 100, height: 100)
+                                                .clipShape(Circle())
+                                                .overlay(
+                                                    Circle()
+                                                        .stroke(
+                                                            Color(
+                                                                hex: user
+                                                                    .profileColor
+                                                            )
+                                                            .contrastingTextColor(
+                                                                in: colorScheme),
+                                                            lineWidth: 1
+                                                        )
+                                                        .shadow(radius: 3)
+                                                )
+                                        case .failure:
+                                            Image(
+                                                systemName: "person.circle.fill"
+                                            )
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: 100, height: 100)
+                                            .foregroundColor(
+                                                .white.opacity(0.8))
+                                        default:
+                                            ProgressView()
+                                                .frame(width: 100, height: 100)
+                                        }
+                                    }
+                                } else {
+                                    Image(systemName: "person.circle.fill")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 100, height: 100)
+                                        .foregroundColor(.white.opacity(0.8))
+                                }
+
+                                // Username with contrasting color
+                                Text("\(user.handle)")
+                                    .font(.pathwayBlack(25))
+                                    .foregroundColor(
+                                        Color(hex: user.profileColor)
+                                            .contrastingTextColor(
+                                                in: colorScheme))
+                            }
+                            .padding(.vertical, 30)
+                        }
+
+                        if user.bio != "" {
+                            ZStack {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("about me")
+                                        .font(.pathwayBold(18))
+                                        .foregroundColor(.white)
+                                        .padding(.top, 30)
+                                        .padding(.leading, 16)
+
+                                    Text(user.bio)
+                                        .font(.pathway(16))
+                                        .foregroundColor(.white.opacity(0.8))
+                                        .padding(.horizontal, 16)
+                                        .padding(.bottom, 20)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(
+                                    CustomRoundedRectangle(
+                                        topLeadingRadius: 0,
+                                        topTrailingRadius: 0,
+                                        bottomLeadingRadius: 16,
+                                        bottomTrailingRadius: 16
+                                    )
+                                    .fill(Color.clear)
+                                    .overlay(
+                                        CustomRoundedRectangle(
+                                            topLeadingRadius: 0,
+                                            topTrailingRadius: 0,
+                                            bottomLeadingRadius: 16,
+                                            bottomTrailingRadius: 16
+                                        )
+                                        .stroke(
+                                            Color(hex: user.profileColor),
+                                            lineWidth: 1
+                                        )
+                                        .blur(radius: 0.5)
+                                    )
+                                )
+                            }
+                            .offset(y: -16)
+                        }
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack(spacing: 0) {
+                                StatItem(
+                                    title: "tasks",
+                                    value: "\(user.tasks.count)",
+                                    userColor: Color(hex: user.profileColor)
+                                )
+
+                                StatItem(
+                                    title: "completed",
+                                    value:
+                                        "\(user.tasks.filter { $0.completion.isCompleted }.count)",
+                                    userColor: Color(hex: user.profileColor)
+                                )
+
+                                StatItem(
+                                    title: "pending",
+                                    value:
+                                        "\(user.tasks.filter { !$0.completion.isCompleted }.count)",
+                                    userColor: Color(hex: user.profileColor)
+                                )
+                            }
+                            .padding(.vertical, 10)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+
+
+                        Spacer(minLength: 40)
+                    }
+                }
+                .edgesIgnoringSafeArea(.top)
+            } else {
+                Text("User not found")
+                    .font(.pathway(16))
+                    .foregroundColor(.secondary)
+            }
+        }
+        .onAppear {
+            loadUser()
+        }
+    }
+
+    private func loadUser() {
+        // Check if this is the current user
+        if userId == UserManager.shared.currentUserId {
+            // Fetch the current user
+            let currentUser = UserManager.shared.getCurrentUser(
+                context: modelContext)
+            self.user = currentUser
+            self.isLoading = false
+        } else {
+            // Fetch another user
+            Task {
+                if let fetchedUser = await fetchUser(userId: userId) {
+                    await MainActor.run {
+                        // Create a temporary user without adding to main context
+                        self.user = fetchedUser
+                        self.isLoading = false
+                    }
+                } else {
+                    await MainActor.run {
+                        self.isLoading = false
+                    }
+                }
+            }
+        }
+    }
+}
+
 struct StatItem: View {
     var title: String
     var value: String
@@ -193,23 +361,25 @@ struct StatItem: View {
                 .font(.pathway(14))
                 .foregroundColor(.secondary)
         }
+        .frame(maxWidth: .infinity)
+        .multilineTextAlignment(.center)
     }
 }
 
-struct ProfileView: View {
-    @Query private var users: [taskapeUser]
-    @State var userID: Int = 0
-
-    var body: some View {
-        Group {
-            if userID == 0 {
-                SelfProfileView(user: users[userID])
-            } else {
-                Text("looking at a profile")
-            }
-        }
-    }
-}
+//struct ProfileView: View {
+//    @Query private var users: [taskapeUser]
+//    @State var userID: Int = 0
+//
+//    var body: some View {
+//        Group {
+//            if userID == 0 {
+//                SelfProfileView(user: users[userID])
+//            } else {
+//                UserProfileView(user: users[userID])
+//            }
+//        }
+//    }
+//}
 
 struct CustomRoundedRectangle: Shape {
     var topLeadingRadius: CGFloat
@@ -228,10 +398,8 @@ struct CustomRoundedRectangle: Shape {
         let bottomLeading = CGPoint(
             x: rect.minX, y: rect.maxY - bottomLeadingRadius)
 
-        // Start from top-left
         path.move(to: topLeading)
 
-        // Top edge (straight line if topLeadingRadius is 0)
         if topLeadingRadius > 0 {
             path.addArc(
                 center: CGPoint(
@@ -245,7 +413,6 @@ struct CustomRoundedRectangle: Shape {
             path.move(to: CGPoint(x: rect.minX, y: rect.minY))
         }
 
-        // Top-right corner
         if topTrailingRadius > 0 {
             path.addLine(
                 to: CGPoint(x: rect.maxX - topTrailingRadius, y: rect.minY))
@@ -308,7 +475,7 @@ struct CustomRoundedRectangle: Shape {
             id: UUID().uuidString,
             handle: "shevlfs",
             bio:
-                "i am shelfisi am shelfisi am shelfisi am shelfisi am shelfisi am shelfisi am shelfisi am shelfis",
+                "something",
             profileImage:
                 "https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg",
             profileColor: "#7A57FE"
@@ -318,7 +485,7 @@ struct CustomRoundedRectangle: Shape {
         try container.mainContext.save()
 
         return Text("lol").sheet(isPresented: .constant(true)) {
-            ProfileView(userID: 0).modelContainer(container)
+            UserProfileView(userId: user.id).modelContainer(container)
         }
     } catch {
         return Text("Failed to create preview: \(error.localizedDescription)")

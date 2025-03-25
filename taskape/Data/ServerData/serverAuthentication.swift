@@ -87,7 +87,12 @@ func phoneNumberIsVerified(
                 UserDefaults.standard.set(user_phone, forKey: "phone")
 
                 if response.profileExists {
-                    UserDefaults.standard.set(response.userId, forKey: "user_id")
+                    // For existing accounts, ensure we properly store and set the user ID
+                    let userId = String(response.userId)
+                    UserDefaults.standard.set(userId, forKey: "user_id")
+                    // Set the current user ID in UserManager
+                    UserManager.shared.setCurrentUser(userId: userId)
+                    print("Existing account detected, user ID: \(userId)")
                     return .userexists
                 }
                 return .success

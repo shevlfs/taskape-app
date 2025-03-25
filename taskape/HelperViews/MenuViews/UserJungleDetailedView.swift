@@ -17,7 +17,7 @@ class FlagManager: ObservableObject {
 struct UserJungleDetailedView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @Query var users: [taskapeUser]
+    @State private var currentUser: taskapeUser?
 
     // Observe the flag manager to detect changes
     @ObservedObject private var flagManager = FlagManager.shared
@@ -77,8 +77,8 @@ struct UserJungleDetailedView: View {
                 tabBarViewIndex: $tabBarViewIndex
             )
 
-            if let currentUser = users.first {
-                if currentUser.tasks.isEmpty {
+            if let user = currentUser {
+                if user.tasks.isEmpty {
                     VStack(spacing: 20) {
                         Spacer()
                         Text("No tasks here yet")
@@ -92,7 +92,7 @@ struct UserJungleDetailedView: View {
                     .padding()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    let tasks = filteredTasks(currentUser.tasks)
+                    let tasks = filteredTasks(user.tasks)
                         .sorted { $0.displayOrder < $1.displayOrder }
                     ScrollView {
                         LazyVStack(spacing: 12) {
@@ -137,19 +137,28 @@ struct UserJungleDetailedView: View {
         .navigationBarHidden(true)
         .onAppear {
             refreshTasks()
-            updateTabBarItems()
+            currentUser = UserManager.shared.getCurrentUser(context: modelContext)
+            if currentUser != nil {
+                updateTabBarItems()
+            }
         }
-        .onChange(of: users.first?.tasks.count) { _, _ in
-            updateTabBarItems()
+        .onChange(of: currentUser?.tasks.count) { _, _ in
+            if currentUser != nil {
+                updateTabBarItems()
+            }
         }
         // Observe the flag manager for changes
         .onChange(of: flagManager.flagChangeCounter) { _, _ in
-            updateTabBarItems()
+            if currentUser != nil {
+                updateTabBarItems()
+            }
         }
         .sheet(
             isPresented: $showNewTaskDetail,
             onDismiss: {
-                updateTabBarItems()  // Update tabs when sheet is dismissed
+                if currentUser != nil {
+                    updateTabBarItems()  // Update tabs when sheet is dismissed
+                }
             }
         ) {
             if let task = newTask {
@@ -185,20 +194,14 @@ struct UserJungleDetailedView: View {
         static func < (lhs: TaskFlag, rhs: TaskFlag) -> Bool {
             return lhs.flagName < rhs.flagName
         }
-
     }
 
     // Get all unique flag names from user's tasks
-    private func getUserFlags() -> [TaskFlag] {
-        guard let user = users.first else { return [] }
-
+    private func getUserFlags(_ user: taskapeUser) -> [TaskFlag] {
         var flagNames: Set<TaskFlag> = []
         for task in user.tasks {
-            if let flagName = task.flagName, task.flagStatus {
-                flagNames
-                    .insert(
-                        TaskFlag(flagname: flagName, flagcolor: task.flagColor!)
-                    )
+            if let flagName = task.flagName, task.flagStatus, let flagColor = task.flagColor {
+                flagNames.insert(TaskFlag(flagname: flagName, flagcolor: flagColor))
             }
         }
         return Array(flagNames).sorted()
@@ -211,10 +214,11 @@ struct UserJungleDetailedView: View {
             tabBarItem(title: "done"),
         ]
 
-        let flags = getUserFlags()
-        for flag in flags {
-            items
-                .append(tabBarItem(title: flag.flagName, color: flag.flagColor))
+        if let user = currentUser {
+            let flags = getUserFlags(user)
+            for flag in flags {
+                items.append(tabBarItem(title: flag.flagName, color: flag.flagColor))
+            }
         }
 
         tabBarItems = items
@@ -276,7 +280,9 @@ struct UserJungleDetailedView: View {
     }
 
     private func refreshTasks() {
-        let userId = UserDefaults.standard.string(forKey: "user_id") ?? ""
+        let userId = UserManager.shared.currentUserId
+        guard !userId.isEmpty else { return }
+
         isRefreshing = true
 
         Task {
@@ -287,27 +293,30 @@ struct UserJungleDetailedView: View {
                 }
                 return
             }
+
             syncUserTasks(
-                userId: userId, remoteTasks: remoteTasks,
-                modelContext: modelContext)
+                userId: userId,
+                remoteTasks: remoteTasks,
+                modelContext: modelContext
+            )
+
             await MainActor.run {
                 isRefreshing = false
-                updateTabBarItems()
+                currentUser = UserManager.shared.getCurrentUser(context: modelContext)
+                if currentUser != nil {
+                    updateTabBarItems()
+                }
             }
         }
     }
 
     private func createNewTask() {
-        guard let currentUser = users.first else {
-            print("No user found to associate task with")
-            return
-        }
+        guard let user = currentUser else { return }
 
-        let userId =
-            UserDefaults.standard.string(forKey: "user_id") ?? currentUser.id
+        let userId = UserManager.shared.currentUserId
 
         // Calculate the next display order value - place new task at the top
-        let maxOrder = currentUser.tasks.map { $0.displayOrder }.max() ?? 0
+        let maxOrder = user.tasks.map { $0.displayOrder }.max() ?? 0
         let nextOrder = maxOrder + 1
 
         let task = taskapeTask(
@@ -315,13 +324,13 @@ struct UserJungleDetailedView: View {
             user_id: userId,
             name: "",
             taskDescription: "",
-            author: currentUser.handle,
+            author: user.handle,
             privacy: PrivacySettings(level: .everyone),
             displayOrder: nextOrder
         )
 
         modelContext.insert(task)
-        currentUser.tasks.insert(task, at: 0)
+        user.tasks.insert(task, at: 0)
 
         newTask = task
         saveNewTask()
@@ -345,7 +354,9 @@ struct UserJungleDetailedView: View {
     private func saveTaskChanges(task: taskapeTask) {
         do {
             try modelContext.save()
-            updateTabBarItems()  // Update tabs in case flag changed
+            if currentUser != nil {
+                updateTabBarItems()  // Update tabs in case flag changed
+            }
 
             Task {
                 await syncTaskChanges(task: task)

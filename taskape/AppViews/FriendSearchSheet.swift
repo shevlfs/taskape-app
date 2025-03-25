@@ -10,7 +10,7 @@ import SwiftData
 import SwiftUI
 
 struct FriendSearchSheet: View {
-    @Query private var currentUser: [taskapeUser]
+    @Environment(\.modelContext) private var modelContext
 
     @State private var searchQuery: String = ""
     @State private var searchResults: [UserSearchResult] = []
@@ -22,6 +22,9 @@ struct FriendSearchSheet: View {
 
     // ObservedObject to manage friend operations
     @StateObject private var friendManager = FriendManager.shared
+
+    // Current user ID for comparison
+    private let currentUserId = UserManager.shared.currentUserId
 
     // This will track which users have pending friend request operations
     @State private var pendingOperations: Set<String> = []
@@ -72,7 +75,7 @@ struct FriendSearchSheet: View {
                 ProgressView()
                     .padding()
             }
-            
+
             // Results list
             ScrollView {
                 LazyVStack(spacing: 12) {
@@ -84,7 +87,7 @@ struct FriendSearchSheet: View {
                                 user.id),
                             hasReceivedRequest:
                                 friendManager.hasPendingRequestFrom(user.id),
-                            isCurrentUser: currentUser.first?.id == user.id,
+                            isCurrentUser: user.id == currentUserId,
                             isPending: pendingOperations.contains(user.id),
                             onSendRequest: {
                                 sendFriendRequest(to: user)
@@ -237,9 +240,10 @@ extension View {
     }
 }
 
-
 // User search result row component
 struct UserSearchResultRow: View {
+    @Environment(\.modelContext) private var modelContext
+
     let user: UserSearchResult
     let isFriend: Bool
     let hasSentRequest: Bool
@@ -247,6 +251,10 @@ struct UserSearchResultRow: View {
     let isCurrentUser: Bool
     let isPending: Bool
     let onSendRequest: () -> Void
+
+    @State private var showDetail = false
+    @State private var isLoadingUserProfile = false
+    @State private var userProfile: taskapeUser? = nil
 
     // Add state for tracking accept operations
     @State private var isAccepting: Bool = false
@@ -328,7 +336,49 @@ struct UserSearchResultRow: View {
         .background(
             RoundedRectangle(cornerRadius: 25)
                 .fill(Color(UIColor.secondarySystemBackground))
+                .overlay(
+                    isLoadingUserProfile
+                        ? AnyView(ProgressView().padding())
+                        : AnyView(EmptyView())
+                )
         )
+        .onTapGesture {
+            loadUserProfile()
+        }
+        .sheet(isPresented: $showDetail) {
+            if userProfile != nil {
+                UserProfileView(userId: user.id).modelContext(modelContext)
+            }
+        }
+    }
+
+    // Function to load the user profile
+    private func loadUserProfile() {
+        guard !isLoadingUserProfile else { return }
+
+        isLoadingUserProfile = true
+
+        Task {
+            if let loadedUser = await fetchUser(userId: user.id) {
+                await MainActor.run {
+                    // We need to create a temporary transient model context
+                    // This is a key improvement - we're not affecting the app's main ModelContext
+                    let tempContext = ModelContext(
+                        ModelContainer.shared.mainContext.container)
+                    tempContext.insert(loadedUser)
+
+                    // Set the user profile
+                    userProfile = loadedUser
+
+                    isLoadingUserProfile = false
+                    showDetail = true
+                }
+            } else {
+                await MainActor.run {
+                    isLoadingUserProfile = false
+                }
+            }
+        }
     }
 
     // Function to accept a friend request

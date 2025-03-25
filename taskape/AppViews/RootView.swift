@@ -23,26 +23,45 @@ struct RootView: View {
         } else {
             print("dotenv is gone")
         }
+
         let token = UserDefaults.standard.string(forKey: "authToken")
         if token != nil {
             if await validateToken(token: token!) {
                 print("token validate success")
                 phoneExistsInDatabase = true
+
+                // Set the current user ID in UserManager
+                if let userId = UserDefaults.standard.string(forKey: "user_id") {
+                    UserManager.shared.setCurrentUser(userId: userId)
+                }
+
                 return true
             }
+
             print("validate token failed")
-            let refreshToken = UserDefaults.standard.string(
-                forKey: "refreshToken")!
-            let phone = UserDefaults.standard.string(forKey: "phone")!
-            if await refreshTokenRequest(
-                token: token!, refreshToken: refreshToken, phone: phone)
-            {
-                print("refresh success")
-                phoneExistsInDatabase = true
-                return true
+
+            if let refreshToken = UserDefaults.standard.string(forKey: "refreshToken"),
+               let phone = UserDefaults.standard.string(forKey: "phone") {
+
+                if await refreshTokenRequest(
+                    token: token!, refreshToken: refreshToken, phone: phone)
+                {
+                    print("refresh success")
+                    phoneExistsInDatabase = true
+
+                    // Set the current user ID in UserManager after refresh
+                    if let userId = UserDefaults.standard.string(forKey: "user_id") {
+                        UserManager.shared.setCurrentUser(userId: userId)
+                    }
+
+                    return true
+                }
+                print("refresh failed")
             }
-            print("refresh failed")
         }
+
+        // Clear the UserManager current user ID when token validation fails
+        UserManager.shared.setCurrentUser(userId: "")
         return false
     }
 

@@ -11,7 +11,7 @@ import SwiftUI
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var appState: AppStateManager
-    @Query var users: [taskapeUser]
+    @State private var currentUser: taskapeUser?
     @State private var showLogoutConfirmation = false
 
     var body: some View {
@@ -22,7 +22,7 @@ struct SettingsView: View {
 
             Spacer()
 
-            if let user = users.first {
+            if let user = currentUser {
                 // User profile section
                 VStack(alignment: .center, spacing: 12) {
                     Text("Logged in as")
@@ -68,11 +68,18 @@ struct SettingsView: View {
                 Text("Are you sure you want to logout from your account?")
             }
         }
+        .onAppear {
+            currentUser = UserManager.shared.getCurrentUser(context: modelContext)
+        }
     }
 
     func performLogout() {
         // Clear user data from SwiftData
         do {
+            // Clear the UserManager current user
+            UserManager.shared.setCurrentUser(userId: "")
+
+            // Clear all data from SwiftData
             let userDescriptor = FetchDescriptor<taskapeUser>()
             let taskDescriptor = FetchDescriptor<taskapeTask>()
 
