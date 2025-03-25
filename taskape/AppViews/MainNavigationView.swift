@@ -9,7 +9,7 @@ import CachedAsyncImage
 import SwiftData
 import SwiftUI
 
-struct selfProfileView: View {
+struct userGreetingCard: View {
     @State var user: taskapeUser?
 
     var body: some View {
@@ -72,7 +72,7 @@ struct MainNavigationView: View {
     var body: some View {
         NavigationStack(path: $mainNavigationPath) {
             VStack {
-                selfProfileView(
+                userGreetingCard(
                     user: currentUser.first
                 )
                 TabBarView(

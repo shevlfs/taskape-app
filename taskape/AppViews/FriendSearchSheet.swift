@@ -263,7 +263,7 @@ struct UserSearchResultRow: View {
             // User info
             VStack(alignment: .leading, spacing: 4) {
                 Text("@\(user.handle)")
-                    .font(.pathwayBold(16))
+                    .font(.pathwayBlack(16))
 
                 // Status text
                 if isCurrentUser {
