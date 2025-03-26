@@ -1,10 +1,3 @@
-//
-//  FriendSearchSheet.swift
-//  taskape
-//
-//  Created by shevlfs on 3/24/25.
-//””
-
 import CachedAsyncImage
 import SwiftData
 import SwiftUI
@@ -32,9 +25,9 @@ struct FriendSearchView: View {
     @State private var pendingOperations: Set<String> = []
 
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             // Header
-            HStack{
+            HStack {
                 Button(action: {
                     dismiss()
                 }) {
@@ -51,7 +44,7 @@ struct FriendSearchView: View {
                 Spacer()
             }.padding(.horizontal, 16)
                 .padding(.top, 12)
-                .padding(.bottom, 25)
+                .padding(.bottom, 20)
 
             // Search field
             SearchField(text: $searchQuery)
@@ -62,73 +55,126 @@ struct FriendSearchView: View {
 
                     // Create a new search after a delay
                     searchTask = Task {
-                        // Only search if query is at least 3 characters
-                        if newValue.count >= 3 {
+                        if newValue.isEmpty {
+                            // Fetch all users when query is empty
+                            await fetchAllUsers()
+                        } else if newValue.count >= 3 {
+                            // Only search if query is at least 3 characters
                             await performSearch()
-                        } else if newValue.isEmpty {
-                            // Clear results when query is empty
-                            searchResults = []
                         }
                     }
                 }
+                .padding(.bottom, 10)
 
-            // Status message (error or empty state)
-            if let error = errorMessage {
-                Text(error)
-                    .font(.pathway(16))
-                    .foregroundColor(.red)
-                    .padding()
-            } else if searchResults.isEmpty && !isSearching
-                && !searchQuery.isEmpty
-            {
-                Text("no users found matching '\(searchQuery)'")
-                    .font(.pathway(16))
-                    .foregroundColor(.secondary)
-                    .padding()
-            }
-
-            // Loading indicator
-            if isSearching {
-                ProgressView()
-                    .padding()
-            }
-
-            // Results list
             ScrollView {
-                LazyVStack(spacing: 12) {
-                    ForEach(searchResults, id: \.id) { user in
-                        UserSearchResultRow(
-                            user: user,
-                            isFriend: friendManager.isFriend(user.id),
-                            hasSentRequest: friendManager.hasPendingRequestTo(
-                                user.id),
-                            hasReceivedRequest:
-                                friendManager.hasPendingRequestFrom(user.id),
-                            isCurrentUser: user.id == currentUserId,
-                            isPending: pendingOperations.contains(user.id),
-                            onSendRequest: {
-                                sendFriendRequest(to: user)
-                            }
-                        )
+                // Incoming friend requests section
+                if !friendManager.incomingRequests.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("friend requests")
+                            .font(.pathwayBold(18))
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+
+                        ForEach(friendManager.incomingRequests, id: \.id) { request in
+                            FriendRequestRow(request: request)
+                                .padding(.horizontal)
+                        }
+
+                        Divider()
+                            .padding(.vertical, 10)
                     }
                 }
-                .padding(.horizontal)
-            }.padding(.top, 20)
 
-            Spacer()
+                // Status message (error or empty state)
+                if let error = errorMessage {
+                    Text(error)
+                        .font(.pathway(16))
+                        .foregroundColor(.red)
+                        .padding()
+                } else if searchResults.isEmpty && !isSearching && !searchQuery.isEmpty {
+                    Text("no users found matching '\(searchQuery)'")
+                        .font(.pathway(16))
+                        .foregroundColor(.secondary)
+                        .padding()
+                }
+
+                // Loading indicator
+                if isSearching {
+                    ProgressView()
+                        .padding()
+                }
+
+                // All users section
+                if !searchResults.isEmpty {
+                    VStack(alignment: .leading) {
+                        Text(searchQuery.isEmpty ? "all users" : "search results")
+                            .font(.pathwayBold(18))
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+
+                        LazyVStack(spacing: 12) {
+                            ForEach(searchResults, id: \.id) { user in
+                                UserSearchResultRow(
+                                    user: user,
+                                    isFriend: friendManager.isFriend(user.id),
+                                    hasSentRequest: friendManager.hasPendingRequestTo(
+                                        user.id),
+                                    hasReceivedRequest:
+                                        friendManager.hasPendingRequestFrom(user.id),
+                                    isCurrentUser: user.id == currentUserId,
+                                    isPending: pendingOperations.contains(user.id),
+                                    onSendRequest: {
+                                        sendFriendRequest(to: user)
+                                    }
+                                )
+                                .padding(.horizontal)
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(.top, 10)
         }
         .onAppear {
-            // Load friend data when sheet appears
+            // Load friend data and fetch all users when view appears
             Task {
                 await friendManager.refreshFriendData()
+                await fetchAllUsers()
             }
         }
     }
 
-    // Function to search for users
+    // Function to fetch all users (empty search query)
+    private func fetchAllUsers() async {
+        await MainActor.run {
+            isSearching = true
+            errorMessage = nil
+        }
+
+        do {
+            if let results = await searchUsers(query: "") {
+                await MainActor.run {
+                    searchResults = results
+                    isSearching = false
+                }
+            } else {
+                await MainActor.run {
+                    errorMessage = "couldn't load users"
+                    isSearching = false
+                }
+            }
+        } catch {
+            await MainActor.run {
+                errorMessage = "Error: \(error.localizedDescription)"
+                isSearching = false
+            }
+        }
+    }
+
+    // Function to search for users with a specific query
     private func performSearch() async {
         guard !searchQuery.isEmpty else {
-            searchResults = []
+            await fetchAllUsers()
             return
         }
 
@@ -170,6 +216,113 @@ struct FriendSearchView: View {
                 if !success {
                     errorMessage =
                         "failed to send friend request to @\(user.handle)"
+                }
+            }
+        }
+    }
+}
+
+// Friend Request Row Component
+struct FriendRequestRow: View {
+    let request: FriendRequest
+    @State private var isAccepting: Bool = false
+    @State private var isRejecting: Bool = false
+    @ObservedObject private var friendManager = FriendManager.shared
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // We'll fetch the user details from the sender handle
+            VStack(alignment: .leading, spacing: 4) {
+                Text("@\(request.sender_handle)")
+                    .font(.pathwayBlack(16))
+
+                Text("wants to be your friend")
+                    .font(.pathway(14))
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            // Accept button
+            Button(action: {
+                acceptFriendRequest()
+            }) {
+                if isAccepting {
+                    ProgressView()
+                        .frame(width: 24, height: 24)
+                } else {
+                    Text("accept")
+                        .font(.pathway(14))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(Color.green)
+                        .cornerRadius(16)
+                }
+            }
+            .disabled(isAccepting || isRejecting)
+
+            // Reject button
+            Button(action: {
+                rejectFriendRequest()
+            }) {
+                if isRejecting {
+                    ProgressView()
+                        .frame(width: 24, height: 24)
+                } else {
+                    Text("reject")
+                        .font(.pathway(14))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(Color.red)
+                        .cornerRadius(16)
+                }
+            }
+            .disabled(isAccepting || isRejecting)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 25)
+                .fill(Color(UIColor.secondarySystemBackground))
+        )
+    }
+
+    // Function to accept friend request
+    private func acceptFriendRequest() {
+        isAccepting = true
+
+        Task {
+            let success = await friendManager.acceptFriendRequest(request.id)
+
+            await MainActor.run {
+                isAccepting = false
+
+                if success {
+                    // Request is now accepted and will disappear from the list
+                    Task {
+                        await friendManager.refreshFriendData()
+                    }
+                }
+            }
+        }
+    }
+
+    // Function to reject friend request
+    private func rejectFriendRequest() {
+        isRejecting = true
+
+        Task {
+            let success = await friendManager.rejectFriendRequest(request.id)
+
+            await MainActor.run {
+                isRejecting = false
+
+                if success {
+                    // Request is now rejected and will disappear from the list
+                    Task {
+                        await friendManager.refreshFriendData()
+                    }
                 }
             }
         }

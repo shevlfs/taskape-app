@@ -1,10 +1,3 @@
-//
-//  SwiftUIView.swift
-//  taskape
-//
-//  Created by shevlfs on 3/5/25.
-//
-
 import SwiftData
 import SwiftUI
 
@@ -14,6 +7,12 @@ struct MainView: View {
     @Namespace var mainNamespace
 
     @State var showFriendInvitationSheet: Bool = false
+
+    // Add ObservedObject for friend manager to get request counts
+    @ObservedObject private var friendManager = FriendManager.shared
+
+    // State to track if we're currently fetching friend data
+    @State private var isLoadingFriendData: Bool = false
 
     @Binding var navigationPath: NavigationPath
 
@@ -56,7 +55,7 @@ struct MainView: View {
                             }
                             .buttonStyle(PlainButtonStyle())
 
-                            // Right button - "new friend?"
+                            // Right button - "new friend?" with notification badge
                             Button(action: {
                                 navigationPath.append("friendSearch")
                             }) {
@@ -69,19 +68,40 @@ struct MainView: View {
                                     )
 
                                     VStack(alignment: .center, spacing: 6) {
+                                        // Add notification badge to image if we have friend requests
+                                        ZStack {
+                                            Image(systemName: "plus.circle")
+                                                .font(
+                                                    .system(
+                                                        size: 45,
+                                                        weight: .medium)
+                                                )
+                                                .foregroundColor(.primary)
 
-                                        Image(systemName: "plus.circle")
-                                            .font(
-                                                .system(
-                                                    size: 45, weight: .medium)
-                                            )
-                                            .foregroundColor(.primary)
+                                            // Show notification badge if we have friend requests
+                                        }
 
                                         Text("new\nfriend?")
                                             .font(.pathwaySemiBold(19))
                                             .foregroundColor(.primary)
                                             .multilineTextAlignment(.center)
                                     }
+
+
+                                    if friendManager.incomingRequests
+                                        .count > 0
+                                    {
+                                        Text(
+                                            "\(friendManager.incomingRequests.count)"
+                                        )
+                                        .font(.pathwayBoldCondensed(12))
+                                        .foregroundColor(.white)
+                                        .padding(10)
+                                        .background(Color.red)
+                                        .clipShape(Circle())
+                                        .offset(x: 30, y: -50)
+                                    }
+
                                 }
                             }.matchedTransitionSource(
                                 id: "friendSearch", in: mainNamespace
@@ -92,7 +112,15 @@ struct MainView: View {
                         .frame(maxWidth: .infinity)
                     }
                 } else {
-                    ProgressView("Loading your jungle...")
+                    VStack(alignment: .center){
+                        Spacer()
+                        HStack{
+                            Spacer()
+                            ProgressView("loading...").font(.pathwayBold(20))
+                            Spacer()
+                        }
+                        Spacer()
+                    }
                 }
             }.navigationDestination(
                 for: String.self,
@@ -106,10 +134,12 @@ struct MainView: View {
                                 .zoom(sourceID: "jungleCard", in: mainNamespace)
                             )
                     case "friendSearch":
-                        FriendSearchView().toolbar(.hidden).modelContext(self.modelContext)
-                            .navigationTransition(
-                                .zoom(sourceID: "friendSearch", in: mainNamespace)
-                            )
+                        FriendSearchView().toolbar(.hidden).modelContext(
+                            self.modelContext
+                        )
+                        .navigationTransition(
+                            .zoom(sourceID: "friendSearch", in: mainNamespace)
+                        )
                     default:
                         EmptyView()
                     }
@@ -118,6 +148,17 @@ struct MainView: View {
             .onAppear {
                 currentUser = UserManager.shared.getCurrentUser(
                     context: modelContext)
+
+                // Fetch friend data when view appears
+                if !isLoadingFriendData {
+                    isLoadingFriendData = true
+                    Task {
+                        await friendManager.refreshFriendData()
+                        await MainActor.run {
+                            isLoadingFriendData = false
+                        }
+                    }
+                }
             }
         }
     }

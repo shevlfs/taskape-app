@@ -1,10 +1,3 @@
-//
-//  FriendManager.swift
-//  taskape
-//
-//  Created by shevlfs on 3/24/25.
-//
-
 import Foundation
 import SwiftData
 import SwiftUI
@@ -87,5 +80,10 @@ class FriendManager: ObservableObject {
 
     func hasPendingRequestFrom(_ userId: String) -> Bool {
         return incomingRequests.contains { $0.sender_id == userId }
+    }
+
+    // Returns the total count of incoming friend requests
+    var incomingRequestCount: Int {
+        return incomingRequests.count
     }
 }
