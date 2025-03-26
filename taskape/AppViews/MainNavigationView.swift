@@ -84,7 +84,8 @@ struct MainNavigationView: View {
 
                 switch selectedTabIndex {
                 case 0:
-                    SettingsView().modelContext(modelContext).environmentObject(appState)
+                    SettingsView().modelContext(modelContext).environmentObject(
+                        appState)
                 case 1:
                     MainView(navigationPath: $mainNavigationPath)
                         .modelContext(modelContext)
@@ -95,7 +96,20 @@ struct MainNavigationView: View {
             }
         }
         .onAppear {
-            currentUser = UserManager.shared.getCurrentUser(context: modelContext)
+            currentUser = UserManager.shared.getCurrentUser(
+                context: modelContext)
+            Task {
+                if let remoteTasks = await UserManager.shared
+                    .fetchCurrentUserTasks()
+                {
+                    await MainActor.run {
+                        syncUserTasks(
+                            userId: UserManager.shared.currentUserId,
+                            remoteTasks: remoteTasks,
+                            modelContext: modelContext)
+                    }
+                }
+            }
         }
     }
 }

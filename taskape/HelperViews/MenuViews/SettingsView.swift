@@ -25,11 +25,11 @@ struct SettingsView: View {
             if let user = currentUser {
                 // User profile section
                 VStack(alignment: .center, spacing: 12) {
-                    Text("Logged in as")
+                    Text("logged in as")
                         .font(.pathway(16))
                         .foregroundColor(.secondary)
 
-                    Text("@\(user.handle)")
+                    Text("\(user.handle)")
                         .font(.pathwayBlack(22))
                 }
                 .padding()
@@ -69,7 +69,8 @@ struct SettingsView: View {
             }
         }
         .onAppear {
-            currentUser = UserManager.shared.getCurrentUser(context: modelContext)
+            currentUser = UserManager.shared.getCurrentUser(
+                context: modelContext)
         }
     }
 

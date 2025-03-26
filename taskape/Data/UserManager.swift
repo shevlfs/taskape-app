@@ -1,10 +1,3 @@
-//
-//  UserManager.swift
-//  taskape
-//
-//  Created by shevlfs on 3/26/25.
-//
-
 import Foundation
 import SwiftData
 import SwiftUI
@@ -32,6 +25,31 @@ class UserManager: ObservableObject {
             print("Error fetching current user: \(error)")
             return nil
         }
+    }
+
+    // Fetch tasks for the current user
+    func getCurrentUserTasks(context: ModelContext) -> [taskapeTask] {
+        guard !currentUserId.isEmpty else { return [] }
+
+        let predicate = #Predicate<taskapeTask> {
+            task in task.user_id == currentUserId
+        }
+
+        let descriptor = FetchDescriptor<taskapeTask>(predicate: predicate)
+
+        do {
+            let tasks = try context.fetch(descriptor)
+            return tasks
+        } catch {
+            print("Error fetching tasks for current user: \(error)")
+            return []
+        }
+    }
+
+    // Fetch tasks from server and return them - to be called from main thread context
+    func fetchCurrentUserTasks() async -> [taskapeTask]? {
+        guard !currentUserId.isEmpty else { return nil }
+        return await fetchTasks(userId: currentUserId)
     }
 
     // Check if a user is the current user

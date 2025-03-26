@@ -9,150 +9,150 @@ import CachedAsyncImage
 import SwiftData
 import SwiftUI
 
-struct SelfProfileView: View {
-    @Environment(\.colorScheme) var colorScheme
-    @State var user: taskapeUser
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                // Header with colored background
-                ZStack {
-                    RoundedRectangle(cornerRadius: 9)
-                        .foregroundColor(Color(hex: user.profileColor))
-                        .frame(maxWidth: .infinity, maxHeight: 250)
-
-                    VStack(alignment: .center, spacing: 16) {
-                        if !user.profileImageURL.isEmpty {
-                            CachedAsyncImage(
-                                url: URL(string: user.profileImageURL)
-                            ) { phase in
-                                switch phase {
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(width: 100, height: 100)
-                                        .clipShape(Circle())
-                                        .overlay(
-                                            Circle()
-                                                .stroke(
-                                                    Color(
-                                                        hex: user
-                                                            .profileColor
-                                                    )
-                                                    .contrastingTextColor(
-                                                        in: colorScheme),
-                                                    lineWidth: 1
-                                                )
-                                                .shadow(radius: 3)
-                                        )
-                                case .failure:
-                                    Image(systemName: "person.circle.fill")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(width: 100, height: 100)
-                                        .foregroundColor(.white.opacity(0.8))
-                                default:
-                                    ProgressView()
-                                        .frame(width: 100, height: 100)
-                                }
-                            }
-                        } else {
-                            Image(systemName: "person.circle.fill")
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 100, height: 100)
-                                .foregroundColor(.white.opacity(0.8))
-                        }
-
-                        // Username with contrasting color
-                        Text("\(user.handle)")
-                            .font(.pathwayBlack(25))
-                            .foregroundColor(
-                                Color(hex: user.profileColor)
-                                    .contrastingTextColor(in: colorScheme))
-                    }
-                    .padding(.vertical, 30)
-                }
-                if user.bio != "" {
-                    ZStack {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("about me")
-                                .font(.pathwayBold(18))
-                                .foregroundColor(.white)
-                                .padding(.top, 30)
-                                .padding(.leading, 16)
-
-                            Text(
-                                user.bio
-                            )
-                            .font(.pathway(16))
-                            .foregroundColor(.white.opacity(0.8))
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, 20)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(
-                            // Use a shape with only bottom corners rounded
-                            CustomRoundedRectangle(
-                                topLeadingRadius: 0, topTrailingRadius: 0,
-                                bottomLeadingRadius: 16,
-                                bottomTrailingRadius: 16
-                            )
-                            .fill(Color.clear)
-                            .overlay(
-                                // Very subtle inner glow instead of a distinct outline
-                                CustomRoundedRectangle(
-                                    topLeadingRadius: 0, topTrailingRadius: 0,
-                                    bottomLeadingRadius: 16,
-                                    bottomTrailingRadius: 16
-                                )
-                                .stroke(
-                                    Color(hex: user.profileColor),
-                                    lineWidth: 1
-                                )
-                                .blur(radius: 0.5)
-                            )
-                        )
-                    }
-                    .offset(y: -16)
-                }
-
-                VStack(alignment: .leading, spacing: 16) {
-
-                    HStack(spacing: 0) {
-                        StatItem(
-                            title: "tasks", value: "\(user.tasks.count)",
-                            userColor: Color(hex: user.profileColor)
-                        )
-
-                        StatItem(
-                            title: "completed",
-                            value:
-                                "\(user.tasks.filter { $0.completion.isCompleted }.count)",
-                            userColor: Color(hex: user.profileColor)
-                        )
-
-                        StatItem(
-                            title: "pending",
-                            value:
-                                "\(user.tasks.filter { !$0.completion.isCompleted }.count)",
-                            userColor: Color(hex: user.profileColor)
-                        )
-                    }
-                    .padding(.vertical, 10)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
-
-                Spacer(minLength: 40)
-
-            }
-        }
-        .edgesIgnoringSafeArea(.top)
-    }
-}
+//struct SelfProfileView: View {
+//    @Environment(\.colorScheme) var colorScheme
+//    @State var user: taskapeUser
+//
+//    var body: some View {
+//        ScrollView {
+//            VStack(spacing: 0) {
+//                // Header with colored background
+//                ZStack {
+//                    RoundedRectangle(cornerRadius: 9)
+//                        .foregroundColor(Color(hex: user.profileColor))
+//                        .frame(maxWidth: .infinity, maxHeight: 250)
+//
+//                    VStack(alignment: .center, spacing: 16) {
+//                        if !user.profileImageURL.isEmpty {
+//                            CachedAsyncImage(
+//                                url: URL(string: user.profileImageURL)
+//                            ) { phase in
+//                                switch phase {
+//                                case .success(let image):
+//                                    image
+//                                        .resizable()
+//                                        .aspectRatio(contentMode: .fill)
+//                                        .frame(width: 100, height: 100)
+//                                        .clipShape(Circle())
+//                                        .overlay(
+//                                            Circle()
+//                                                .stroke(
+//                                                    Color(
+//                                                        hex: user
+//                                                            .profileColor
+//                                                    )
+//                                                    .contrastingTextColor(
+//                                                        in: colorScheme),
+//                                                    lineWidth: 1
+//                                                )
+//                                                .shadow(radius: 3)
+//                                        )
+//                                case .failure:
+//                                    Image(systemName: "person.circle.fill")
+//                                        .resizable()
+//                                        .aspectRatio(contentMode: .fill)
+//                                        .frame(width: 100, height: 100)
+//                                        .foregroundColor(.white.opacity(0.8))
+//                                default:
+//                                    ProgressView()
+//                                        .frame(width: 100, height: 100)
+//                                }
+//                            }
+//                        } else {
+//                            Image(systemName: "person.circle.fill")
+//                                .resizable()
+//                                .aspectRatio(contentMode: .fill)
+//                                .frame(width: 100, height: 100)
+//                                .foregroundColor(.white.opacity(0.8))
+//                        }
+//
+//                        // Username with contrasting color
+//                        Text("\(user.handle)")
+//                            .font(.pathwayBlack(25))
+//                            .foregroundColor(
+//                                Color(hex: user.profileColor)
+//                                    .contrastingTextColor(in: colorScheme))
+//                    }
+//                    .padding(.vertical, 30)
+//                }
+//                if user.bio != "" {
+//                    ZStack {
+//                        VStack(alignment: .leading, spacing: 8) {
+//                            Text("about me")
+//                                .font(.pathwayBold(18))
+//                                .foregroundColor(.white)
+//                                .padding(.top, 30)
+//                                .padding(.leading, 16)
+//
+//                            Text(
+//                                user.bio
+//                            )
+//                            .font(.pathway(16))
+//                            .foregroundColor(.white.opacity(0.8))
+//                            .padding(.horizontal, 16)
+//                            .padding(.bottom, 20)
+//                        }
+//                        .frame(maxWidth: .infinity, alignment: .leading)
+//                        .background(
+//                            // Use a shape with only bottom corners rounded
+//                            CustomRoundedRectangle(
+//                                topLeadingRadius: 0, topTrailingRadius: 0,
+//                                bottomLeadingRadius: 16,
+//                                bottomTrailingRadius: 16
+//                            )
+//                            .fill(Color.clear)
+//                            .overlay(
+//                                // Very subtle inner glow instead of a distinct outline
+//                                CustomRoundedRectangle(
+//                                    topLeadingRadius: 0, topTrailingRadius: 0,
+//                                    bottomLeadingRadius: 16,
+//                                    bottomTrailingRadius: 16
+//                                )
+//                                .stroke(
+//                                    Color(hex: user.profileColor),
+//                                    lineWidth: 1
+//                                )
+//                                .blur(radius: 0.5)
+//                            )
+//                        )
+//                    }
+//                    .offset(y: -16)
+//                }
+//
+//                VStack(alignment: .leading, spacing: 16) {
+//
+//                    HStack(spacing: 0) {
+//                        StatItem(
+//                            title: "tasks", value: "\(user.tasks.count)",
+//                            userColor: Color(hex: user.profileColor)
+//                        )
+//
+//                        StatItem(
+//                            title: "completed",
+//                            value:
+//                                "\(user.tasks.filter { $0.completion.isCompleted }.count)",
+//                            userColor: Color(hex: user.profileColor)
+//                        )
+//
+//                        StatItem(
+//                            title: "pending",
+//                            value:
+//                                "\(user.tasks.filter { !$0.completion.isCompleted }.count)",
+//                            userColor: Color(hex: user.profileColor)
+//                        )
+//                    }
+//                    .padding(.vertical, 10)
+//                }
+//                .frame(maxWidth: .infinity, alignment: .leading)
+//                .padding(.horizontal)
+//
+//                Spacer(minLength: 40)
+//
+//            }
+//        }
+//        .edgesIgnoringSafeArea(.top)
+//    }
+//}
 
 struct UserProfileView: View {
     @Environment(\.modelContext) var modelContext
@@ -298,12 +298,10 @@ struct UserProfileView: View {
                                     userColor: Color(hex: user.profileColor)
                                 )
                             }
-                            .padding(.vertical, 10)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal)
 
-
+                        }.padding(.vertical, user.bio == "" ? 25 : 10)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
                         Spacer(minLength: 40)
                     }
                 }

@@ -36,9 +36,10 @@ struct AuthenticationView: View {
     @Namespace private var namespace
 
     private func createUser() {
-        print("Creating new user: \(userHandle)")
+        if userHandle[userHandle.startIndex] == "@" {
+            userHandle.remove(at: userHandle.startIndex)
+        }
 
-        // Clean up any existing users first
         do {
             let descriptor = FetchDescriptor<taskapeUser>()
             let existingUsers = try modelContext.fetch(descriptor)
@@ -55,8 +56,6 @@ struct AuthenticationView: View {
 
         // Get the user ID from UserDefaults
         let userId = UserDefaults.standard.string(forKey: "user_id") ?? user_id
-
-        // Create the new user
         let newUser = taskapeUser(
             id: userId,
             handle: userHandle,

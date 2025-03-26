@@ -34,6 +34,7 @@ func fetchUser(userId: String) async -> taskapeUser? {
                     profileImage: response.profile_picture,
                     profileColor: response.color
                 )
+                print("user handle:", user.handle)
 
                 // Store friend data
                 if let friends = response.friends, !friends.isEmpty {
