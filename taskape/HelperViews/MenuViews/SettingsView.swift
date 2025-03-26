@@ -16,11 +16,8 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            Text("settings")
-                .font(.pathwayBold(24))
-                .padding(.top)
 
-            Spacer()
+
 
             if let user = currentUser {
                 // User profile section
