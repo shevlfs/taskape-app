@@ -18,7 +18,11 @@ struct Provider: TimelineProvider {
         let tasks = WidgetDataManager.shared.loadTasks()
 
         let entry = SimpleEntry(date: currentDate, tasks: tasks)
-        let nextUpdateDate = Calendar.current.date(byAdding: .minute, value: 5, to: currentDate)!
+        let nextUpdateDate = Calendar.current.date(
+            byAdding: .minute,
+            value: 5,
+            to: currentDate
+        )!
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdateDate))
         completion(timeline)
     }
@@ -52,20 +56,20 @@ struct TaskapeWidgetEntryView : View {
     var body: some View {
         ZStack {
             // Simplified gradient background inspired by MenuItem but simpler
-            LinearGradient(
-                stops: colorScheme == .dark ? [
-                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.9), location: 0.1),
-                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.7), location: 0.5),
-                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.5), location: 0.9),
-                ] : [
-                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.8), location: 0.1),
-                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.6), location: 0.5),
-                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.4), location: 0.9),
-                ],
-                startPoint: UnitPoint(x: 0.5, y: 1),
-                endPoint: UnitPoint(x: 0.5, y: 0)
-            )
-            .cornerRadius(10)
+//            LinearGradient(
+//                stops: colorScheme == .dark ? [
+//                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.9), location: 0.1),
+//                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.7), location: 0.5),
+//                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.5), location: 0.9),
+//                ] : [
+//                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.8), location: 0.1),
+//                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.6), location: 0.5),
+//                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.4), location: 0.9),
+//                ],
+//                startPoint: UnitPoint(x: 0.5, y: 1),
+//                endPoint: UnitPoint(x: 0.5, y: 0)
+//            )
+            RoundedRectangle(cornerRadius: 30).fill(.background)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
                     .inset(by: 0.5)
@@ -96,12 +100,26 @@ struct TaskapeWidgetEntryView : View {
                     VStack(alignment: .leading, spacing: 5) {
                         ForEach(Array(entry.tasks.prefix(3))) { task in
                             HStack {
+                                if let flagColor = task.flagColor, !flagColor.isEmpty {
+                                    Circle()
+                                        .fill(Color(hex: flagColor))
+                                        .frame(width: 8, height: 8)
+                                        .padding(.horizontal)
+                                } else {
+
+                                Circle()
+                                        .fill(.primary)
+                                            .frame(width: 4, height: 4)
+                                            .padding(.leading).offset(x: 2).padding(.trailing, 20)
+                                }
+
+
                                 if task.name.isEmpty {
-                                    Text("•  new to-do")
+                                    Text(" new to-do")
                                         .font(.pathway(14)).opacity(0.8)
                                         .lineLimit(1)
                                 } else {
-                                    Text("•  \(task.name)")
+                                    Text("\(task.name)")
                                         .font(.pathway(14))
                                         .lineLimit(1)
                                         .strikethrough(task.isCompleted)
@@ -113,14 +131,6 @@ struct TaskapeWidgetEntryView : View {
                                 if task.isCompleted {
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 12))
-                                        .foregroundColor(.white)
-                                }
-
-                                if let flagColor = task.flagColor, !flagColor.isEmpty {
-                                    Circle()
-                                        .fill(Color(hex: flagColor))
-                                        .frame(width: 8, height: 8)
-                                        .padding(.leading, 4)
                                 }
                             }
                         }
@@ -157,7 +167,7 @@ struct TaskapeWidget: Widget {
         }.contentMarginsDisabled()
         .configurationDisplayName("taskape")
         .description("view your tasks at a glance")
-        .supportedFamilies([.systemMedium]) // Only support medium size
+        .supportedFamilies([.systemMedium])
     }
 }
 
@@ -206,6 +216,8 @@ struct TaskapeWidget_Previews: PreviewProvider {
     static var previews: some View {
         TaskapeWidgetEntryView(entry: SimpleEntry(date: Date(), tasks: sampleTasks))
             .previewContext(WidgetPreviewContext(family: .systemMedium))
+            .containerBackground(.windowBackground, for: .widget)
+            .ignoresSafeArea(.all)
     }
 }
 

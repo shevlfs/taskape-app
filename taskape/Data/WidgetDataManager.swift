@@ -26,8 +26,10 @@ class WidgetDataManager {
 
     private init() {}
 
-    // Save tasks to shared container for widget access
+    // In WidgetDataManager.swift
     func saveTasks(_ tasks: [taskapeTask]) {
+        print("WidgetDataManager: Attempting to save \(tasks.count) tasks")
+
         let widgetTasks = tasks.map { task -> WidgetTaskModel in
             return WidgetTaskModel(
                 id: task.id,
@@ -38,27 +40,48 @@ class WidgetDataManager {
             )
         }
 
-        if let data = try? JSONEncoder().encode(widgetTasks) {
+        do {
+            let data = try JSONEncoder().encode(widgetTasks)
             let userDefaults = UserDefaults(suiteName: appGroupIdentifier)
+            print("WidgetDataManager: Writing to UserDefaults group: \(appGroupIdentifier ?? "nil")")
             userDefaults?.set(data, forKey: "taskape_widget_tasks")
-            userDefaults?.synchronize()
+            let success = userDefaults?.synchronize() ?? false
+            print("WidgetDataManager: Save and synchronize \(success ? "succeeded" : "failed")")
 
-            // Refresh widget
+            // Add verification step
+            if let savedData = userDefaults?.data(forKey: "taskape_widget_tasks") {
+                print("WidgetDataManager: Verified data exists in UserDefaults (\(savedData.count) bytes)")
+            } else {
+                print("WidgetDataManager: ⚠️ Verification FAILED - data not found after save")
+            }
+
             WidgetCenter.shared.reloadAllTimelines()
+        } catch {
+            print("WidgetDataManager: Failed to encode tasks: \(error)")
         }
     }
 
     // Load tasks from shared container (used by widget)
     func loadTasks() -> [WidgetTaskModel] {
         let userDefaults = UserDefaults(suiteName: appGroupIdentifier)
-        guard let data = userDefaults?.data(forKey: "taskape_widget_tasks"),
-            let widgetTasks = try? JSONDecoder().decode(
-                [WidgetTaskModel].self, from: data)
+        print(
+            "Widget attempting to load data from group: \(appGroupIdentifier)")
+
+        guard let data = userDefaults?.data(forKey: "taskape_widget_tasks")
         else {
+            print("Widget: No data found for key 'taskape_widget_tasks'")
             return []
         }
 
-        return widgetTasks
+        do {
+            let widgetTasks = try JSONDecoder().decode(
+                [WidgetTaskModel].self, from: data)
+            print("Widget: Successfully loaded \(widgetTasks.count) tasks")
+            return widgetTasks
+        } catch {
+            print("Widget: Failed to decode tasks: \(error)")
+            return []
+        }
     }
 }
 
