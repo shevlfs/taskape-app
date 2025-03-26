@@ -89,6 +89,8 @@ struct TaskCardWithCheckbox: View {
     @State private var isAnimating: Bool = false
     @State private var newCompletionStatus: Bool = false
 
+    @Binding var labels: [TaskFlag]
+
     @Environment(\.colorScheme) var colorScheme
 
     @Environment(\.modelContext) var modelContext
@@ -195,7 +197,7 @@ struct TaskCardWithCheckbox: View {
             .sheet(isPresented: $detailIsPresent) {
                 taskCardDetailView(
                     detailIsPresent: $detailIsPresent,
-                    task: task
+                    task: task, labels: labels
                 ).transition(.opacity)
                     .animation(
                         Animation.easeInOut(duration: 0.25),
@@ -236,6 +238,6 @@ struct TaskCardWithCheckbox: View {
             taskDescription: "Create mockups in Figma",
             author: "shevlfs",
             privacy: "private"
-        )
+        ), labels : .constant([])
     )
 }

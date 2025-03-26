@@ -14,6 +14,45 @@ class FlagManager: ObservableObject {
     }
 }
 
+class TaskFlag: Equatable, Hashable, Comparable {
+    var flagName: String
+    var flagColor: String
+
+    init(flagname: String, flagcolor: String) {
+        self.flagName = flagname
+        self.flagColor = flagcolor
+    }
+
+    static func == (lhs: TaskFlag, rhs: TaskFlag) -> Bool {
+        return lhs.flagName == rhs.flagName
+            && lhs.flagColor == rhs.flagColor
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(flagName)
+        hasher.combine(flagColor)
+    }
+
+    static func < (lhs: TaskFlag, rhs: TaskFlag) -> Bool {
+        return lhs.flagName < rhs.flagName
+    }
+}
+
+func getUserFlags(_ user: taskapeUser) -> [TaskFlag] {
+    var flagNames: Set<TaskFlag> = []
+    for task in user.tasks {
+        if let flagName = task.flagName, task.flagStatus,
+            let flagColor = task.flagColor
+        {
+            flagNames.insert(
+                TaskFlag(flagname: flagName, flagcolor: flagColor))
+        }
+    }
+    return Array(flagNames).sorted()
+}
+
+var uniqueFlags: [TaskFlag] = []
+
 struct UserJungleDetailedView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -104,7 +143,7 @@ struct UserJungleDetailedView: View {
                                     onCompletion: { completedTask in
                                         handleTaskCompletion(
                                             task: completedTask)
-                                    }
+                                    }, labels: getUserFlags(currentUser!)
                                 )
                                 .padding(.horizontal, 16)
                             }
@@ -137,7 +176,8 @@ struct UserJungleDetailedView: View {
         .navigationBarHidden(true)
         .onAppear {
             refreshTasks()
-            currentUser = UserManager.shared.getCurrentUser(context: modelContext)
+            currentUser = UserManager.shared.getCurrentUser(
+                context: modelContext)
             if currentUser != nil {
                 updateTabBarItems()
             }
@@ -164,47 +204,15 @@ struct UserJungleDetailedView: View {
             if let task = newTask {
                 taskCardDetailView(
                     detailIsPresent: $showNewTaskDetail,
-                    task: task
+                    task: task,
+                    labels: getUserFlags(
+                        currentUser!
+                    )
                 ).onDisappear {
                     saveTaskChanges(task: task)
                 }
             }
-        }
-    }
-
-    class TaskFlag: Equatable, Hashable, Comparable {
-        var flagName: String
-        var flagColor: String
-
-        init(flagname: String, flagcolor: String) {
-            self.flagName = flagname
-            self.flagColor = flagcolor
-        }
-
-        static func == (lhs: TaskFlag, rhs: TaskFlag) -> Bool {
-            return lhs.flagName == rhs.flagName
-                && lhs.flagColor == rhs.flagColor
-        }
-
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(flagName)
-            hasher.combine(flagColor)
-        }
-
-        static func < (lhs: TaskFlag, rhs: TaskFlag) -> Bool {
-            return lhs.flagName < rhs.flagName
-        }
-    }
-
-    // Get all unique flag names from user's tasks
-    private func getUserFlags(_ user: taskapeUser) -> [TaskFlag] {
-        var flagNames: Set<TaskFlag> = []
-        for task in user.tasks {
-            if let flagName = task.flagName, task.flagStatus, let flagColor = task.flagColor {
-                flagNames.insert(TaskFlag(flagname: flagName, flagcolor: flagColor))
-            }
-        }
-        return Array(flagNames).sorted()
+        }.onAppear(perform: { uniqueFlags = getUserFlags(currentUser!) })
     }
 
     // Update the tab bar items with standard tabs and flag tabs
@@ -216,8 +224,10 @@ struct UserJungleDetailedView: View {
 
         if let user = currentUser {
             let flags = getUserFlags(user)
+            uniqueFlags = getUserFlags(user)
             for flag in flags {
-                items.append(tabBarItem(title: flag.flagName, color: flag.flagColor))
+                items.append(
+                    tabBarItem(title: flag.flagName, color: flag.flagColor))
             }
         }
 
@@ -302,7 +312,8 @@ struct UserJungleDetailedView: View {
 
             await MainActor.run {
                 isRefreshing = false
-                currentUser = UserManager.shared.getCurrentUser(context: modelContext)
+                currentUser = UserManager.shared.getCurrentUser(
+                    context: modelContext)
                 if currentUser != nil {
                     updateTabBarItems()
                 }
@@ -377,8 +388,10 @@ struct AnimatedTaskCard: View {
     @State private var opacity: Double = 1
     @State private var offset: CGFloat = 0
 
+    @State var labels: [TaskFlag] = []
+
     var body: some View {
-        TaskCardWithCheckbox(task: task)
+        TaskCardWithCheckbox(task: task, labels: $labels)
             .background(
                 // Measure the height of the task card
                 GeometryReader { geo in

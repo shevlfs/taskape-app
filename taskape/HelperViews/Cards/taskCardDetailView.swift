@@ -122,14 +122,15 @@ struct TaskPrioritySelector: View {
     @Binding var flagStatus: Bool
     @Binding var flagColor: String?
     @Binding var flagName: String?
+    @Binding var labels: [TaskFlag]
     @State private var showPriorityPicker: Bool = false
 
     // Predefined flag options
-    private let priorityOptions = [
-        (label: "important", color: "#FF6B6B"),
-        (label: "work", color: "#FFD166"),
-        (label: "study", color: "#06D6A0"),
-        (label: "life", color: "#118AB2"),
+    @State var priorityOptions: [TaskFlag] = [
+        TaskFlag(flagname: "important", flagcolor: "#FF6B6B"),
+        TaskFlag(flagname: "work", flagcolor: "#FFD166"),
+        TaskFlag(flagname: "study", flagcolor: "#06D6A0"),
+        TaskFlag(flagname: "life", flagcolor: "#118AB2"),
     ]
 
     var body: some View {
@@ -143,8 +144,8 @@ struct TaskPrioritySelector: View {
                 HStack {
                     if flagStatus, let colorHex = flagColor {
                         let priorityLabel =
-                            priorityOptions.first { $0.color == colorHex }?
-                            .label ?? flagName ?? "Custom"
+                        priorityOptions.first { $0.flagColor == colorHex }?
+                            .flagName ?? flagName ?? "Custom"
                         Group {
                             Circle()
                                 .fill(Color(hex: colorHex))
@@ -171,7 +172,7 @@ struct TaskPrioritySelector: View {
                     flagStatus: $flagStatus,
                     flagColor: $flagColor,
                     flagName: $flagName,
-                    priorityOptions: priorityOptions,
+                    priorityOptions: getLabels(),
                     showPicker: $showPriorityPicker
                 ).presentationDetents([.medium])
             }
@@ -183,6 +184,17 @@ struct TaskPrioritySelector: View {
         )
         .padding(.horizontal)
     }
+
+    private func getLabels() -> [TaskFlag]{
+        return (priorityOptions + uniqueFlags).uniqued()
+    }
+}
+
+extension Sequence where Element: Hashable {
+    func uniqued() -> [Element] {
+        var set = Set<Element>()
+        return filter { set.insert($0).inserted }
+    }
 }
 
 // COMPONENT 5.1: Priority picker content
@@ -190,7 +202,7 @@ struct PriorityPickerContent: View {
     @Binding var flagStatus: Bool
     @Binding var flagColor: String?
     @Binding var flagName: String?
-    let priorityOptions: [(label: String, color: String)]
+    @State var priorityOptions: [TaskFlag]
     @Binding var showPicker: Bool
 
     @State private var isAddingCustomLabel: Bool = false
@@ -240,7 +252,7 @@ struct PriorityPickerContent: View {
                     .font(.pathway(16))
                     .padding()
                     .background(Color(UIColor.systemGray6))
-                    .cornerRadius(8)
+                    .cornerRadius(30)
                     .padding(.horizontal)
 
                 Text("label color:")
@@ -316,29 +328,30 @@ struct PriorityPickerContent: View {
                 // Standard label options
                 ScrollView {
                     VStack(spacing: 0) {
-                        ForEach(priorityOptions, id: \.color) { option in
+                        ForEach(priorityOptions, id: \.flagName) { option in
                             Button(action: {
                                 withAnimation {
                                     flagStatus = true
-                                    flagColor = option.color
-                                    flagName = option.label
+                                    flagColor = option.flagColor
+                                    flagName = option.flagName
                                     showPicker = false
                                     FlagManager.shared.flagChanged()
                                 }
                             }) {
                                 HStack {
                                     Circle()
-                                        .fill(Color(hex: option.color))
+                                        .fill(Color(hex: option.flagColor))
                                         .frame(width: 18, height: 18)
 
-                                    Text(option.label)
+                                    Text(option.flagName)
                                         .font(.pathway(17))
                                         .padding(.leading, 12)
 
                                     Spacer()
 
-                                    if flagStatus && flagColor == option.color
-                                        && flagName == option.label
+                                    if flagStatus
+                                        && flagColor == option.flagColor
+                                        && flagName == option.flagName
                                     {
                                         Image(systemName: "checkmark")
                                             .foregroundColor(.blue)
@@ -453,7 +466,7 @@ struct TaskPrivacySelector: View {
 struct taskCardDetailView: View {
     @Binding var detailIsPresent: Bool
     @Bindable var task: taskapeTask
-
+    @State var labels: [TaskFlag] = []
     @FocusState var isFocused: Bool
 
     var body: some View {
@@ -478,7 +491,7 @@ struct taskCardDetailView: View {
                 TaskPrioritySelector(
                     flagStatus: $task.flagStatus,
                     flagColor: $task.flagColor,
-                    flagName: $task.flagName
+                    flagName: $task.flagName, labels: $labels
                 )
 
                 // Component 6: Privacy selector

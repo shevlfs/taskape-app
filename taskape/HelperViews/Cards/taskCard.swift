@@ -11,6 +11,7 @@ struct taskCard: View {
         .everyone
     @State private var disappearAnimation: Bool = false
     @State private var shouldShow: Bool = true
+    @State var labels: [TaskFlag] = []
 
     // Environment values
     @Environment(\.modelContext) var modelContext
