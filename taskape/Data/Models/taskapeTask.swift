@@ -161,8 +161,8 @@ final class taskapeTask: Identifiable {
             self.flagColor = nil
             self.flagName = nil
         } else if self.flagColor == nil {
-            self.flagColor = "#FF6B6B" // Default flag color
-            self.flagName = "High Priority" // Default flag name
+            self.flagColor = "#FF6B6B"  // Default flag color
+            self.flagName = "High Priority"  // Default flag name
         }
     }
 

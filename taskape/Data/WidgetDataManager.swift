@@ -61,3 +61,12 @@ class WidgetDataManager {
         return widgetTasks
     }
 }
+
+class TaskNotifier {
+    static func notifyTasksUpdated() {
+        NotificationCenter.default.post(
+            name: NSNotification.Name("TaskapeTasksUpdated"),
+            object: nil
+        )
+    }
+}

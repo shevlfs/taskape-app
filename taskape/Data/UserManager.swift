@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import SwiftUI
+import WidgetKit
 
 class UserManager: ObservableObject {
     static let shared = UserManager()
@@ -61,5 +62,38 @@ class UserManager: ObservableObject {
     func setCurrentUser(userId: String) {
         currentUserId = userId
         UserDefaults.standard.set(userId, forKey: "user_id")
+    }
+}
+
+extension UserManager {
+    // Sync current user tasks with widget
+    func syncTasksWithWidget(context: ModelContext) {
+        if let user = getCurrentUser(context: context) {
+            // Sort tasks by display order before saving
+            let sortedTasks = user.tasks.sorted { $0.displayOrder > $1.displayOrder }
+            WidgetDataManager.shared.saveTasks(sortedTasks)
+        }
+    }
+
+    // Call this after tasks are fetched or updated
+    func syncCurrentUserTasksWithWidget(tasks: [taskapeTask]) {
+        // Sort tasks by display order before saving
+        let sortedTasks = tasks.sorted { $0.displayOrder > $1.displayOrder }
+        WidgetDataManager.shared.saveTasks(sortedTasks)
+    }
+}
+
+// Extension to sync tasks with widget when they change
+extension taskapeTask {
+    // Call this when a task is updated
+    func syncWithWidget() {
+        // Get all tasks for current user and sync
+        if let userId = UserDefaults.standard.string(forKey: "user_id") {
+            Task {
+                if let tasks = await fetchTasks(userId: userId) {
+                    UserManager.shared.syncCurrentUserTasksWithWidget(tasks: tasks)
+                }
+            }
+        }
     }
 }

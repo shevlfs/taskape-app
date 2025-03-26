@@ -9,6 +9,7 @@ import Alamofire
 import Foundation
 import SwiftData
 import SwiftDotenv
+import WidgetKit
 
 func submitTasksBatch(tasks: [taskapeTask]) async
     -> BatchTaskSubmissionResponse?
@@ -84,85 +85,6 @@ func submitTasksBatch(tasks: [taskapeTask]) async
             return nil
         }
     }
-}
-
-func convertToLocalTask(_ taskResponse: TaskResponse) -> taskapeTask {
-    let dateFormatter = ISO8601DateFormatter()
-
-    var deadline: Date? = nil
-    if let deadlineString = taskResponse.deadline {
-        deadline = dateFormatter.date(from: deadlineString)
-    }
-
-    let createdAt = dateFormatter.date(from: taskResponse.created_at) ?? Date()
-
-    let privacyLevel: PrivacySettings.PrivacyLevel
-    if taskResponse.privacy_level.isEmpty {
-        privacyLevel = .everyone
-    } else {
-        switch taskResponse.privacy_level {
-        case "everyone":
-            privacyLevel = .everyone
-        case "friends-only":
-            privacyLevel = .friendsOnly
-        case "group":
-            privacyLevel = .group
-        case "noone":
-            privacyLevel = .noone
-        case "except":
-            privacyLevel = .except
-        default:
-            privacyLevel = .everyone
-        }
-    }
-
-    let privacySettings = PrivacySettings(
-        level: privacyLevel, exceptIDs: taskResponse.privacy_except_ids)
-
-    let completionStatus = CompletionStatus(
-        isCompleted: taskResponse.is_completed, proofURL: taskResponse.proof_url
-    )
-
-    let difficulty: TaskDifficulty
-    switch taskResponse.task_difficulty {
-    case "small":
-        difficulty = .small
-    case "medium":
-        difficulty = .medium
-    case "large":
-        difficulty = .large
-    case "custom":
-        difficulty = .custom
-    default:
-        difficulty = .medium
-    }
-
-    
-    let task = taskapeTask(
-        id: taskResponse.id,
-        user_id: taskResponse.user_id,
-        name: taskResponse.name,
-        taskDescription: taskResponse.description,
-        author: taskResponse.author,
-        privacy: privacySettings,
-        group: taskResponse.group,
-        group_id: taskResponse.group_id,
-        assignedToTask: taskResponse.assigned_to ?? [],
-        task_difficulty: difficulty,
-        custom_hours: taskResponse.custom_hours,
-        mentioned_in_event: false,
-        flagStatus: taskResponse.flag_status,
-        flagColor: taskResponse.flag_color,
-        flagName: taskResponse.flag_name,
-        displayOrder: taskResponse.display_order
-    )
-
-    task.createdAt = createdAt
-    task.deadline = deadline
-    task.completion = completionStatus
-    task.privacy = privacySettings
-
-    return task
 }
 
 func updateTaskOrder(userID: String, taskOrders: [(taskID: String, order: Int)])
@@ -284,8 +206,40 @@ func syncTaskChanges(task: taskapeTask) async {
 
     if success {
         print("Task synced successfully with server")
+
+        // Sync with widget after server update
+        task.syncWithWidget()
+        TaskNotifier.notifyTasksUpdated()
+
+        // Post notification for widget update
+        DispatchQueue.main.async {
+            TaskNotifier.notifyTasksUpdated()
+        }
     } else {
         print("Failed to sync task with server")
+    }
+}
+
+func updateWidgetWithTasks(userId: String, modelContext: ModelContext) {
+    // Get the current user's tasks
+    let taskDescriptor = FetchDescriptor<taskapeTask>(
+        predicate: #Predicate<taskapeTask> { task in
+            task.user_id == userId && !task.completion.isCompleted
+        }
+    )
+
+    do {
+        // Fetch incomplete tasks for the widget
+        let tasks = try modelContext.fetch(taskDescriptor)
+        print("Updating widget with \(tasks.count) tasks")
+
+        // Sort by display order
+        let sortedTasks = tasks.sorted { $0.displayOrder > $1.displayOrder }
+
+        // Update widget data
+        WidgetDataManager.shared.saveTasks(sortedTasks)
+    } catch {
+        print("Error fetching tasks for widget: \(error)")
     }
 }
 
@@ -391,8 +345,20 @@ func syncUserTasks(
         }
 
         // Save all changes at once
+        // try modelContext.save()
+       //  print("Successfully synced tasks for user \(userId)")
+
+//        UserManager.shared.syncCurrentUserTasksWithWidget(tasks: remoteTasks)
+//
+//        DispatchQueue.main.async {
+//            TaskNotifier.notifyTasksUpdated()
+//        }
+
         try modelContext.save()
         print("Successfully synced tasks for user \(userId)")
+
+        // Update widget data
+        updateWidgetWithTasks(userId: userId, modelContext: modelContext)
 
     } catch {
         print("Failed to sync tasks: \(error)")

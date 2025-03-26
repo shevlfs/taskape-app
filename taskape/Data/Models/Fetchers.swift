@@ -152,3 +152,81 @@ func fetchTasks(userId: String) async -> [taskapeTask]? {
         }
     }
 }
+
+func convertToLocalTask(_ taskResponse: TaskResponse) -> taskapeTask {
+    let dateFormatter = ISO8601DateFormatter()
+
+    var deadline: Date? = nil
+    if let deadlineString = taskResponse.deadline {
+        deadline = dateFormatter.date(from: deadlineString)
+    }
+
+    let createdAt = dateFormatter.date(from: taskResponse.created_at) ?? Date()
+
+    let privacyLevel: PrivacySettings.PrivacyLevel
+    if taskResponse.privacy_level.isEmpty {
+        privacyLevel = .everyone
+    } else {
+        switch taskResponse.privacy_level {
+        case "everyone":
+            privacyLevel = .everyone
+        case "friends-only":
+            privacyLevel = .friendsOnly
+        case "group":
+            privacyLevel = .group
+        case "noone":
+            privacyLevel = .noone
+        case "except":
+            privacyLevel = .except
+        default:
+            privacyLevel = .everyone
+        }
+    }
+
+    let privacySettings = PrivacySettings(
+        level: privacyLevel, exceptIDs: taskResponse.privacy_except_ids)
+
+    let completionStatus = CompletionStatus(
+        isCompleted: taskResponse.is_completed, proofURL: taskResponse.proof_url
+    )
+
+    let difficulty: TaskDifficulty
+    switch taskResponse.task_difficulty {
+    case "small":
+        difficulty = .small
+    case "medium":
+        difficulty = .medium
+    case "large":
+        difficulty = .large
+    case "custom":
+        difficulty = .custom
+    default:
+        difficulty = .medium
+    }
+
+    let task = taskapeTask(
+        id: taskResponse.id,
+        user_id: taskResponse.user_id,
+        name: taskResponse.name,
+        taskDescription: taskResponse.description,
+        author: taskResponse.author,
+        privacy: privacySettings,
+        group: taskResponse.group,
+        group_id: taskResponse.group_id,
+        assignedToTask: taskResponse.assigned_to ?? [],
+        task_difficulty: difficulty,
+        custom_hours: taskResponse.custom_hours,
+        mentioned_in_event: false,
+        flagStatus: taskResponse.flag_status,
+        flagColor: taskResponse.flag_color,
+        flagName: taskResponse.flag_name,
+        displayOrder: taskResponse.display_order
+    )
+
+    task.createdAt = createdAt
+    task.deadline = deadline
+    task.completion = completionStatus
+    task.privacy = privacySettings
+
+    return task
+}

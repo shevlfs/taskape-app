@@ -1,4 +1,5 @@
 import WidgetKit
+import AppIntents
 import SwiftUI
 
 struct Provider: TimelineProvider {
@@ -16,14 +17,26 @@ struct Provider: TimelineProvider {
         let currentDate = Date()
         let tasks = WidgetDataManager.shared.loadTasks()
 
-        // Create entry for current time
         let entry = SimpleEntry(date: currentDate, tasks: tasks)
-
-        // Create a timeline that refreshes every 30 minutes
-        let nextUpdateDate = Calendar.current.date(byAdding: .minute, value: 30, to: currentDate)!
+        let nextUpdateDate = Calendar.current.date(byAdding: .minute, value: 5, to: currentDate)!
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdateDate))
         completion(timeline)
     }
+
+    func loadTasks() -> [WidgetTaskModel] {
+        let userDefaults = UserDefaults(suiteName: appGroupIdentifier)
+        guard let data = userDefaults?.data(forKey: "taskape_widget_tasks"),
+            let widgetTasks = try? JSONDecoder().decode(
+                [WidgetTaskModel].self, from: data)
+        else {
+            print("Widget: No tasks found in shared UserDefaults")
+            return []
+        }
+
+        print("Widget: Loaded \(widgetTasks.count) tasks from shared UserDefaults")
+        return widgetTasks
+    }
+
 }
 
 struct SimpleEntry: TimelineEntry {

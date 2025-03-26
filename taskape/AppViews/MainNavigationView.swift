@@ -99,14 +99,14 @@ struct MainNavigationView: View {
             currentUser = UserManager.shared.getCurrentUser(
                 context: modelContext)
             Task {
-                if let remoteTasks = await UserManager.shared
-                    .fetchCurrentUserTasks()
-                {
+                if let remoteTasks = await UserManager.shared.fetchCurrentUserTasks() {
                     await MainActor.run {
                         syncUserTasks(
                             userId: UserManager.shared.currentUserId,
                             remoteTasks: remoteTasks,
-                            modelContext: modelContext)
+                            modelContext: modelContext
+                        )
+                        updateWidgetWithTasks(userId: UserManager.shared.currentUserId, modelContext: modelContext)
                     }
                 }
             }

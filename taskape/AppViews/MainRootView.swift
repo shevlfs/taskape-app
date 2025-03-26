@@ -29,11 +29,11 @@ struct MainRootView: View {
                     Button("return to Login") {
                         appState.logout()
                     }.font(.pathway(20))
-                    .padding()
-                    .background(Color.taskapeOrange)
-                    .foregroundColor(.white)
-                    .cornerRadius(30)
-                    .padding(.top, 20)
+                        .padding()
+                        .background(Color.taskapeOrange)
+                        .foregroundColor(.white)
+                        .cornerRadius(30)
+                        .padding(.top, 20)
                 }
             } else {
                 MainNavigationView()
@@ -48,10 +48,13 @@ struct MainRootView: View {
                     print("Loading profile for user ID: \(userId)")
 
                     // Try to fetch the user from the database first
-                    let existingUser = UserManager.shared.getCurrentUser(context: modelContext)
+                    let existingUser = UserManager.shared.getCurrentUser(
+                        context: modelContext)
 
                     if existingUser != nil {
-                        print("User found in local database, no need to fetch from server")
+                        print(
+                            "User found in local database, no need to fetch from server"
+                        )
                         await MainActor.run {
                             isLoading = false
                         }
@@ -75,11 +78,16 @@ struct MainRootView: View {
                                     remoteTasks: tasks,
                                     modelContext: modelContext
                                 )
+
+                                // Update widget data
+                                updateWidgetWithTasks(
+                                    userId: userId, modelContext: modelContext)
                             }
 
                             isLoading = false
                         } else {
-                            loadingError = "Could not load your profile. Please try again."
+                            loadingError =
+                                "Could not load your profile. Please try again."
                             isLoading = false
                         }
                     }

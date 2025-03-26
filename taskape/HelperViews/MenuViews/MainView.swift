@@ -87,7 +87,6 @@ struct MainView: View {
                                             .multilineTextAlignment(.center)
                                     }
 
-
                                     if friendManager.incomingRequests
                                         .count > 0
                                     {
@@ -112,9 +111,9 @@ struct MainView: View {
                         .frame(maxWidth: .infinity)
                     }
                 } else {
-                    VStack(alignment: .center){
+                    VStack(alignment: .center) {
                         Spacer()
-                        HStack{
+                        HStack {
                             Spacer()
                             ProgressView("loading...").font(.pathwayBold(20))
                             Spacer()
@@ -159,7 +158,13 @@ struct MainView: View {
                         }
                     }
                 }
+                setupWidgetSync()
             }
+        }
+    }
+    func setupWidgetSync() {
+        if let user = currentUser {
+            UserManager.shared.syncTasksWithWidget(context: modelContext)
         }
     }
 }

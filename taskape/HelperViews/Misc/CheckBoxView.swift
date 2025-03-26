@@ -27,6 +27,8 @@ struct CheckBoxView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     task.completion.isCompleted = newCompletionStatus
                     saveTask()
+                    task.syncWithWidget()
+                    TaskNotifier.notifyTasksUpdated()
                 }
             }
         }) {
@@ -69,6 +71,12 @@ struct CheckBoxView: View {
     func saveTask() {
         do {
             try modelContext.save()
+
+            // Update widget data
+            let userId = task.user_id
+
+            updateWidgetWithTasks(userId: userId, modelContext: modelContext)
+
         } catch {
             print("Error saving task locally: \(error)")
         }
@@ -204,6 +212,8 @@ struct TaskCardWithCheckbox: View {
                         value: detailIsPresent
                     ).onDisappear {
                         saveTask()
+                        task.syncWithWidget()
+                        TaskNotifier.notifyTasksUpdated()
                     }
             }.onAppear {
                 // Initialize the visual state to match the actual state
@@ -238,6 +248,6 @@ struct TaskCardWithCheckbox: View {
             taskDescription: "Create mockups in Figma",
             author: "shevlfs",
             privacy: "private"
-        ), labels : .constant([])
+        ), labels: .constant([])
     )
 }

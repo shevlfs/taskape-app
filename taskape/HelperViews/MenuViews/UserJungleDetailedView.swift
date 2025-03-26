@@ -367,6 +367,11 @@ struct UserJungleDetailedView: View {
             try modelContext.save()
             if currentUser != nil {
                 updateTabBarItems()  // Update tabs in case flag changed
+
+                // Update widget data
+                let userId = UserManager.shared.currentUserId 
+                    updateWidgetWithTasks(userId: userId, modelContext: modelContext)
+
             }
 
             Task {

@@ -271,6 +271,11 @@ struct ProfileCreationFirstTaskSetup: View {
 
             do {
                 try modelContext.save()
+                let userId = UserManager.shared.currentUserId
+
+                updateWidgetWithTasks(
+                    userId: userId, modelContext: modelContext)
+
                 var tasksToSubmit = tasks
                 for i in 0..<tasksToSubmit.count {
                     tasksToSubmit[i].user_id = userId ?? user.id
