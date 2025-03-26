@@ -167,13 +167,3 @@ struct ProfileCreationPFPSelectionView: View {
         }
     }
 }
-
-//#Preview {
-//    @Previewable @State var image: UIImage? = nil
-//    @Previewable @State var path = NavigationPath()
-////    ProfileCreationPFPSelectionView(
-////        image: $image,
-////        path: $path,
-////        progress: .constant(0.3)
-////    )
-//}

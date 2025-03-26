@@ -30,7 +30,7 @@ struct AuthenticationView: View {
     @State var userHandle: String = ""
     @State var userBio: String = ""
     @State var userColor: String = ""
-    @State var userProfileImageData: String = ""
+    @State var profileImageURL: String = ""
     @State var user_id: String = ""
 
     @Namespace private var namespace
@@ -59,10 +59,12 @@ struct AuthenticationView: View {
         let newUser = taskapeUser(
             id: userId,
             handle: userHandle,
-            bio: userBio,
-            profileImage: userProfileImageData,
+            bio: UserDefaults.standard.string(forKey: "bio") ?? "",
+            profileImage: profileImageURL,
             profileColor: userColor
         )
+
+        print(userBio)
 
         modelContext.insert(newUser)
 
@@ -232,7 +234,7 @@ struct AuthenticationView: View {
                             ).navigationBarBackButtonHidden()
                         case "pfp_selection":
                             ProfileCreationPFPSelectionView(
-                                imageurl: $userProfileImageData,
+                                imageurl: $profileImageURL,
                                 path: $path,
                                 progress: $progress
                             )

@@ -21,24 +21,79 @@ struct MainView: View {
         GeometryReader { geometry in
             VStack {
                 if let user = currentUser {
-                    Button(action: { navigationPath.append("self_jungle_view") }) {
+                    Button(action: { navigationPath.append("self_jungle_view") }
+                    ) {
                         UserJungleCard(user: user).matchedTransitionSource(
                             id: "jungleCard", in: mainNamespace
                         )
                     }.buttonStyle(PlainButtonStyle())
                     ScrollView {
-                        FriendInvitationButtons(
-                            onApeTap: {
-                            },
-                            onNewFriendTap: {
-                                showFriendInvitationSheet = true
-                            })
+                        HStack(spacing: 15) {
+                            Button(action: {}) {
+                                ZStack(alignment: .leading) {
+                                    MenuItem(
+                                        mainColor: Color(hex: "#FF7AAD"),
+                                        widthProportion: 0.56,
+                                        heightProportion: 0.16
+                                    )
+
+                                    HStack(alignment: .center, spacing: 10) {
+                                        VStack {
+                                            Text("🐒")
+                                                .font(.system(size: 50))
+                                        }.padding(.leading, 20)
+
+                                        VStack(alignment: .leading, spacing: 2)
+                                        {
+                                            Text("ape-ify")
+                                                .font(.pathwayBlack(21))
+                                            Text("your friends'\nlives today!")
+                                                .font(.pathwaySemiBold(19))
+
+                                        }
+                                    }
+                                }
+                            }
+                            .buttonStyle(PlainButtonStyle())
+
+                            // Right button - "new friend?"
+                            Button(action: {
+                                navigationPath.append("friendSearch")
+                            }) {
+                                ZStack {
+                                    // Background using MenuItem component
+                                    MenuItem(
+                                        mainColor: Color(hex: "#E97451"),
+                                        widthProportion: 0.32,
+                                        heightProportion: 0.16
+                                    )
+
+                                    VStack(alignment: .center, spacing: 6) {
+
+                                        Image(systemName: "plus.circle")
+                                            .font(
+                                                .system(
+                                                    size: 45, weight: .medium)
+                                            )
+                                            .foregroundColor(.primary)
+
+                                        Text("new\nfriend?")
+                                            .font(.pathwaySemiBold(19))
+                                            .foregroundColor(.primary)
+                                            .multilineTextAlignment(.center)
+                                    }
+                                }
+                            }.matchedTransitionSource(
+                                id: "friendSearch", in: mainNamespace
+                            )
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                        .padding(.horizontal, 10)
+                        .frame(maxWidth: .infinity)
                     }
                 } else {
                     ProgressView("Loading your jungle...")
                 }
-            }.sheet(isPresented: $showFriendInvitationSheet) {
-                FriendSearchSheet().modelContext(modelContext)
             }.navigationDestination(
                 for: String.self,
                 destination: {
@@ -50,13 +105,20 @@ struct MainView: View {
                             .navigationTransition(
                                 .zoom(sourceID: "jungleCard", in: mainNamespace)
                             )
+                    case "friendSearch":
+                        FriendSearchView().toolbar(.hidden).modelContext(self.modelContext)
+                            .navigationTransition(
+                                .zoom(sourceID: "friendSearch", in: mainNamespace)
+                            )
                     default:
                         EmptyView()
                     }
-                })
-                .onAppear {
-                    currentUser = UserManager.shared.getCurrentUser(context: modelContext)
                 }
+            )
+            .onAppear {
+                currentUser = UserManager.shared.getCurrentUser(
+                    context: modelContext)
+            }
         }
     }
 }

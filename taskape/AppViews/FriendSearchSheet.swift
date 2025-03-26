@@ -3,19 +3,21 @@
 //  taskape
 //
 //  Created by shevlfs on 3/24/25.
-//
+//””
 
 import CachedAsyncImage
 import SwiftData
 import SwiftUI
 
-struct FriendSearchSheet: View {
+struct FriendSearchView: View {
     @Environment(\.modelContext) private var modelContext
 
     @State private var searchQuery: String = ""
     @State private var searchResults: [UserSearchResult] = []
     @State private var isSearching: Bool = false
     @State private var errorMessage: String? = nil
+
+    @Environment(\.dismiss) private var dismiss
 
     // Debounce timer for search
     @State private var searchTask: Task<Void, Never>? = nil
@@ -32,9 +34,24 @@ struct FriendSearchSheet: View {
     var body: some View {
         VStack {
             // Header
-            Text("find your friends!")
-                .font(.pathway(24))
-                .padding(.top, 20)
+            HStack{
+                Button(action: {
+                    dismiss()
+                }) {
+                    Image(systemName: "chevron.left")
+                        .font(.pathwayBold(20))
+                        .foregroundColor(.primary)
+                }
+
+                Spacer()
+
+                Text("find your friends!")
+                    .font(.pathway(24))
+
+                Spacer()
+            }.padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 25)
 
             // Search field
             SearchField(text: $searchQuery)
@@ -255,6 +272,7 @@ struct UserSearchResultRow: View {
     @State private var showDetail = false
     @State private var isLoadingUserProfile = false
     @State private var userProfile: taskapeUser? = nil
+    @State private var loadingError: String? = nil
 
     // Add state for tracking accept operations
     @State private var isAccepting: Bool = false
@@ -337,16 +355,25 @@ struct UserSearchResultRow: View {
             RoundedRectangle(cornerRadius: 25)
                 .fill(Color(UIColor.secondarySystemBackground))
                 .overlay(
-                    isLoadingUserProfile
-                        ? AnyView(ProgressView().padding())
-                        : AnyView(EmptyView())
+                    Group {
+                        if isLoadingUserProfile {
+                            ProgressView().padding()
+                        } else if let error = loadingError {
+                            Text(error)
+                                .font(.pathway(14))
+                                .foregroundColor(.red)
+                                .padding()
+                        } else {
+                            EmptyView()
+                        }
+                    }
                 )
         )
         .onTapGesture {
             loadUserProfile()
         }
         .sheet(isPresented: $showDetail) {
-            if userProfile != nil {
+            if let profile = userProfile {
                 UserProfileView(userId: user.id).modelContext(modelContext)
             }
         }
@@ -356,25 +383,65 @@ struct UserSearchResultRow: View {
     private func loadUserProfile() {
         guard !isLoadingUserProfile else { return }
 
+        loadingError = nil
         isLoadingUserProfile = true
 
+        print("Loading profile for user: \(user.handle) (ID: \(user.id))")
+
         Task {
+            // First fetch the user profile
             if let loadedUser = await fetchUser(userId: user.id) {
-                await MainActor.run {
-                    // We need to create a temporary transient model context
-                    // This is a key improvement - we're not affecting the app's main ModelContext
-                    let tempContext = ModelContext(
-                        ModelContainer.shared.mainContext.container)
-                    tempContext.insert(loadedUser)
+                print("Successfully loaded profile for \(loadedUser.handle)")
 
-                    // Set the user profile
-                    userProfile = loadedUser
+                // Then fetch tasks with the requester_id parameter
+                // This will filter tasks based on privacy settings
+                let userTasks = await fetchTasks(userId: user.id)
 
-                    isLoadingUserProfile = false
-                    showDetail = true
+                if let tasks = userTasks {
+                    print(
+                        "Loaded \(tasks.count) visible tasks for \(loadedUser.handle)"
+                    )
+
+                    await MainActor.run {
+                        // Create a temporary context to avoid affecting the main one
+                        let tempContext = ModelContext(
+                            ModelContainer.shared.mainContext.container)
+
+                        // Assign the tasks to the user
+                        loadedUser.tasks = tasks
+
+                        // Insert the user into the temp context
+                        tempContext.insert(loadedUser)
+
+                        // Set the user profile for the sheet
+                        userProfile = loadedUser
+                        isLoadingUserProfile = false
+                        showDetail = true
+                    }
+                } else {
+                    print(
+                        "No tasks loaded or accessible for \(loadedUser.handle)"
+                    )
+
+                    await MainActor.run {
+                        // Still show the profile even if no tasks are available
+                        let tempContext = ModelContext(
+                            ModelContainer.shared.mainContext.container)
+
+                        // Initialize with empty tasks array
+                        loadedUser.tasks = []
+                        tempContext.insert(loadedUser)
+
+                        userProfile = loadedUser
+                        isLoadingUserProfile = false
+                        showDetail = true
+                    }
                 }
             } else {
+                print("Failed to load profile for user ID: \(user.id)")
+
                 await MainActor.run {
+                    loadingError = "Couldn't load profile"
                     isLoadingUserProfile = false
                 }
             }
@@ -456,6 +523,6 @@ struct ProfileImageView: View {
 }
 
 #Preview {
-    FriendSearchSheet()
+    FriendSearchView()
         .modelContainer(for: [taskapeUser.self], inMemory: true)
 }

@@ -157,15 +157,41 @@ import SwiftUI
 struct UserProfileView: View {
     @Environment(\.modelContext) var modelContext
     @Environment(\.colorScheme) var colorScheme
+    @Environment(\.dismiss) var dismiss
 
     let userId: String
     @State private var user: taskapeUser?
     @State private var isLoading = true
+    @State private var errorMessage: String? = nil
+    @State private var isRefreshingTasks = false
+
+    // Flag to track if this is the current user's profile
+    private var isCurrentUserProfile: Bool {
+        return userId == UserManager.shared.currentUserId
+    }
 
     var body: some View {
         Group {
             if isLoading {
-                ProgressView("Loading profile...")
+                ProgressView("loading profile...")
+            } else if let error = errorMessage {
+                VStack {
+                    Text(error)
+                        .font(.pathway(16))
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
+                        .padding()
+
+                    Button("go back") {
+                        dismiss()
+                    }
+                    .font(.pathway(16))
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(Color.taskapeOrange)
+                    .foregroundColor(.white)
+                    .cornerRadius(20)
+                }
             } else if let user = user {
                 ScrollView {
                     VStack(spacing: 0) {
@@ -225,7 +251,7 @@ struct UserProfileView: View {
                                 }
 
                                 // Username with contrasting color
-                                Text("\(user.handle)")
+                                Text("@\(user.handle)")
                                     .font(.pathwayBlack(25))
                                     .foregroundColor(
                                         Color(hex: user.profileColor)
@@ -276,32 +302,79 @@ struct UserProfileView: View {
                             }
                             .offset(y: -16)
                         }
+
                         VStack(alignment: .leading, spacing: 16) {
                             HStack(spacing: 0) {
+                                // Show tasks count
                                 StatItem(
                                     title: "tasks",
                                     value: "\(user.tasks.count)",
                                     userColor: Color(hex: user.profileColor)
                                 )
 
+                                // Show completed tasks count
                                 StatItem(
                                     title: "completed",
-                                    value:
-                                        "\(user.tasks.filter { $0.completion.isCompleted }.count)",
+                                    value: "\(user.tasks.filter { $0.completion.isCompleted }.count)",
                                     userColor: Color(hex: user.profileColor)
                                 )
 
+                                // Show pending tasks count
                                 StatItem(
                                     title: "pending",
-                                    value:
-                                        "\(user.tasks.filter { !$0.completion.isCompleted }.count)",
+                                    value: "\(user.tasks.filter { !$0.completion.isCompleted }.count)",
                                     userColor: Color(hex: user.profileColor)
                                 )
                             }
 
+                            // Show privacy notice if not user's own profile
+                            if !isCurrentUserProfile && user.tasks.isEmpty {
+                                Text("no publicly visible tasks...")
+                                    .font(.pathwayItalic(16))
+                                    .foregroundColor(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .padding(.top, 20)
+                            }
+
+                            // Refresh button for other users' profiles
+//                            if !isCurrentUserProfile {
+//                                Button(action: refreshTasks) {
+//                                    Label(
+//                                        isRefreshingTasks ? "Refreshing..." : "Refresh Tasks",
+//                                        systemImage: isRefreshingTasks ? "arrow.triangle.2.circlepath" : "arrow.clockwise"
+//                                    )
+//                                    .font(.pathway(16))
+//                                    .frame(maxWidth: .infinity)
+//                                    .padding(.vertical, 10)
+//                                    .background(Color(hex: user.profileColor).opacity(0.2))
+//                                    .cornerRadius(20)
+//                                }
+//                                .disabled(isRefreshingTasks)
+//                                .padding(.horizontal)
+//                                .padding(.top, 10)
+//                            }
+
                         }.padding(.vertical, user.bio == "" ? 25 : 10)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
+
+                        // Display tasks if there are any
+                        if !user.tasks.isEmpty {
+                            Text("to-do's")
+                                .font(.pathwayBold(18))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal)
+                                .padding(.top, 15).padding(.bottom,5)
+
+                            LazyVStack(spacing: 12) {
+                                ForEach(user.tasks) { task in
+                                    TaskListItem(task: task)
+                                }
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 8)
+                        }
+
                         Spacer(minLength: 40)
                     }
                 }
@@ -319,28 +392,123 @@ struct UserProfileView: View {
 
     private func loadUser() {
         // Check if this is the current user
-        if userId == UserManager.shared.currentUserId {
+        if isCurrentUserProfile {
             // Fetch the current user
             let currentUser = UserManager.shared.getCurrentUser(
                 context: modelContext)
             self.user = currentUser
             self.isLoading = false
         } else {
-            // Fetch another user
+            // Fetch another user with privacy-filtered tasks
             Task {
                 if let fetchedUser = await fetchUser(userId: userId) {
-                    await MainActor.run {
-                        // Create a temporary user without adding to main context
-                        self.user = fetchedUser
-                        self.isLoading = false
+                    if let tasks = await fetchTasks(userId: userId) {
+                        await MainActor.run {
+                            fetchedUser.tasks = tasks
+                            // Create a temporary user without adding to main context
+                            self.user = fetchedUser
+                            self.isLoading = false
+                        }
+                    } else {
+                        await MainActor.run {
+                            fetchedUser.tasks = [] // Empty array when no tasks are accessible
+                            self.user = fetchedUser
+                            self.isLoading = false
+                        }
                     }
                 } else {
                     await MainActor.run {
+                        self.errorMessage = "error while loading user profile"
                         self.isLoading = false
                     }
                 }
             }
         }
+    }
+
+    private func refreshTasks() {
+        guard !isCurrentUserProfile, let user = self.user else { return }
+
+        isRefreshingTasks = true
+
+        Task {
+            if let tasks = await fetchTasks(userId: userId) {
+                await MainActor.run {
+                    user.tasks = tasks
+                    isRefreshingTasks = false
+                }
+            } else {
+                await MainActor.run {
+                    user.tasks = []
+                    isRefreshingTasks = false
+                }
+            }
+        }
+    }
+}
+
+struct TaskListItem: View {
+    @State var task: taskapeTask
+
+    var body: some View {
+        VStack {
+            HStack(spacing: 12) {
+                // Completion status indicator - just checkmark when completed
+                if task.completion.isCompleted {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.green)
+                        .frame(width: 16, height: 16).background(Circle().stroke(style: StrokeStyle(lineWidth: 0.5)).foregroundColor(.gray)
+                            .frame(width: 20, height: 20))
+                } else {
+                    Circle().stroke(style: StrokeStyle(lineWidth: 0.5)).foregroundColor(.gray)
+                        .frame(width: 20, height: 20)
+                }
+
+                // Task name with strikethrough when completed
+                Text(task.name.isEmpty ? "unnamed to-do" : task.name)
+                    .font(.pathway(16))
+                    .strikethrough(task.completion.isCompleted)
+                    .foregroundColor(task.completion.isCompleted ? .secondary : .primary)
+
+                Spacer()
+
+                // Deadline if available
+                if let deadline = task.deadline {
+                    Text(formatDate(deadline))
+                        .font(.pathwayItalic(14))
+                        .foregroundColor(.secondary)
+                        .strikethrough(task.completion.isCompleted)
+                }
+            }
+
+            if let flagName = task.flagName, !flagName.isEmpty {
+                HStack {
+                    Spacer()
+
+                    Circle()
+                        .fill(Color(hex: task.flagColor ?? "#000000"))
+                        .frame(width: 10, height: 10)
+
+                    Text(flagName)
+                        .font(.pathway(15))
+                        .strikethrough(task.completion.isCompleted)
+                        .foregroundColor(task.completion.isCompleted ? .secondary : .primary)
+                }
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 30)
+                .fill(Color(UIColor.secondarySystemBackground))
+                .opacity(task.completion.isCompleted ? 0.7 : 1.0)
+        )
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        return formatter.string(from: date)
     }
 }
 

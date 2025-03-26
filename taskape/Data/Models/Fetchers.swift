@@ -116,11 +116,18 @@ func fetchTasks(userId: String) async -> [taskapeTask]? {
         return nil
     }
 
-    print("USER ID", userId)
+    // Get the current user ID for the requester_id
+    let requesterId = UserManager.shared.currentUserId
+
+    print("Fetching tasks for user ID: \(userId), requester ID: \(requesterId)")
 
     do {
+        // Include the requester_id as a query parameter
+        let url =
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)/tasks?requester_id=\(requesterId)"
+
         let result = await AF.request(
-            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)/tasks",
+            url,
             method: .get,
             headers: ["Authorization": token]
         )

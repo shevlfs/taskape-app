@@ -319,11 +319,20 @@ func syncUserTasks(
             "Syncing tasks: Found \(existingTasks.count) local tasks and \(remoteTasks.count) remote tasks"
         )
 
-        // Create efficient maps for lookup
-        let remoteTaskMap = Dictionary(
-            uniqueKeysWithValues: remoteTasks.map { ($0.id, $0) })
-        let existingTaskMap = Dictionary(
-            uniqueKeysWithValues: existingTasks.map { ($0.id, $0) })
+        // Create efficient maps for lookup - handling potential duplicates
+        var remoteTaskMap = [String: taskapeTask]()
+        for task in remoteTasks {
+            // If duplicate exists, keep the most recent version (assuming last one is most recent)
+            remoteTaskMap[task.id] = task
+        }
+
+        // Create map of existing tasks
+        var existingTaskMap = [String: taskapeTask]()
+        for task in existingTasks {
+            existingTaskMap[task.id] = task
+        }
+
+        print("After deduplication: \(remoteTaskMap.count) unique remote tasks")
 
         // 1. Update existing tasks that are also in remote
         for existingTask in existingTasks {
@@ -337,6 +346,10 @@ func syncUserTasks(
                 existingTask.assignedToTask = remoteTask.assignedToTask
                 existingTask.task_difficulty = remoteTask.task_difficulty
                 existingTask.custom_hours = remoteTask.custom_hours
+                existingTask.flagStatus = remoteTask.flagStatus
+                existingTask.flagColor = remoteTask.flagColor
+                existingTask.flagName = remoteTask.flagName
+                existingTask.displayOrder = remoteTask.displayOrder
                 print(
                     "Updated existing task: \(existingTask.id) - \(existingTask.name)"
                 )
@@ -362,8 +375,8 @@ func syncUserTasks(
         }
 
         // 2. Insert new remote tasks that don't exist locally
-        for remoteTask in remoteTasks {
-            if existingTaskMap[remoteTask.id] == nil {
+        for (id, remoteTask) in remoteTaskMap {
+            if existingTaskMap[id] == nil {
                 // This is a new task from the server
                 print(
                     "Inserting new remote task: \(remoteTask.id) - \(remoteTask.name)"

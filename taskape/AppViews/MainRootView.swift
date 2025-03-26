@@ -22,17 +22,17 @@ struct MainRootView: View {
                 ProgressView("Loading your profile...")
             } else if let error = loadingError {
                 VStack {
-                    Text(error)
+                    Text(error.lowercased()).font(.pathway(26))
                         .padding()
                         .multilineTextAlignment(.center)
 
-                    Button("Return to Login") {
+                    Button("return to Login") {
                         appState.logout()
-                    }
+                    }.font(.pathway(20))
                     .padding()
                     .background(Color.taskapeOrange)
                     .foregroundColor(.white)
-                    .cornerRadius(8)
+                    .cornerRadius(30)
                     .padding(.top, 20)
                 }
             } else {
