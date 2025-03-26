@@ -320,3 +320,79 @@ struct RespondToFriendRequestResponse: Codable {
     let success: Bool
     let message: String?
 }
+
+struct GetTaskResponse: Codable {
+    let success: Bool
+    let task: TaskResponse
+    let message: String?
+}
+
+// Define DTOs to match the Go server types
+
+struct EventResponse: Codable {
+    let id: String
+    let user_id: String
+    let target_user_id: String
+    let type: String
+    let size: String
+    let created_at: String
+    let expires_at: String?
+    let task_ids: [String]
+    let streak_days: Int
+    let likes_count: Int
+    let comments_count: Int
+    let liked_by_user_ids: [String]
+}
+
+struct GetEventsResponse: Codable {
+    let success: Bool
+    let events: [EventResponse]
+    let message: String?
+}
+
+struct LikeEventRequest: Codable {
+    let user_id: String
+    let token: String
+}
+
+struct LikeEventResponse: Codable {
+    let success: Bool
+    let likes_count: Int
+    let message: String?
+}
+
+struct EventCommentResponse: Codable {
+    let id: String
+    let event_id: String
+    let user_id: String
+    let content: String
+    let created_at: String
+    let is_edited: Bool
+    let edited_at: String?
+}
+
+struct AddEventCommentRequest: Codable {
+    let user_id: String
+    let content: String
+    let token: String
+}
+
+struct GetEventCommentsResponse: Codable {
+    let success: Bool
+    let comments: [EventCommentResponse]
+    let total_count: Int
+    let message: String?
+}
+
+struct ConfirmTaskCompletionRequest: Codable {
+    let task_id: String
+    let confirmer_id: String
+    let is_confirmed: Bool
+    let token: String
+}
+
+struct ConfirmTaskCompletionResponse: Codable {
+    let success: Bool
+    let message: String?
+}
+

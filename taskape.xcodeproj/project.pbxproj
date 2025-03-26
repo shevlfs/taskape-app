@@ -69,6 +69,8 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Data/Models/Fetchers.swift,
+				Data/Models/taskapeEvent.swift,
+				Data/Models/taskapeGroup.swift,
 				Data/Models/taskapeTask.swift,
 				Data/Models/taskapeUser.swift,
 				Data/ServerData/dto.swift,

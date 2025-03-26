@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct FriendView: View {
+struct EventCardBackGround: View {
     var friendColor: Color
     var size: FriendCardSize
 
@@ -24,7 +24,7 @@ struct FriendView: View {
     }
     var body: some View {
         MenuItem(
-            mainColor: friendColor.opacity(0.6),
+            mainColor: friendColor,
             widthProportion: proportions.widthProportion,
             heightProportion: proportions.heightProportion)
     }
@@ -33,9 +33,9 @@ struct FriendView: View {
 #Preview {
     VStack(alignment: .center) {
         HStack(spacing: 20) {
-            FriendView(friendColor: .blue, size: .small)
-            FriendView(friendColor: .yellow, size: .medium)
+            EventCardBackGround(friendColor: .blue, size: .small)
+            EventCardBackGround(friendColor: .yellow, size: .medium)
         }
-        FriendView(friendColor: .pink, size: .large)
+        EventCardBackGround(friendColor: .pink, size: .large)
     }
 }
