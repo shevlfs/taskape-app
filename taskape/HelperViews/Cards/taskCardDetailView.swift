@@ -144,7 +144,7 @@ struct TaskPrioritySelector: View {
                 HStack {
                     if flagStatus, let colorHex = flagColor {
                         let priorityLabel =
-                        priorityOptions.first { $0.flagColor == colorHex }?
+                            priorityOptions.first { $0.flagColor == colorHex }?
                             .flagName ?? flagName ?? "Custom"
                         Group {
                             Circle()
@@ -185,7 +185,7 @@ struct TaskPrioritySelector: View {
         .padding(.horizontal)
     }
 
-    private func getLabels() -> [TaskFlag]{
+    private func getLabels() -> [TaskFlag] {
         return (priorityOptions + uniqueFlags).uniqued()
     }
 }
@@ -210,55 +210,55 @@ struct PriorityPickerContent: View {
     @State private var customLabelName: String = ""
 
     private let defaultColors: [Color] = [
-        .red, .orange, .yellow, .green, .blue, .purple, .pink,
+        .red, .orange, .yellow, .green, .blue, .purple, .pink,.mint, .cyan, .teal,.indigo
     ]
 
     var body: some View {
         if isAddingCustomLabel {
-            VStack(alignment: .center, spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     Button(action: {
                         isAddingCustomLabel = false
                     }) {
                         Image(systemName: "chevron.left")
-                            .foregroundColor(.orange)
+                            .foregroundColor(.taskapeOrange)
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .padding(.leading, 10)
+                    .padding(.leading, 15)
                     Spacer()
 
                     Text("new label")
                         .font(.pathway(17))
                         .fontWeight(.medium)
-                        .padding(.top, 16)
-                        .padding(.bottom, 12).offset(x: -10)
+                        .offset(x: -10)
 
                     Spacer()
-                }
+                }.padding(.vertical)
 
                 Divider()
-                    .padding(.bottom, 8)
 
                 Spacer()
 
                 // Label name field
-                Text("label name:")
-                    .font(.pathway(16))
+                Text("label name")
+                    .font(.pathway(17))
                     .padding(.horizontal)
-                    .padding(.bottom, 8)
 
                 TextField("enter label name", text: $customLabelName)
+                    .autocapitalization(.none)
                     .autocorrectionDisabled()
-                    .font(.pathway(16))
+                    .font(.pathway(17))
                     .padding()
                     .background(Color(UIColor.systemGray6))
-                    .cornerRadius(30)
-                    .padding(.horizontal)
+                    .cornerRadius(30).background(
+                        RoundedRectangle(cornerRadius: 30)
+                            .stroke(.regularMaterial, lineWidth: 1)
+                    )
+                    .padding(.horizontal).padding(.top).padding(.bottom,25)
 
-                Text("label color:")
-                    .font(.pathway(16))
+                Text("label color")
+                    .font(.pathway(17))
                     .padding(.horizontal)
-                    .padding(.bottom, 8)
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
                         ColorPicker("", selection: $customColor)
@@ -282,8 +282,7 @@ struct PriorityPickerContent: View {
                     }
                     .padding(8)
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 24)
+                .padding(.top).padding(.horizontal).padding(.bottom,20)
 
                 Spacer()
                 Button(action: {
@@ -300,7 +299,7 @@ struct PriorityPickerContent: View {
                         .font(.pathway(17))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
+                        .padding(.vertical, 16)
                         .background(
                             RoundedRectangle(cornerRadius: 30)
                                 .fill(
@@ -409,13 +408,13 @@ struct PriorityPickerContent: View {
                         }) {
                             HStack {
                                 Image(systemName: "plus.circle.fill")
-                                    .foregroundColor(.orange)
+                                    .foregroundColor(.taskapeOrange)
                                     .font(.system(size: 18)).frame(
                                         width: 18, height: 18)
 
                                 Text("add custom label")
                                     .font(.pathway(17))
-                                    .foregroundColor(.orange)
+                                    .foregroundColor(.taskapeOrange)
                                     .padding(.leading, 12)
 
                                 Spacer()
@@ -446,9 +445,359 @@ struct TaskPrivacySelector: View {
                 Text("no one").tag(PrivacySettings.PrivacyLevel.noone)
                 Text("friends only").tag(
                     PrivacySettings.PrivacyLevel.friendsOnly)
-                Text("group").tag(PrivacySettings.PrivacyLevel.group)
-                Text("everyone except...").tag(
+                Text("everyone except").tag(
                     PrivacySettings.PrivacyLevel.except)
+            }.font(.pathwayBold(17))
+                .pickerStyle(MenuPickerStyle())
+                .accentColor(Color.taskapeOrange)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 30)
+                .fill(Color(UIColor.secondarySystemBackground))
+        )
+        .padding(.horizontal)
+    }
+}
+
+// COMPONENT 7: Except People Selector
+struct ExceptPeopleSelector: View {
+    @Bindable var task: taskapeTask
+    @ObservedObject private var friendManager = FriendManager.shared
+    @State private var isLoading: Bool = false
+    @State private var showingFriendsList: Bool = false
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Button(action: {
+                // Load friends data if needed and show selection list
+                if friendManager.friends.isEmpty {
+                    isLoading = true
+                    Task {
+                        await friendManager.refreshFriendData()
+                        await MainActor.run {
+                            isLoading = false
+                            showingFriendsList = true
+                        }
+                    }
+                } else {
+                    showingFriendsList = true
+                }
+            }) {
+                HStack {
+                    Text("select people to exclude")
+                        .font(.pathway(17))
+                        .foregroundColor(Color.taskapeOrange)
+
+                    Spacer()
+
+                    if isLoading {
+                        ProgressView()
+                            .frame(width: 20, height: 20)
+                    } else {
+                        Text("\(task.privacy.exceptIDs.count) selected")
+                            .font(.pathwayItalic(14))
+                            .foregroundColor(.secondary)
+
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color.taskapeOrange)
+                    }
+                }
+                .padding(.horizontal).padding(.vertical,20)
+                .background(
+                    RoundedRectangle(cornerRadius: 30)
+                        .stroke(Color.taskapeOrange.opacity(0.3), lineWidth: 1)
+                        .background(
+                            RoundedRectangle(cornerRadius: 30).fill(
+                                Color(UIColor.secondarySystemBackground)))
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
+            .disabled(isLoading)
+
+            // Friend tags display when friends are excluded
+            if !task.privacy.exceptIDs.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(task.privacy.exceptIDs, id: \.self) {
+                            friendId in
+                            ExcludedFriendTag(
+                                friendId: friendId,
+                                task: task
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                }
+                .frame(height: 40)
+            }
+        }
+        .padding(.horizontal)
+        .sheet(isPresented: $showingFriendsList) {
+            FriendSelectionSheet(task: task)
+                .presentationDetents([.medium])
+        }
+    }
+}
+
+// Excluded friend tag component
+struct ExcludedFriendTag: View {
+    let friendId: String
+    @Bindable var task: taskapeTask
+    @ObservedObject private var friendManager = FriendManager.shared
+
+    private var friendName: String {
+        friendManager.friends.first(where: { $0.id == friendId })?.handle
+            ?? "unknown"
+    }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text("@\(friendName)")
+                .font(.pathway(14))
+                .foregroundColor(.white)
+
+            Button(action: {
+                withAnimation {
+                    // Remove this friend from the excluded list
+                    task.privacy.exceptIDs.removeAll(where: { $0 == friendId })
+                }
+            }) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(.white.opacity(0.7))
+            }
+            .buttonStyle(PlainButtonStyle())
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(
+            Capsule()
+                .fill(Color.taskapeOrange.opacity(0.8))
+        )
+    }
+}
+
+// Friend selection sheet
+struct FriendSelectionSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Bindable var task: taskapeTask
+    @ObservedObject private var friendManager = FriendManager.shared
+    @State private var searchText: String = ""
+
+    private var filteredFriends: [Friend] {
+        if searchText.isEmpty {
+            return friendManager.friends
+        } else {
+            return friendManager.friends.filter {
+                $0.handle.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("exclude friends")
+                    .font(.pathwayBold(18))
+
+                Spacer()
+
+                Button("done") {
+                    dismiss()
+                }
+                .font(.pathway(16))
+                .foregroundColor(Color.taskapeOrange)
+            }
+            .padding()
+
+            // Search field
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.gray)
+                    .padding(.leading, 10)
+
+                TextField("search friends", text: $searchText)
+                    .font(.pathway(16))
+                    .padding(10)
+                    .autocorrectionDisabled()
+                    .autocapitalization(.none)
+
+                if !searchText.isEmpty {
+                    Button(action: {
+                        searchText = ""
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.gray)
+                    }
+                    .padding(.trailing, 10)
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 30)
+                    .fill(Color(UIColor.systemGray6)).stroke(.regularMaterial, lineWidth: 1)
+            )
+            .padding(.horizontal)
+            .padding(.bottom, 10)
+
+            if friendManager.friends.isEmpty {
+                VStack(spacing: 20) {
+                    Spacer()
+                    Text("no friends yet")
+                        .font(.pathway(18))
+                        .foregroundColor(.secondary)
+
+                    Text("add friends to exclude them from seeing this task")
+                        .font(.pathwayItalic(15))
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    Spacer()
+                }
+            } else if filteredFriends.isEmpty {
+                VStack {
+                    Spacer()
+                    Text("no results found")
+                        .font(.pathway(18))
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+            } else {
+                // Friends list
+                List {
+                    ForEach(filteredFriends, id: \.id) { friend in
+                        FriendSelectRow(
+                            friend: friend,
+                            isSelected: task.privacy.exceptIDs.contains(
+                                friend.id),
+                            onToggle: { selected in
+                                if selected {
+                                    // Add to excluded IDs
+                                    if !task.privacy.exceptIDs.contains(
+                                        friend.id)
+                                    {
+                                        task.privacy.exceptIDs.append(friend.id)
+                                    }
+                                } else {
+                                    // Remove from excluded IDs
+                                    task.privacy.exceptIDs.removeAll(where: {
+                                        $0 == friend.id
+                                    })
+                                }
+                            }
+                        )
+                    }
+                }
+                .listStyle(.plain)
+            }
+        }
+        .onAppear {
+            // Refresh friend data when the sheet appears
+            if friendManager.friends.isEmpty {
+                Task {
+                    await friendManager.refreshFriendData()
+                }
+            }
+        }
+    }
+}
+
+// Friend selection row component
+struct FriendSelectRow: View {
+    let friend: Friend
+    let isSelected: Bool
+    let onToggle: (Bool) -> Void
+
+    var body: some View {
+        Button(action: {
+            onToggle(!isSelected)
+        }) {
+            HStack {
+                // Profile image or placeholder
+                if !friend.profile_picture.isEmpty {
+                    AsyncImage(url: URL(string: friend.profile_picture)) {
+                        phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 40, height: 40)
+                                .clipShape(Circle())
+                        case .failure, .empty:
+                            Circle()
+                                .fill(Color(hex: friend.color))
+                                .frame(width: 40, height: 40)
+                                .overlay(
+                                    Text(
+                                        String(friend.handle.prefix(1))
+                                            .uppercased()
+                                    )
+                                    .font(.pathwayBold(16))
+                                    .foregroundColor(.white)
+                                )
+                        @unknown default:
+                            Circle()
+                                .fill(Color(hex: friend.color))
+                                .frame(width: 40, height: 40)
+                        }
+                    }
+                } else {
+                    Circle()
+                        .fill(Color(hex: friend.color))
+                        .frame(width: 40, height: 40)
+                        .overlay(
+                            Text(String(friend.handle.prefix(1)).uppercased())
+                                .font(.pathwayBold(16))
+                                .foregroundColor(.white)
+                        )
+                }
+
+                Text("@\(friend.handle)")
+                    .font(.pathwayBlack(16))
+                    .padding(.leading, 10)
+
+                Spacer()
+
+                // Checkmark or empty circle
+                ZStack {
+                    Circle()
+                        .stroke(
+                            isSelected
+                                ? Color.taskapeOrange : Color.gray.opacity(0.5),
+                            lineWidth: 2
+                        )
+                        .frame(width: 24, height: 24)
+
+                    if isSelected {
+                        Circle()
+                            .fill(Color.taskapeOrange)
+                            .frame(width: 16, height: 16)
+                    }
+                }
+            }
+            .contentShape(Rectangle())
+            .padding(.vertical, 8)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+struct ProofSelectRow: View {
+    @Binding var proofNeeded: Bool
+
+    var body: some View {
+        HStack {
+            Text("proof needed").font(.pathway(17))
+            Spacer()
+
+            Picker("", selection: $proofNeeded) {
+                Text("yes").tag(true)
+                Text("no").tag(false)
             }.font(.pathwayBold(17))
                 .pickerStyle(MenuPickerStyle())
                 .accentColor(Color.taskapeOrange)
@@ -468,6 +817,9 @@ struct taskCardDetailView: View {
     @Bindable var task: taskapeTask
     @State var labels: [TaskFlag] = []
     @FocusState var isFocused: Bool
+    @State var proofNeeded: Bool = false
+
+    @State var detents: Set<PresentationDetent> = [.large]
 
     var body: some View {
         Group {
@@ -504,14 +856,23 @@ struct taskCardDetailView: View {
                 case .group:
                     Text("group selection")
                 case .except:
-                    Text("except people selection")
+                    EmptyView()
                 }
-            }
-            .padding(.top, 20)
+
+                if task.privacy.level == .except {
+                    ExceptPeopleSelector(task: task)
+                        .transition(
+                            .move(edge: .bottom).combined(with: .opacity))
+                }
+
+                ProofSelectRow(proofNeeded: $proofNeeded)
+
+            }.animation(.easeInOut(duration: 0.3), value: task.privacy.level)
+                .padding(.top, 20)
 
             Spacer()
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents(detents).animation(.easeInOut, value: detents)
     }
 }
 
