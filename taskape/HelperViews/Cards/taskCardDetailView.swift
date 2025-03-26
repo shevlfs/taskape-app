@@ -18,6 +18,27 @@ struct DetailViewHeader: View {
 // COMPONENT 2: Task name input field
 struct TaskNameField: View {
     @Binding var name: String
+    @Environment(\.colorScheme) var colorScheme
+    @Binding var flagColor: String?
+    @Binding var flagName: String?
+
+    private func getTaskColor()
+        -> Color
+    {
+        if flagColor != nil && flagName != "" {
+            return Color(hex: flagColor!)
+        }
+        return Color.taskapeOrange.opacity(0.8)
+    }
+
+    private func getTaskTextColor()
+        -> Color
+    {
+        if flagColor != nil && flagName != "" {
+            return Color(hex: flagColor!).contrastingTextColor(in: colorScheme)
+        }
+        return Color.white
+    }
 
     var body: some View {
         HStack {
@@ -25,8 +46,12 @@ struct TaskNameField: View {
                 "what needs to be done?", text: $name
             )
             .padding(15)
-            .accentColor(Color.taskapeOrange)
-            .foregroundStyle(Color.white)
+            .accentColor(
+                getTaskTextColor()
+            )
+            .foregroundStyle(
+                getTaskTextColor()
+            )
             .autocorrectionDisabled(true)
             .autocapitalization(.none)
             .multilineTextAlignment(.center)
@@ -36,7 +61,9 @@ struct TaskNameField: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 30)
-                .fill(Color.taskapeOrange.opacity(0.8))
+                .fill(
+                    getTaskColor()
+                )
                 .stroke(.regularMaterial, lineWidth: 1)
                 .blur(radius: 0.5)
         )
@@ -268,10 +295,10 @@ struct PriorityPickerContent: View {
                                     customLabelName.isEmpty
                                         ? Color.gray : Color.taskapeOrange)
                         )
-                }.padding(.bottom,10)
-                .buttonStyle(PlainButtonStyle())
-                .disabled(customLabelName.isEmpty)
-                .padding(.horizontal)
+                }.padding(.bottom, 10)
+                    .buttonStyle(PlainButtonStyle())
+                    .disabled(customLabelName.isEmpty)
+                    .padding(.horizontal)
             }
         } else {
             // LABEL SELECTION VIEW
@@ -436,7 +463,9 @@ struct taskCardDetailView: View {
                 //DetailViewHeader(detailIsPresent: $detailIsPresent)
 
                 // Component 2: Task name field
-                TaskNameField(name: $task.name)
+                TaskNameField(
+                    name: $task.name, flagColor: $task.flagColor,
+                    flagName: $task.flagName)
 
                 // Component 3: Task description field
                 TaskDescriptionField(
@@ -469,7 +498,7 @@ struct taskCardDetailView: View {
 
             Spacer()
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 }
 

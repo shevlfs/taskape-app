@@ -21,9 +21,23 @@ struct taskCard: View {
 
     @State var newCompletionStatus: Bool = false
 
+    private func getTaskColor(flagColor: String?, newCompletionStatus: Bool)
+        -> Color
+    {
+        let baseColor: Color = {
+            if flagColor != nil && task.flagName != "" {
+                return Color(hex: flagColor!)
+            }
+            return Color.taskapeOrange
+        }()
+        let opacity: Double = newCompletionStatus ? 0.5 : 0.8
+        return baseColor.opacity(opacity)
+    }
+
     var body: some View {
         HStack(spacing: 0) {
-            CheckBoxView(task: task, newCompletionStatus: $newCompletionStatus).modelContext(modelContext)
+            CheckBoxView(task: task, newCompletionStatus: $newCompletionStatus)
+                .modelContext(modelContext)
                 .padding(.trailing, 5)
                 .onChange(of: task.completion.isCompleted) {
                     oldValue, newValue in
@@ -119,9 +133,10 @@ struct taskCard: View {
                     .background(
                         RoundedRectangle(cornerRadius: 30)
                             .fill(
-                                newCompletionStatus
-                                    ? Color.taskapeOrange.opacity(0.5)
-                                    : Color.taskapeOrange.opacity(0.8)
+                                getTaskColor(
+                                    flagColor: task.flagColor,
+                                    newCompletionStatus: newCompletionStatus
+                                )
                             )
                             .stroke(.regularMaterial, lineWidth: 1)
                             .blur(radius: 0.25)

@@ -5,6 +5,7 @@ struct CheckBoxView: View {
     @State private var isAnimating: Bool = false
     @Binding var newCompletionStatus: Bool
     @Environment(\.modelContext) var modelContext
+
     var body: some View {
         Button(action: {
             // Toggle the visual state immediately for responsive UI
@@ -88,7 +89,32 @@ struct TaskCardWithCheckbox: View {
     @State private var isAnimating: Bool = false
     @State private var newCompletionStatus: Bool = false
 
+    @Environment(\.colorScheme) var colorScheme
+
     @Environment(\.modelContext) var modelContext
+
+    func getTaskTextColor(flagColor: String?, newCompletionStatus: Bool)
+        -> Color
+    {
+        if flagColor != nil && task.flagName != "" {
+            return Color(hex: flagColor!).contrastingTextColor(in: colorScheme)
+        } else {
+            return newCompletionStatus ? Color.white.opacity(0.7) : Color.white
+        }
+    }
+
+    private func getTaskColor(flagColor: String?, newCompletionStatus: Bool)
+        -> Color
+    {
+        let baseColor: Color = {
+            if flagColor != nil && task.flagName != "" {
+                return Color(hex: flagColor!)
+            }
+            return Color.taskapeOrange
+        }()
+        let opacity: Double = newCompletionStatus ? 0.5 : 0.8
+        return baseColor.opacity(opacity)
+    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -120,9 +146,11 @@ struct TaskCardWithCheckbox: View {
                                     .font(.pathwayBold(15))
                                     .padding()
                                     .foregroundStyle(
-                                        newCompletionStatus
-                                            ? Color.white.opacity(0.7)
-                                            : Color.white
+                                        getTaskTextColor(
+                                            flagColor: task.flagColor,
+                                            newCompletionStatus:
+                                                newCompletionStatus
+                                        )
                                     )
                                     .strikethrough(newCompletionStatus)
 
@@ -147,15 +175,17 @@ struct TaskCardWithCheckbox: View {
                     .background(
                         RoundedRectangle(cornerRadius: 30)
                             .fill(
-                                newCompletionStatus
-                                    ? Color.taskapeOrange.opacity(0.5)
-                                    : Color.taskapeOrange.opacity(0.8)
+
+                                getTaskColor(
+                                    flagColor: task.flagColor,
+                                    newCompletionStatus: newCompletionStatus)
+
                             )
                             .stroke(.regularMaterial, lineWidth: 1)
                             .blur(radius: 0.25)
                     )
                     .completedTaskStyle(
-                    isCompleted: newCompletionStatus,
+                        isCompleted: newCompletionStatus,
                         isAnimating: isAnimating
                     )
                     .padding(.leading, 5)
@@ -171,8 +201,8 @@ struct TaskCardWithCheckbox: View {
                         Animation.easeInOut(duration: 0.25),
                         value: detailIsPresent
                     ).onDisappear {
-                    saveTask()
-                }
+                        saveTask()
+                    }
             }.onAppear {
                 // Initialize the visual state to match the actual state
                 newCompletionStatus = task.completion.isCompleted

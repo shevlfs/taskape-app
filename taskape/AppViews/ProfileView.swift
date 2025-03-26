@@ -266,13 +266,13 @@ struct UserProfileView: View {
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text("about me")
                                         .font(.pathwayBold(18))
-                                        .foregroundColor(.white)
+                                        .foregroundColor(.primary)
                                         .padding(.top, 30)
                                         .padding(.leading, 16)
 
                                     Text(user.bio)
                                         .font(.pathway(16))
-                                        .foregroundColor(.white.opacity(0.8))
+                                        .foregroundColor(.primary.opacity(0.8))
                                         .padding(.horizontal, 16)
                                         .padding(.bottom, 20)
                                 }
@@ -315,14 +315,16 @@ struct UserProfileView: View {
                                 // Show completed tasks count
                                 StatItem(
                                     title: "completed",
-                                    value: "\(user.tasks.filter { $0.completion.isCompleted }.count)",
+                                    value:
+                                        "\(user.tasks.filter { $0.completion.isCompleted }.count)",
                                     userColor: Color(hex: user.profileColor)
                                 )
 
                                 // Show pending tasks count
                                 StatItem(
                                     title: "pending",
-                                    value: "\(user.tasks.filter { !$0.completion.isCompleted }.count)",
+                                    value:
+                                        "\(user.tasks.filter { !$0.completion.isCompleted }.count)",
                                     userColor: Color(hex: user.profileColor)
                                 )
                             }
@@ -332,27 +334,29 @@ struct UserProfileView: View {
                                 Text("no publicly visible tasks...")
                                     .font(.pathwayItalic(16))
                                     .foregroundColor(.secondary)
-                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .frame(
+                                        maxWidth: .infinity, alignment: .center
+                                    )
                                     .padding(.top, 20)
                             }
 
                             // Refresh button for other users' profiles
-//                            if !isCurrentUserProfile {
-//                                Button(action: refreshTasks) {
-//                                    Label(
-//                                        isRefreshingTasks ? "Refreshing..." : "Refresh Tasks",
-//                                        systemImage: isRefreshingTasks ? "arrow.triangle.2.circlepath" : "arrow.clockwise"
-//                                    )
-//                                    .font(.pathway(16))
-//                                    .frame(maxWidth: .infinity)
-//                                    .padding(.vertical, 10)
-//                                    .background(Color(hex: user.profileColor).opacity(0.2))
-//                                    .cornerRadius(20)
-//                                }
-//                                .disabled(isRefreshingTasks)
-//                                .padding(.horizontal)
-//                                .padding(.top, 10)
-//                            }
+                            //                            if !isCurrentUserProfile {
+                            //                                Button(action: refreshTasks) {
+                            //                                    Label(
+                            //                                        isRefreshingTasks ? "Refreshing..." : "Refresh Tasks",
+                            //                                        systemImage: isRefreshingTasks ? "arrow.triangle.2.circlepath" : "arrow.clockwise"
+                            //                                    )
+                            //                                    .font(.pathway(16))
+                            //                                    .frame(maxWidth: .infinity)
+                            //                                    .padding(.vertical, 10)
+                            //                                    .background(Color(hex: user.profileColor).opacity(0.2))
+                            //                                    .cornerRadius(20)
+                            //                                }
+                            //                                .disabled(isRefreshingTasks)
+                            //                                .padding(.horizontal)
+                            //                                .padding(.top, 10)
+                            //                            }
 
                         }.padding(.vertical, user.bio == "" ? 25 : 10)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -364,7 +368,7 @@ struct UserProfileView: View {
                                 .font(.pathwayBold(18))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.horizontal)
-                                .padding(.top, 15).padding(.bottom,5)
+                                .padding(.top, 15).padding(.bottom, 5)
 
                             LazyVStack(spacing: 12) {
                                 ForEach(user.tasks) { task in
@@ -411,7 +415,7 @@ struct UserProfileView: View {
                         }
                     } else {
                         await MainActor.run {
-                            fetchedUser.tasks = [] // Empty array when no tasks are accessible
+                            fetchedUser.tasks = []  // Empty array when no tasks are accessible
                             self.user = fetchedUser
                             self.isLoading = false
                         }
@@ -458,18 +462,29 @@ struct TaskListItem: View {
                     Image(systemName: "checkmark")
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(.green)
-                        .frame(width: 16, height: 16).background(Circle().stroke(style: StrokeStyle(lineWidth: 0.5)).foregroundColor(.gray)
-                            .frame(width: 20, height: 20))
+                        .frame(width: 16, height: 16).background(
+                            Circle().stroke(style: StrokeStyle(lineWidth: 0.5))
+                                .foregroundColor(.gray)
+                                .frame(width: 20, height: 20))
                 } else {
-                    Circle().stroke(style: StrokeStyle(lineWidth: 0.5)).foregroundColor(.gray)
+                    Circle().stroke(style: StrokeStyle(lineWidth: 0.5))
+                        .foregroundColor(.gray)
                         .frame(width: 20, height: 20)
                 }
 
-                // Task name with strikethrough when completed
-                Text(task.name.isEmpty ? "unnamed to-do" : task.name)
-                    .font(.pathway(16))
-                    .strikethrough(task.completion.isCompleted)
-                    .foregroundColor(task.completion.isCompleted ? .secondary : .primary)
+                if task.name.isEmpty {
+                    Text("unnamed to-do").opacity(0.5)
+                        .font(.pathway(16))
+                        .strikethrough(task.completion.isCompleted)
+                        .foregroundColor(
+                            task.completion.isCompleted ? .secondary : .primary)
+                } else {
+                    Text(task.name)
+                        .font(.pathway(16))
+                        .strikethrough(task.completion.isCompleted)
+                        .foregroundColor(
+                            task.completion.isCompleted ? .secondary : .primary)
+                }
 
                 Spacer()
 
@@ -493,7 +508,8 @@ struct TaskListItem: View {
                     Text(flagName)
                         .font(.pathway(15))
                         .strikethrough(task.completion.isCompleted)
-                        .foregroundColor(task.completion.isCompleted ? .secondary : .primary)
+                        .foregroundColor(
+                            task.completion.isCompleted ? .secondary : .primary)
                 }
             }
         }

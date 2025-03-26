@@ -116,22 +116,25 @@ struct SettingsView: View {
         let container = try ModelContainer(
             for: taskapeUser.self, taskapeTask.self, configurations: config)
 
+        // Create user directly in the container
         let user = taskapeUser(
             id: UUID().uuidString,
             handle: "shevlfs",
             bio: "i am shevlfs",
-            profileImage:
-                "https://example.com/profile.jpg",
+            profileImage: "https://example.com/profile.jpg",
             profileColor: "blue"
         )
 
+        // Manually insert the user and set it as the current user
         container.mainContext.insert(user)
         try container.mainContext.save()
+
+        UserManager.shared.setCurrentUser(userId: user.id)
 
         return SettingsView()
             .modelContainer(container)
             .environmentObject(AppStateManager())
     } catch {
-        return Text("Failed to create preview: \(error.localizedDescription)")
+        return Text("failed to create preview: \(error.localizedDescription)")
     }
 }
