@@ -21,188 +21,257 @@ struct MainView: View {
     @Binding var navigationPath: NavigationPath
 
     var body: some View {
-        GeometryReader { geometry in
-            VStack {
-                if let user = currentUser {
-                    Button(action: { navigationPath.append("self_jungle_view") }
-                    ) {
-                        UserJungleCard(user: user).matchedTransitionSource(
-                            id: "jungleCard", in: mainNamespace
-                        )
-                    }.buttonStyle(PlainButtonStyle())
-                    ScrollView {
-                        VStack(spacing: 15) {
-                            // Top buttons row
-                            HStack(spacing: 15) {
-                                Button(action: {}) {
-                                    ZStack(alignment: .leading) {
-                                        MenuItem(
-                                            mainColor: Color(hex: "#FF7AAD"),
-                                            widthProportion: 0.56,
-                                            heightProportion: 0.16
-                                        )
-
-                                        HStack(alignment: .center, spacing: 10) {
-                                            VStack {
-                                                Text("🐒")
-                                                    .font(.system(size: 50))
-                                            }.padding(.leading, 20)
-
-                                            VStack(alignment: .leading, spacing: 2)
-                                            {
-                                                Text("ape-ify")
-                                                    .font(.pathwayBlack(21))
-                                                Text("your friends'\nlives today!")
-                                                    .font(.pathwaySemiBold(19))
-
-                                            }
-                                        }
-                                    }
-                                }
-                                .buttonStyle(PlainButtonStyle())
-
-                                // Right button - "new friend?" with notification badge
-                                Button(action: {
-                                    navigationPath.append("friendSearch")
-                                }) {
-                                    ZStack {
-                                        // Background using MenuItem component
-                                        MenuItem(
-                                            mainColor: Color(hex: "#E97451"),
-                                            widthProportion: 0.32,
-                                            heightProportion: 0.16
-                                        )
-
-                                        VStack(alignment: .center, spacing: 6) {
-                                            // Add notification badge to image if we have friend requests
-                                            ZStack {
-                                                Image(systemName: "plus.circle")
-                                                    .font(
-                                                        .system(
-                                                            size: 45,
-                                                            weight: .medium)
-                                                    )
-                                                    .foregroundColor(.primary)
-
-                                                // Show notification badge if we have friend requests
-                                            }
-
-                                            Text("new\nfriend?")
-                                                .font(.pathwaySemiBold(19))
-                                                .foregroundColor(.primary)
-                                                .multilineTextAlignment(.center)
-                                        }
-
-                                        if friendManager.incomingRequests
-                                            .count > 0
-                                        {
-                                            Text(
-                                                "\(friendManager.incomingRequests.count)"
-                                            )
-                                            .font(.pathwayBoldCondensed(12))
-                                            .foregroundColor(.white)
-                                            .padding(10)
-                                            .background(Color.red)
-                                            .clipShape(Circle())
-                                            .offset(x: 30, y: -50)
-                                        }
-                                    }
-                                }.matchedTransitionSource(
-                                    id: "friendSearch", in: mainNamespace
-                                )
-                                .buttonStyle(PlainButtonStyle())
+        VStack(spacing: 0) {
+            if let user = currentUser {
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(alignment: .center, spacing: 10) {
+                        Button(action: {
+                            navigationPath.append("self_jungle_view")
+                        }
+                        ) {
+                            UserJungleCard(user: user).matchedTransitionSource(
+                                id: "jungleCard", in: mainNamespace
+                            )
+                        }.buttonStyle(PlainButtonStyle())
+                        if isLoadingEvents {
+                            HStack {
+                                ProgressView()
+                                    .padding(.trailing, 16)
                             }
-                            .padding(.horizontal, 10)
-                            .frame(maxWidth: .infinity)
+                        }
 
-                            // Events Feed Section
-                            VStack(alignment: .leading, spacing: 10) {
-                                HStack {
-                                    Text("happening in your jungle")
-                                        .font(.pathwayBold(18))
-                                        .padding(.leading, 16)
+                        if !events.isEmpty && !isLoadingEvents {
+                            // Group events into pairs or individual cards based on size
+                            let chunkedEvents = createLayoutGroups(
+                                from: events)
 
-                                    Spacer()
+                            ForEach(
+                                0..<chunkedEvents.count, id: \.self
+                            ) { index in
+                                let group = chunkedEvents[index]
 
-                                    if isLoadingEvents {
-                                        ProgressView()
-                                            .padding(.trailing, 16)
+                                // For paired events (horizontal layout)
+                                if group.count == 2 {
+                                    HStack(spacing: 20) {
+                                        ForEach(group) { event in
+                                            EventCard(
+                                                event: event,
+                                                eventSize: event
+                                                    .eventSize
+                                            )
+                                        }
                                     }
                                 }
+                                // For single event (could be small, medium, or large)
+                                else if let singleEvent = group
+                                    .first
+                                {
+                                    if singleEvent.eventSize == .large {
+                                        // Large events get full width
+                                        EventCard(
+                                            event: singleEvent,
+                                            eventSize: .large
+                                        )
+                                    } else {
+                                        // For small or medium events, create a layout with appropriate spacing
+                                        HStack(spacing: 20) {
+                                            if group.first?.position == .right {
+                                                // Empty space (nothing) on the left
+                                                Spacer()
+                                                    .frame(maxWidth: .infinity)
 
-                                if events.isEmpty && !isLoadingEvents {
-                                    Text("no events yet")
+                                                // Event on the right
+                                                EventCard(
+                                                    event: singleEvent,
+                                                    eventSize: singleEvent
+                                                        .eventSize
+                                                ).padding(.trailing, 12)
+                                            } else {
+                                                // Event on the left
+                                                EventCard(
+                                                    event: singleEvent,
+                                                    eventSize: singleEvent
+                                                        .eventSize
+                                                ).padding(.leading, 12)
+
+                                                // Empty space (nothing) on the right
+                                                Spacer()
+                                                    .frame(maxWidth: .infinity)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else if events.isEmpty && !isLoadingEvents {
+                            // Keep your existing empty state code here
+                            if friendManager.friends.isEmpty {
+                                VStack(spacing: 8) {
+                                    Text("no friends yet")
                                         .font(.pathway(16))
                                         .foregroundColor(.secondary)
-                                        .frame(maxWidth: .infinity, alignment: .center)
-                                        .padding(.vertical, 20)
-                                } else {
-                                    // Events List
-                                    LazyVStack(spacing: 12) {
-                                        ForEach(events) { event in
-                                            EventCard(event: event, friendCardSize: .medium)
-                                                .padding(.horizontal, 16)
-                                        }
+
+                                    Text(
+                                        "add some friends to see their activity"
+                                    )
+                                    .font(.pathwayItalic(14))
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                                }
+                                .frame(
+                                    maxWidth: .infinity,
+                                    alignment: .center
+                                )
+                                .padding(.vertical, 20)
+                            } else {
+                                Text("no events yet")
+                                    .font(.pathway(16))
+                                    .foregroundColor(.secondary)
+                                    .frame(
+                                        maxWidth: .infinity,
+                                        alignment: .center
+                                    )
+                                    .padding(.vertical, 20)
+                            }
+                        }
+                    }
+
+                    HStack(spacing: 20) {
+                        Button(action: {}) {
+                            ZStack(alignment: .leading) {
+                                MenuItem(
+                                    mainColor: Color(hex: "#FF7AAD"),
+                                    widthProportion: 0.56,
+                                    heightProportion: 0.16
+                                )
+
+                                HStack(alignment: .center, spacing: 10) {
+                                    VStack {
+                                        Text("🐒")
+                                            .font(.system(size: 50))
+                                    }.padding(.leading, 20)
+
+                                    VStack(
+                                        alignment: .leading, spacing: 2
+                                    ) {
+                                        Text("ape-ify")
+                                            .font(.pathwayBlack(21))
+                                        Text(
+                                            "your friends'\nlives today!"
+                                        )
+                                        .font(.pathwaySemiBold(19))
                                     }
                                 }
                             }
-                            .padding(.top, 10)
                         }
-                    }
-                } else {
-                    VStack(alignment: .center) {
-                        Spacer()
-                        HStack {
-                            Spacer()
-                            ProgressView("loading...").font(.pathwayBold(20))
-                            Spacer()
-                        }
-                        Spacer()
-                    }
-                }
-            }.navigationDestination(
-                for: String.self,
-                destination: {
-                    route in
-                    switch route {
-                    case "self_jungle_view":
-                        UserJungleDetailedView()
-                            .modelContext(self.modelContext)
-                            .navigationTransition(
-                                .zoom(sourceID: "jungleCard", in: mainNamespace)
-                            )
-                    case "friendSearch":
-                        FriendSearchView().toolbar(.hidden).modelContext(
-                            self.modelContext
+                        .buttonStyle(PlainButtonStyle())
+
+                        // Right button - "new friend?" with notification badge
+                        Button(action: {
+                            navigationPath.append("friendSearch")
+                        }) {
+                            ZStack {
+                                // Background using MenuItem component
+                                MenuItem(
+                                    mainColor: Color(hex: "#E97451"),
+                                    widthProportion: 0.32,
+                                    heightProportion: 0.16
+                                )
+
+                                VStack(alignment: .center, spacing: 6) {
+                                    // Add notification badge to image if we have friend requests
+                                    ZStack {
+                                        Image(systemName: "plus.circle")
+                                            .font(
+                                                .system(
+                                                    size: 45,
+                                                    weight: .medium)
+                                            )
+                                            .foregroundColor(.primary)
+                                    }
+
+                                    Text("new\nfriend?")
+                                        .font(.pathwaySemiBold(19))
+                                        .foregroundColor(.primary)
+                                        .multilineTextAlignment(.center)
+                                }
+
+                                if friendManager.incomingRequests.count > 0 {
+                                    Text(
+                                        "\(friendManager.incomingRequests.count)"
+                                    )
+                                    .font(.pathwayBoldCondensed(12))
+                                    .foregroundColor(.white)
+                                    .padding(10)
+                                    .background(Color.red)
+                                    .clipShape(Circle())
+                                    .offset(x: 30, y: -50)
+                                }
+                            }
+                        }.matchedTransitionSource(
+                            id: "friendSearch", in: mainNamespace
                         )
-                        .navigationTransition(
-                            .zoom(sourceID: "friendSearch", in: mainNamespace)
-                        )
-                    default:
-                        EmptyView()
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
-            )
-            .onAppear {
-                currentUser = UserManager.shared.getCurrentUser(
-                    context: modelContext)
-
-                // Fetch friend data when view appears
-                if !isLoadingFriendData {
-                    isLoadingFriendData = true
-                    Task {
-                        await friendManager.refreshFriendData()
-                        await MainActor.run {
-                            isLoadingFriendData = false
-                        }
+            } else {
+                VStack(alignment: .center) {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        ProgressView("loading...").font(.pathwayBold(20))
+                        Spacer()
                     }
+                    Spacer()
                 }
-
-                // Fetch events when view appears
-                fetchEvents()
-
-                setupWidgetSync()
             }
+        }
+        .edgesIgnoringSafeArea(.all)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .navigationDestination(
+            for: String.self,
+            destination: {
+                route in
+                switch route {
+                case "self_jungle_view":
+                    UserJungleDetailedView()
+                        .modelContext(self.modelContext)
+                        .navigationTransition(
+                            .zoom(sourceID: "jungleCard", in: mainNamespace)
+                        )
+                case "friendSearch":
+                    FriendSearchView().toolbar(.hidden).modelContext(
+                        self.modelContext
+                    )
+                    .navigationTransition(
+                        .zoom(sourceID: "friendSearch", in: mainNamespace)
+                    )
+                default:
+                    EmptyView()
+                }
+            }
+        )
+        .onAppear {
+            currentUser = UserManager.shared.getCurrentUser(
+                context: modelContext)
+
+            // Fetch friend data when view appears
+            if !isLoadingFriendData {
+                isLoadingFriendData = true
+                Task {
+                    await friendManager.refreshFriendData()
+                    await MainActor.run {
+                        isLoadingFriendData = false
+
+                        // Fetch events after we have friend data
+                        fetchEvents()
+                    }
+                }
+            } else {
+                // If we're already loading friend data, just fetch events
+                fetchEvents()
+            }
+
+            setupWidgetSync()
         }
     }
 
@@ -210,26 +279,97 @@ struct MainView: View {
     private func fetchEvents() {
         guard let user = currentUser else { return }
 
+        // Don't continue if there are no friends
+        if friendManager.friends.isEmpty && !isLoadingFriendData {
+            return
+        }
+
         isLoadingEvents = true
+        events = []  // Clear any existing events
 
         Task {
-            // Fetch events for the current user
-            if let userEvents = await taskape.fetchEvents(userId: user.id) {
-                await MainActor.run {
-                    events = userEvents
-                    isLoadingEvents = false
+            var allEvents: [taskapeEvent] = []
 
-                    // Load associated tasks for better display
+            // We don't need to fetch events for each friend because our backend
+            // implementation already ensures we get one event per friend
+            // when we call fetchEvents with the current user's ID as the target
+            if let userEvents = await taskape.fetchEvents(userId: user.id) {
+                allEvents = userEvents
+            }
+
+            await MainActor.run {
+                events = allEvents
+                isLoadingEvents = false
+
+                // Load associated tasks for better display
+                if !events.isEmpty {
                     Task {
-                        await loadRelatedTasksForEvents(events: events, modelContext: modelContext)
+                        await loadRelatedTasksForEvents(
+                            events: events, modelContext: modelContext)
                     }
-                }
-            } else {
-                await MainActor.run {
-                    isLoadingEvents = false
                 }
             }
         }
+    }
+
+    // Add this helper function inside the MainView struct
+    private func createLayoutGroups(from events: [taskapeEvent])
+        -> [[taskapeEvent]]
+    {
+        var result: [[taskapeEvent]] = []
+        var currentIndex = 0
+
+        while currentIndex < events.count {
+            let event = events[currentIndex]
+
+            switch event.eventSize {
+            case .large:
+                // Large events always get their own row
+                result.append([event])
+                currentIndex += 1
+
+            case .medium:
+                // Check if we can pair with a small event
+                if currentIndex + 1 < events.count
+                    && events[currentIndex + 1].eventSize == .small
+                {
+                    // Medium + Small
+                    result.append([event, events[currentIndex + 1]])
+                    currentIndex += 2
+                } else {
+                    // Medium only - leave the second position empty
+                    result.append([event])
+                    currentIndex += 1
+                }
+
+            case .small:
+                // Check if we can pair with a medium event
+                if currentIndex + 1 < events.count
+                    && events[currentIndex + 1].eventSize == .medium
+                {
+                    // Small + Medium
+                    result.append([event, events[currentIndex + 1]])
+                    currentIndex += 2
+                } else if currentIndex + 1 < events.count
+                    && events[currentIndex + 1].eventSize == .small
+                {
+                    // Small + Small
+                    result.append([event, events[currentIndex + 1]])
+                    currentIndex += 2
+                } else {
+                    // Small only - leave the second position empty
+                    result.append([event])
+                    currentIndex += 1
+                }
+
+            default:
+                // For any other sizes, add individually
+                result.append([event])
+                currentIndex += 1
+            }
+        }
+
+        return result
     }
 
     func setupWidgetSync() {
@@ -237,6 +377,22 @@ struct MainView: View {
             UserManager.shared.syncTasksWithWidget(context: modelContext)
         }
     }
+}
+
+extension taskapeEvent {
+    var position: EventPosition {
+        // Use the UUID as a deterministic way to decide position
+        // This ensures consistency across app launches
+        let uuidString = self.id
+        let firstChar = uuidString.first ?? "0"
+        return firstChar.asciiValue?.isMultiple(of: 2) == true
+            ? .left : .right
+    }
+}
+
+enum EventPosition {
+    case left
+    case right
 }
 
 #Preview {

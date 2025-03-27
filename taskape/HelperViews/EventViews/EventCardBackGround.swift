@@ -9,7 +9,7 @@ import SwiftUI
 
 struct EventCardBackGround: View {
     var friendColor: Color
-    var size: FriendCardSize
+    var size: EventSize
 
     private var proportions: (widthProportion: Double, heightProportion: Double)
     {

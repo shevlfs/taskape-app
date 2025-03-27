@@ -61,7 +61,10 @@ struct UserJungleCard: View {
                 width: UIScreen.main.bounds.width * 0.93,
                 height: UIScreen.main.bounds.height * 0.24
             )
-        }
+        }.frame(
+            width: UIScreen.main.bounds.width * 0.93,
+            height: UIScreen.main.bounds.height * 0.24
+        )
     }
 }
 

@@ -42,6 +42,34 @@ func fetchEvents(userId: String, includeExpired: Bool = false, limit: Int = 20) 
             headers: headers
         )
         .validate()
+        .responseData { response in
+            // Print the raw response data
+            if let data = response.data {
+                print("Raw response: \(String(data: data, encoding: .utf8) ?? "Unable to convert data to string")")
+
+                // Try decoding manually to see detailed error
+                do {
+                    let decoded = try JSONDecoder().decode(GetEventsResponse.self, from: data)
+                    print("Manual decode successful: \(decoded)")
+                } catch {
+                    print("Decode error: \(error)")
+
+                    // For CodingKeys mismatch errors, print more details
+                    if let decodingError = error as? DecodingError {
+                        switch decodingError {
+                        case .keyNotFound(let key, let context):
+                            print("Missing key: \(key), path: \(context.codingPath)")
+                        case .typeMismatch(let type, let context):
+                            print("Type mismatch: expected \(type), path: \(context.codingPath)")
+                        case .valueNotFound(let type, let context):
+                            print("Value not found: expected \(type), path: \(context.codingPath)")
+                        default:
+                            print("Other decoding error: \(decodingError)")
+                        }
+                    }
+                }
+            }
+        }
         .serializingDecodable(GetEventsResponse.self)
         .response
 
@@ -341,7 +369,7 @@ func convertToLocalEvent(_ event: EventResponse) -> taskapeEvent {
         streakDays: event.streak_days,
         likesCount: event.likes_count,
         commentsCount: event.comments_count,
-        likedByUserIds: event.liked_by_user_ids
+        likedByUserIds: event.liked_by_user_ids ?? []
     )
 }
 

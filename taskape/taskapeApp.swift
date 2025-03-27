@@ -23,7 +23,7 @@ struct taskapeApp: App {
 extension ModelContainer {
     static let shared: ModelContainer = {
         do {
-            return try ModelContainer(for: taskapeUser.self, taskapeTask.self)
+            return try ModelContainer(for: taskapeUser.self, taskapeTask.self, taskapeEvent.self)
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }

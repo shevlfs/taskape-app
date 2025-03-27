@@ -1,56 +1,42 @@
 import CachedAsyncImage
+import SwiftData
 import SwiftUI
-
-enum FriendCardSize {
-    case small
-    case medium
-    case large
-}
 
 struct EventCard: View {
     var event: taskapeEvent
-    var friendCardSize: FriendCardSize
+    var eventSize: EventSize
 
     @State private var userName: String = ""
     @State private var userColor: String = "000000"
     @State private var userImage: String = ""
     @State private var isLiked: Bool = false
 
-    // Time formatting
-    private let timeFormatter: RelativeDateTimeFormatter = {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .short
-        return formatter
-    }()
-
-    private func formatDate(_ date: Date) -> String {
-        return timeFormatter.localizedString(for: date, relativeTo: Date())
-    }
+    @Environment(\.colorScheme) var colorScheme
 
     private func getEventTypeText() -> String {
         switch event.eventType {
         case .newTasksAdded:
             return "added new tasks"
         case .newlyReceived:
-            return "received new tasks"
+            return "newly received"
         case .newlyCompleted:
-            return "completed tasks"
+            return "recently completed"
         case .requiresConfirmation:
-            return "needs task confirmation"
+            return "needs confirmation"
         case .nDayStreak:
             let days = event.streakDays
             return "is on a \(days) day streak!"
         case .deadlineComingUp:
-            return "has tasks due soon"
+            return "due soon"
         }
     }
 
     var body: some View {
-        Button(action: {
-            // Navigate to event detail view
-        }) {
-            VStack(alignment: .leading, spacing: 0) {
-                switch friendCardSize {
+        ZStack {
+            // Background
+            // Content
+            VStack(spacing: 0) {
+                switch eventSize {
                 case .small:
                     smallEventView
                 case .medium:
@@ -59,16 +45,7 @@ struct EventCard: View {
                     largeEventView
                 }
             }
-            .background(
-                EventCardBackGround(
-                    friendColor: event.user?.profileColor != nil ?
-                        Color(hex: event.user!.profileColor) :
-                        Color(hex: userColor),
-                    size: friendCardSize
-                )
-            )
         }
-        .buttonStyle(PlainButtonStyle())
         .onAppear {
             isLiked = event.isLikedByCurrentUser()
 
@@ -89,319 +66,414 @@ struct EventCard: View {
         }
     }
 
-    // Small event view - just shows user and type
     private var smallEventView: some View {
-        HStack(spacing: 10) {
-            userProfileImage(size: 30)
+        ZStack(alignment: .topLeading) {
+            EventCardBackGround(
+                friendColor: Color(hex: userColor), size: .small)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text("@\(event.user?.handle ?? userName)")
-                    .font(.pathwayBold(14))
-                    .lineLimit(1)
-
-                Text(getEventTypeText())
-                    .font(.pathway(12))
-                    .lineLimit(1)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding(12)
-    }
-
-    // Medium event view - shows user, type, and stats
-    private var mediumEventView: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                userProfileImage(size: 36)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("@\(event.user?.handle ?? userName)")
-                        .font(.pathwayBold(16))
-
-                    Text(getEventTypeText())
-                        .font(.pathway(14))
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-
-                Text(formatDate(event.createdAt))
-                    .font(.pathwayItalic(12))
-                    .foregroundColor(.secondary)
-            }
-
-            if event.taskIds.count > 0 {
-                Text("\(event.taskIds.count) tasks")
-                    .font(.pathway(14))
-                    .padding(.vertical, 2)
-            }
-
-            HStack(spacing: 15) {
-                Button(action: {
-                    toggleLike()
-                }) {
-                    Label(
-                        "\(event.likesCount)",
-                        systemImage: isLiked ? "heart.fill" : "heart"
-                    )
-                    .font(.pathway(12))
-                    .foregroundColor(isLiked ? .red : .primary)
-                }
-                .buttonStyle(PlainButtonStyle())
-
-                Label(
-                    "\(event.commentsCount)",
-                    systemImage: "bubble.left"
-                )
-                .font(.pathway(12))
-            }
-        }
-        .padding(12)
-    }
-
-    // Large event view - shows everything
-    private var largeEventView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                userProfileImage(size: 40)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("@\(event.user?.handle ?? userName)")
-                        .font(.pathwayBold(18))
-
-                    Text(getEventTypeText())
-                        .font(.pathway(16))
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-
-                Text(formatDate(event.createdAt))
-                    .font(.pathwayItalic(14))
-                    .foregroundColor(.secondary)
-            }
-
-            // Task list if available
-            if !event.relatedTasks.isEmpty {
-                VStack(alignment: .leading, spacing: 6) {
-                    ForEach(event.relatedTasks.prefix(3)) { task in
-                        HStack {
+            VStack(alignment: .leading, spacing: 0) {
+                // Profile image area
+                HStack {
+                    Spacer()
+                    CachedAsyncImage(url: URL(string: userImage)) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        case .failure, .empty, _:
                             Circle()
-                                .fill(Color.white.opacity(0.5))
-                                .frame(width: 6, height: 6)
-
-                            Text(task.name.isEmpty ? "unnamed task" : task.name)
-                                .font(.pathway(14))
-                                .lineLimit(1)
-                                .foregroundColor(.primary.opacity(0.9))
+                                .fill(Color(hex: userColor))
+                                .overlay(
+                                    Text(
+                                        String(userName.prefix(1)).uppercased()
+                                    )
+                                    .font(
+                                        .system(size: 20 * 0.4, weight: .bold)
+                                    )
+                                    .foregroundColor(.white)
+                                )
                         }
                     }
-
-                    if event.relatedTasks.count > 3 {
-                        Text("& \(event.relatedTasks.count - 3) more...")
-                            .font(.pathwayItalic(12))
-                            .foregroundColor(.secondary)
-                            .padding(.leading, 12)
-                    }
+                    .frame(width: 75, height: 75)
+                    .clipShape(Circle())
+                    .padding(.trailing, 8)
+                    .padding(.top, 8)
                 }
-                .padding(.vertical, 4)
-            } else if event.taskIds.count > 0 {
-                Text("\(event.taskIds.count) tasks")
-                    .font(.pathway(14))
-                    .padding(.vertical, 2)
+
+                // Username text with fixed position at bottom
+                Text("\(userName)")
+                    .font(.pathwayBlack(20))
+                    .foregroundColor(getTextColor())
+                    .lineLimit(1)
+                    .padding(.leading, 9).padding(.top, 15)
             }
+        }.frame(
+            width: UIScreen.main.bounds.width * proportions.0,
+            height: UIScreen.main.bounds.height * proportions.1
+        )
+    }
 
-            // Streak information if applicable
-            if event.eventType == .nDayStreak && event.streakDays > 0 {
-                HStack {
-                    ForEach(0..<min(event.streakDays, 5), id: \.self) { _ in
-                        Image(systemName: "flame.fill")
-                            .foregroundColor(.orange)
-                    }
+    private var mediumEventView: some View {
+        ZStack(alignment: .topLeading) {
+            EventCardBackGround(
+                friendColor: Color(hex: userColor), size: .medium)
 
-                    if event.streakDays > 5 {
-                        Text("+\(event.streakDays - 5)")
-                            .font(.pathwayBold(14))
-                            .foregroundColor(.orange)
+            HStack {
+                VStack {
+                    CachedAsyncImage(url: URL(string: userImage)) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        case .failure, .empty, _:
+                            Circle()
+                                .fill(Color(hex: userColor))
+                                .overlay(
+                                    Text(
+                                        String(userName.prefix(1)).uppercased()
+                                    )
+                                    .font(
+                                        .system(size: 20 * 0.4, weight: .bold)
+                                    )
+                                    .foregroundColor(.white)
+                                )
+                        }
                     }
+                    .frame(width: 75, height: 75)
+                    .clipShape(Circle())
+                    .padding(.leading, 8).padding(.top, 8)
+                    Spacer()
+                    Text("\(userName)")
+                        .font(.pathwayBlack(22))
+                        .foregroundColor(getTextColor()).padding(.bottom, 15)
+
+                }.padding(.trailing, 8)
+                Spacer()
+                if !event.relatedTasks.isEmpty {
+                    VStack(alignment: .trailing, spacing: 5) {
+
+                        Text("\(getEventTypeText())")
+                            .font(.pathwaySemiBold(11))
+                            .lineLimit(2)
+                            .foregroundColor(getTextColor())
+                            .padding(.bottom, 5)
+                            .multilineTextAlignment(.trailing)
+                            .allowsTightening(true)
+                            .padding(.trailing, 10)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.leading).padding(.top, 8)
+
+                        Group {
+                            if !event.relatedTasks.isEmpty {
+                                HStack(alignment: .top, spacing: 6) {
+                                    Text("•")
+                                        .font(.pathway(11)).foregroundColor(
+                                            getTextColor())
+
+                                    Text(event.relatedTasks[1].name)
+                                        .foregroundColor(getTextColor())
+                                        .font(.pathway(10)).allowsTightening(
+                                            true
+                                        )
+                                        .lineLimit(2)
+                                        .multilineTextAlignment(.leading)
+                                        .padding(
+                                            .trailing, 5)
+                                }
+
+                                if event.relatedTasks.count > 1 {
+
+                                    HStack(alignment: .top, spacing: 6) {
+                                        Text("•")
+                                            .font(.pathway(11)).foregroundColor(
+                                                getTextColor())
+
+                                        Text(event.relatedTasks[1].name)
+                                            .foregroundColor(getTextColor())
+                                            .font(.pathway(10))
+                                            .allowsTightening(
+                                                true
+                                            ).lineLimit(4)
+                                            .multilineTextAlignment(.leading)
+                                            .padding(.trailing, 5)
+                                    }
+                                }
+                            }
+                        }
+                        Spacer()
+                    }
+                } else {
+                    VStack {
+                        Spacer()
+                        Text(getEventTypeText())
+                            .foregroundColor(getTextColor())
+                            .font(.pathwaySemiBold(13))
+                            .lineLimit(2)
+                            .multilineTextAlignment(.trailing)
+                        Spacer()
+                    }.padding()
                 }
-                .padding(.vertical, 4)
+
             }
+        }.frame(
+            width: UIScreen.main.bounds.width * proportions.0,
+            height: UIScreen.main.bounds.height * proportions.1
+        )
+    }
 
-            Divider()
-                .background(Color.white.opacity(0.3))
+    private var proportions: (widthProportion: Double, heightProportion: Double)
+    {
+        switch eventSize {
+        case .small:
+            return (0.32, 0.16)
+        case .medium:
+            return (0.56, 0.16)
+        case .large:
+            return (0.93, 0.16)
+        }
+    }
 
-            // Interaction buttons
-            HStack(spacing: 20) {
-                Button(action: {
-                    toggleLike()
-                }) {
-                    Label(
-                        "\(event.likesCount)",
-                        systemImage: isLiked ? "heart.fill" : "heart"
-                    )
-                    .font(.pathway(14))
-                    .foregroundColor(isLiked ? .red : .primary)
+    //    else {
+    //        VStack{
+    //            Spacer()
+    //            Text(getEventTypeText())
+    //                .foregroundColor(getTextColor())
+    //                .font(.pathwaySemiBold(13))
+    //                .lineLimit(2)
+    //                .multilineTextAlignment(.trailing)
+    //            Spacer()
+    //        }.padding()
+    //    }
+
+    private var largeEventView: some View {
+        ZStack {
+            EventCardBackGround(
+                friendColor: Color(hex: userColor),
+                size: .large
+            )
+
+            HStack {
+                if !event.relatedTasks.isEmpty {
+                    VStack(alignment: .leading) {
+                        Text(getEventTypeText())
+                            .font(.pathwaySemiBold(11))
+                            .foregroundColor(getTextColor())
+                            .padding(.top, 8)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                        Spacer()
+
+                        Group {
+                            if !event.relatedTasks.isEmpty {
+                                HStack(alignment: .top, spacing: 6) {
+                                    Text("•")
+                                        .font(.pathway(11)).foregroundColor(
+                                            getTextColor())
+
+                                    Text(event.relatedTasks[1].name)
+                                        .foregroundColor(getTextColor())
+                                        .font(.pathway(11)).allowsTightening(
+                                            true
+                                        )
+                                        .lineLimit(2)
+                                        .multilineTextAlignment(.trailing)
+                                }
+
+                                if event.relatedTasks.count > 1 {
+
+                                    HStack(alignment: .top, spacing: 6) {
+                                        Text("•")
+                                            .font(.pathway(11)).foregroundColor(
+                                                getTextColor())
+
+                                        Text(event.relatedTasks[1].name)
+                                            .foregroundColor(getTextColor())
+                                            .font(.pathway(11))
+                                            .allowsTightening(
+                                                true
+                                            ).lineLimit(4)
+                                            .multilineTextAlignment(.leading)
+                                            .padding(.trailing, 5)
+                                    }
+                                }
+                            }
+                        }.padding(.bottom, 10)
+
+                        Spacer()
+
+                    }.padding(.leading, 12)
+                } else {
+                    VStack {
+                        Spacer()
+                        Text(getEventTypeText())
+                            .foregroundColor(getTextColor())
+                            .font(.pathwaySemiBold(16))
+                            .lineLimit(3)
+                            .multilineTextAlignment(.leading)
+                        Spacer()
+                    }.padding()
                 }
-                .buttonStyle(PlainButtonStyle())
-
-                Button(action: {
-                    // Navigate to comments
-                }) {
-                    Label(
-                        "\(event.commentsCount)",
-                        systemImage: "bubble.left"
-                    )
-                    .font(.pathway(14))
-                }
-                .buttonStyle(PlainButtonStyle())
 
                 Spacer()
+                VStack(alignment: .trailing) {
+                    CachedAsyncImage(url: URL(string: userImage)) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        case .failure, .empty, _:
+                            Circle()
+                                .fill(Color(hex: userColor))
+                                .overlay(
+                                    Text(
+                                        String(userName.prefix(1)).uppercased()
+                                    )
+                                    .font(
+                                        .system(size: 20 * 0.4, weight: .bold)
+                                    )
+                                    .foregroundColor(.white)
+                                )
+                        }
+                    }
+                    .frame(width: 75, height: 75)
+                    .clipShape(Circle()).padding(.top)
+
+                    Spacer()
+
+                    Text("\(userName)")
+                        .font(.pathwayBlack(25))
+                        .foregroundColor(getTextColor())
+                        .padding(.leading, 17).padding(.bottom, 8)
+
+                }.padding(.trailing, 12)
             }
-            .padding(.top, 4)
-        }
-        .padding(16)
+
+        }.frame(
+            width: UIScreen.main.bounds.width * proportions.0,
+            height: UIScreen.main.bounds.height * proportions.1
+        )
     }
 
-    // Helper function to display user profile image
-    private func userProfileImage(size: CGFloat) -> some View {
-        Group {
-            if let user = event.user, !user.profileImageURL.isEmpty {
-                CachedAsyncImage(url: URL(string: user.profileImageURL)) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .failure:
-                        Circle()
-                            .fill(Color(hex: user.profileColor))
-                            .overlay(
-                                Text(String(user.handle.prefix(1)).uppercased())
-                                    .font(.pathwayBold(size * 0.4))
-                                    .foregroundColor(.white)
-                            )
-                    case .empty:
-                        ProgressView()
-                    @unknown default:
-                        Circle()
-                            .fill(Color(hex: user.profileColor))
-                    }
-                }
-                .frame(width: size, height: size)
-                .clipShape(Circle())
-            } else if !userImage.isEmpty {
-                CachedAsyncImage(url: URL(string: userImage)) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .failure, .empty, _:
-                        Circle()
-                            .fill(Color(hex: userColor))
-                            .overlay(
-                                Text(String(userName.prefix(1)).uppercased())
-                                    .font(.pathwayBold(size * 0.4))
-                                    .foregroundColor(.white)
-                            )
-                    }
-                }
-                .frame(width: size, height: size)
-                .clipShape(Circle())
-            } else {
-                Circle()
-                    .fill(Color(hex: userColor))
-                    .overlay(
-                        Text(String(userName.prefix(1)).uppercased())
-                            .font(.pathwayBold(size * 0.4))
-                            .foregroundColor(.white)
-                    )
-                    .frame(width: size, height: size)
-            }
-        }
-    }
-
-    // Toggle like function
-    private func toggleLike() {
-        let currentUserId = UserManager.shared.currentUserId
-        if isLiked {
-            // Unlike the event
-            isLiked = false
-            if event.likesCount > 0 {
-                event.likesCount -= 1
-            }
-            event.likedByUserIds.removeAll { $0 == currentUserId }
-
-            // Update on server
-            Task {
-                await unlikeEvent(eventId: event.id, userId: currentUserId)
-            }
-        } else {
-            // Like the event
-            isLiked = true
-            event.likesCount += 1
-            event.likedByUserIds.append(currentUserId)
-
-            // Update on server
-            Task {
-                await likeEvent(eventId: event.id, userId: currentUserId)
-            }
-        }
+    func getTextColor() -> Color {
+        return Color(hex: userColor).contrastingTextColor(in: colorScheme)
     }
 }
 
 // Preview for testing
-#Preview {
-    VStack(spacing: 20) {
-        // Create a sample event for small size
-        EventCard(
-            event: taskapeEvent(
-                id: "event1",
-                userId: "user1",
-                targetUserId: "user2",
-                eventType: .newTasksAdded,
-                eventSize: .small,
-                createdAt: Date().addingTimeInterval(-3600),
-                taskIds: ["task1", "task2"],
-                likesCount: 5,
-                commentsCount: 2
-            ),
-            friendCardSize: .small
-        )
+struct EventCardPreview: View {
+    // Sample users
+    let dmitryUser = taskapeUser(
+        id: "user1",
+        handle: "dmitryddddd",
+        bio: "87CEFA",
+        profileImage:
+            "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
+        profileColor: "")
+    let gogaUser = taskapeUser(
+        id: "user2", handle: "goga", bio: "F5F5DC",
+        profileImage:
+            "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
+        profileColor: "")
+    let shevlfsUser = taskapeUser(
+        id: "user3", handle: "shevlfs", bio: "FFC0CB",
+        profileImage:
+            "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
+        profileColor: "")
 
-        // Medium size event
-        EventCard(
-            event: taskapeEvent(
-                id: "event2",
-                userId: "user1",
-                targetUserId: "user2",
-                eventType: .newlyCompleted,
-                eventSize: .medium,
-                createdAt: Date().addingTimeInterval(-86400),
-                taskIds: ["task1", "task2", "task3"],
-                likesCount: 12,
-                commentsCount: 4
-            ),
-            friendCardSize: .medium
-        )
+    // Sample tasks
+    let designTask = taskapeTask(
+        id: "task1",
+        name: "check out this design prototype!",
+        taskDescription: "Review the new design prototype",
+        author: "goga",
+        privacy: "everyone"
+    )
 
-        // Large size event with streak
-        EventCard(
-            event: taskapeEvent(
-                id: "event3",
-                userId: "user3",
-                targetUserId: "user3",
-                eventType: .nDayStreak,
-                eventSize: .large,
-                createdAt: Date().addingTimeInterval(-172800),
-                taskIds: ["task4", "task5"],
-                streakDays: 7,
-                likesCount: 25,
-                commentsCount: 10
-            ),
-            friendCardSize: .large
+    let figmaTask = taskapeTask(
+        id: "task2",
+        name: "figure out how figma works",
+        taskDescription: "Learn Figma basics",
+        author: "shevlfs",
+        privacy: "everyone"
+    )
+
+    let uiTask = taskapeTask(
+        id: "task3",
+        name: "understand how to make good uis",
+        taskDescription: "Study UI design principles",
+        author: "shevlfs",
+        privacy: "everyone"
+    )
+
+    let designChangesTask = taskapeTask(
+        id: "task4",
+        name: "make some changes to this design",
+        taskDescription: "Implement design modifications",
+        author: "shevlfs",
+        privacy: "everyone"
+    )
+
+    // Sample events
+    var dmitryEvent: taskapeEvent {
+        let event = taskapeEvent(
+            id: "event1",
+            userId: dmitryUser.id,
+            targetUserId: dmitryUser.id,
+            eventType: .newTasksAdded,
+            eventSize: .small,
+            createdAt: Date().addingTimeInterval(-3600),
+            taskIds: ["task1", "task2"]
         )
+        event.user = dmitryUser
+        return event
     }
-    .padding()
+
+    var gogaEvent: taskapeEvent {
+        let event = taskapeEvent(
+            id: "event2",
+            userId: gogaUser.id,
+            targetUserId: gogaUser.id,
+            eventType: .newlyCompleted,
+            eventSize: .medium,
+            createdAt: Date().addingTimeInterval(-86400),
+            taskIds: [designTask.id, uiTask.id]
+        )
+        event.user = gogaUser
+        event.relatedTasks = []
+        return event
+    }
+
+    var shevlfsEvent: taskapeEvent {
+        let event = taskapeEvent(
+            id: "event3",
+            userId: shevlfsUser.id,
+            targetUserId: shevlfsUser.id,
+            eventType: .newlyReceived,
+            eventSize: .large,
+            createdAt: Date().addingTimeInterval(-172800),
+            taskIds: [figmaTask.id]
+        )
+        event.user = shevlfsUser
+        event.relatedTasks = []
+        return event
+    }
+
+    var body: some View {
+        VStack(spacing: 15) {
+            HStack(spacing: 20) {
+                EventCard(event: dmitryEvent, eventSize: .small)
+
+                EventCard(event: gogaEvent, eventSize: .medium)
+            }
+            EventCard(event: shevlfsEvent, eventSize: .large)
+        }
+        .padding()
+    }
+}
+
+#Preview {
+    EventCardPreview()
 }

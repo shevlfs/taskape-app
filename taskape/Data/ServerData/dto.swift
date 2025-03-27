@@ -341,7 +341,7 @@ struct EventResponse: Codable {
     let streak_days: Int
     let likes_count: Int
     let comments_count: Int
-    let liked_by_user_ids: [String]
+    let liked_by_user_ids: [String]?
 }
 
 struct GetEventsResponse: Codable {

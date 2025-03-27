@@ -80,7 +80,9 @@ struct MainNavigationView: View {
                 TabBarView(
                     tabBarItems: $mainTabBarItems,
                     tabBarViewIndex: $selectedTabIndex
-                )
+                ).ignoresSafeArea(.all)
+                    .edgesIgnoringSafeArea(.all)
+                    .toolbar(.hidden)
 
                 switch selectedTabIndex {
                 case 0:
@@ -89,13 +91,17 @@ struct MainNavigationView: View {
                 case 1:
                     MainView(navigationPath: $mainNavigationPath)
                         .modelContext(modelContext)
+                        .ignoresSafeArea(.all)
+                        .edgesIgnoringSafeArea(.all)
+                        .frame(maxHeight: .infinity).toolbar(.hidden)
                 default:
                     Text("Unknown")
                 }
                 Spacer()
             }
-        }
-        .onAppear {
+            .edgesIgnoringSafeArea(.bottom)
+               .toolbar(.hidden)
+        }        .onAppear {
             currentUser = UserManager.shared.getCurrentUser(
                 context: modelContext)
             Task {
