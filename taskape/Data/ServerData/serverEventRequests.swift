@@ -45,7 +45,7 @@ func fetchEvents(userId: String, includeExpired: Bool = false, limit: Int = 20) 
         .responseData { response in
             // Print the raw response data
             if let data = response.data {
-                print("Raw response: \(String(data: data, encoding: .utf8) ?? "Unable to convert data to string")")
+                // print("Raw response: \(String(data: data, encoding: .utf8) ?? "Unable to convert data to string")")
 
                 // Try decoding manually to see detailed error
                 do {
@@ -365,7 +365,7 @@ func convertToLocalEvent(_ event: EventResponse) -> taskapeEvent {
         eventSize: eventSize,
         createdAt: createdAt,
         expiresAt: expiresAt,
-        taskIds: event.task_ids,
+        taskIds: event.task_ids ?? [],
         streakDays: event.streak_days,
         likesCount: event.likes_count,
         commentsCount: event.comments_count,
@@ -393,70 +393,6 @@ func convertToLocalComment(_ comment: EventCommentResponse) -> EventComment {
         isEdited: comment.is_edited,
         editedAt: editedAt
     )
-}
-
-// Helper function to sync events for a user
-func syncUserEvents(userId: String, modelContext: ModelContext) async {
-    // Fetch events from server
-    guard let remoteEvents = await fetchEvents(userId: userId) else {
-        print("failed to fetch events")
-        return
-    }
-
-    // Fetch existing events from local database
-    let eventDescriptor = FetchDescriptor<taskapeEvent>(
-        predicate: #Predicate<taskapeEvent> { event in
-            event.targetUserId == userId
-        }
-    )
-
-    do {
-        let existingEvents = try modelContext.fetch(eventDescriptor)
-        print("found \(existingEvents.count) existing events and \(remoteEvents.count) remote events")
-
-        // Create maps for lookup
-        var remoteEventMap = [String: taskapeEvent]()
-        for event in remoteEvents {
-            remoteEventMap[event.id] = event
-        }
-
-        var existingEventMap = [String: taskapeEvent]()
-        for event in existingEvents {
-            existingEventMap[event.id] = event
-        }
-
-        // Update existing events
-        for existingEvent in existingEvents {
-            if let remoteEvent = remoteEventMap[existingEvent.id] {
-                // Update with remote values
-                existingEvent.likesCount = remoteEvent.likesCount
-                existingEvent.commentsCount = remoteEvent.commentsCount
-                existingEvent.likedByUserIds = remoteEvent.likedByUserIds
-                existingEvent.expiresAt = remoteEvent.expiresAt
-            } else {
-                // Remove events that no longer exist remotely
-                // Only if they're expired
-                if existingEvent.expiresAt != nil && existingEvent.expiresAt! < Date() {
-                    modelContext.delete(existingEvent)
-                }
-            }
-        }
-
-        // Insert new events
-        for (id, remoteEvent) in remoteEventMap {
-            if existingEventMap[id] == nil {
-                // This is a new event from the server
-                modelContext.insert(remoteEvent)
-            }
-        }
-
-        // Save changes
-        try modelContext.save()
-        print("successfully synced events for user \(userId)")
-
-    } catch {
-        print("failed to sync events: \(error)")
-    }
 }
 
 // Function to load related tasks for events
@@ -524,38 +460,3 @@ func loadRelatedTasksForEvents(events: [taskapeEvent], modelContext: ModelContex
     }
 }
 
-// Function to fetch a single task by ID
-func fetchTask(taskId: String, requesterId: String) async -> taskapeTask? {
-    guard let token = UserDefaults.standard.string(forKey: "authToken") else {
-        print("no auth token found")
-        return nil
-    }
-
-    do {
-        let headers: HTTPHeaders = [
-            "Authorization": token
-        ]
-
-        let result = await AF.request(
-            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/tasks/\(taskId)?requester_id=\(requesterId)",
-            method: .get,
-            headers: headers
-        )
-        .validate()
-        .serializingDecodable(GetTaskResponse.self)
-        .response
-
-        switch result.result {
-        case .success(let response):
-            if response.success {
-                return convertToLocalTask(response.task)
-            } else {
-                print("failed to fetch task: \(response.message ?? "unknown error")")
-                return nil
-            }
-        case .failure(let error):
-            print("failed to fetch task: \(error.localizedDescription)")
-            return nil
-        }
-    }
-}

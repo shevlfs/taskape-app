@@ -19,14 +19,14 @@ struct MainRootView: View {
     var body: some View {
         Group {
             if isLoading {
-                ProgressView("Loading your profile...")
+                ProgressView("loading your profile...")
             } else if let error = loadingError {
                 VStack {
                     Text(error.lowercased()).font(.pathway(26))
                         .padding()
                         .multilineTextAlignment(.center)
 
-                    Button("return to Login") {
+                    Button("return to login") {
                         appState.logout()
                     }.font(.pathway(20))
                         .padding()
@@ -87,13 +87,13 @@ struct MainRootView: View {
                             isLoading = false
                         } else {
                             loadingError =
-                                "Could not load your profile. Please try again."
+                                "could not load your profile.\nplease try again."
                             isLoading = false
                         }
                     }
                 } else {
                     await MainActor.run {
-                        loadingError = "No user ID found. Please log in again."
+                        loadingError = "no user id found.\nplease log in again."
                         isLoading = false
                     }
                 }

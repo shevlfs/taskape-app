@@ -102,11 +102,11 @@ struct EventCard: View {
                 }
 
                 // Username text with fixed position at bottom
-                Text("\(userName)")
+                Text("\(userName)") .minimumScaleFactor(0.01)
                     .font(.pathwayBlack(20))
                     .foregroundColor(getTextColor())
                     .lineLimit(1)
-                    .padding(.leading, 9).padding(.top, 15)
+                    .padding(.leading, 9).padding(.top, 15).padding(.trailing, 5)
             }
         }.frame(
             width: UIScreen.main.bounds.width * proportions.0,
@@ -126,7 +126,7 @@ struct EventCard: View {
                         case .success(let image):
                             image
                                 .resizable()
-                                .aspectRatio(contentMode: .fill)
+                                .aspectRatio(contentMode:   .fill)
                         case .failure, .empty, _:
                             Circle()
                                 .fill(Color(hex: userColor))
@@ -145,9 +145,12 @@ struct EventCard: View {
                     .clipShape(Circle())
                     .padding(.leading, 8).padding(.top, 8)
                     Spacer()
+
                     Text("\(userName)")
                         .font(.pathwayBlack(22))
-                        .foregroundColor(getTextColor()).padding(.bottom, 15)
+                        .foregroundColor(getTextColor())
+                        .padding(.bottom, 15)
+                        .padding(.leading, 5).scaledToFit().frame(maxWidth: .infinity) .minimumScaleFactor(0.01)
 
                 }.padding(.trailing, 8)
                 Spacer()
@@ -172,7 +175,7 @@ struct EventCard: View {
                                         .font(.pathway(11)).foregroundColor(
                                             getTextColor())
 
-                                    Text(event.relatedTasks[1].name)
+                                    Text(event.relatedTasks[0].name)
                                         .foregroundColor(getTextColor())
                                         .font(.pathway(10)).allowsTightening(
                                             true
@@ -205,15 +208,12 @@ struct EventCard: View {
                         Spacer()
                     }
                 } else {
-                    VStack {
-                        Spacer()
                         Text(getEventTypeText())
                             .foregroundColor(getTextColor())
                             .font(.pathwaySemiBold(13))
                             .lineLimit(2)
                             .multilineTextAlignment(.trailing)
-                        Spacer()
-                    }.padding()
+                    .padding([.trailing])
                 }
 
             }
@@ -258,7 +258,7 @@ struct EventCard: View {
                 if !event.relatedTasks.isEmpty {
                     VStack(alignment: .leading) {
                         Text(getEventTypeText())
-                            .font(.pathwaySemiBold(11))
+                            .font(.pathwaySemiBold(16))
                             .foregroundColor(getTextColor())
                             .padding(.top, 8)
                             .lineLimit(2)
@@ -272,7 +272,7 @@ struct EventCard: View {
                                         .font(.pathway(11)).foregroundColor(
                                             getTextColor())
 
-                                    Text(event.relatedTasks[1].name)
+                                    Text(event.relatedTasks[0].name)
                                         .foregroundColor(getTextColor())
                                         .font(.pathway(11)).allowsTightening(
                                             true
@@ -343,7 +343,7 @@ struct EventCard: View {
 
                     Spacer()
 
-                    Text("\(userName)")
+                    Text("\(userName)") .minimumScaleFactor(0.01)
                         .font(.pathwayBlack(25))
                         .foregroundColor(getTextColor())
                         .padding(.leading, 17).padding(.bottom, 8)
@@ -373,12 +373,12 @@ struct EventCardPreview: View {
             "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
         profileColor: "")
     let gogaUser = taskapeUser(
-        id: "user2", handle: "goga", bio: "F5F5DC",
+        id: "user2", handle: "seconduser", bio: "F5F5DC",
         profileImage:
             "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
         profileColor: "")
     let shevlfsUser = taskapeUser(
-        id: "user3", handle: "shevlfs", bio: "FFC0CB",
+        id: "user3", handle: "seconduser", bio: "FFC0CB",
         profileImage:
             "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
         profileColor: "")
@@ -457,7 +457,7 @@ struct EventCardPreview: View {
             taskIds: [figmaTask.id]
         )
         event.user = shevlfsUser
-        event.relatedTasks = []
+        event.relatedTasks = [figmaTask]
         return event
     }
 

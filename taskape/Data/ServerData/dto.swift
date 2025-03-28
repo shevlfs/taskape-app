@@ -337,7 +337,7 @@ struct EventResponse: Codable {
     let size: String
     let created_at: String
     let expires_at: String?
-    let task_ids: [String]
+    let task_ids: [String]?
     let streak_days: Int
     let likes_count: Int
     let comments_count: Int

@@ -49,7 +49,7 @@ func submitTasksBatch(tasks: [taskapeTask]) async
             name: task.name,
             description: task.taskDescription,
             deadline: deadlineString,
-            author: task.author,
+            author: task.user_id,
             group: task.group,
             group_id: task.group_id,
             assigned_to: task.assignedToTask,
@@ -346,13 +346,13 @@ func syncUserTasks(
 
         // Save all changes at once
         // try modelContext.save()
-       //  print("Successfully synced tasks for user \(userId)")
+        //  print("Successfully synced tasks for user \(userId)")
 
-//        UserManager.shared.syncCurrentUserTasksWithWidget(tasks: remoteTasks)
-//
-//        DispatchQueue.main.async {
-//            TaskNotifier.notifyTasksUpdated()
-//        }
+        //        UserManager.shared.syncCurrentUserTasksWithWidget(tasks: remoteTasks)
+        //
+        //        DispatchQueue.main.async {
+        //            TaskNotifier.notifyTasksUpdated()
+        //        }
 
         try modelContext.save()
         print("Successfully synced tasks for user \(userId)")
@@ -362,5 +362,42 @@ func syncUserTasks(
 
     } catch {
         print("Failed to sync tasks: \(error)")
+    }
+}
+
+func fetchTask(taskId: String, requesterId: String) async -> taskapeTask? {
+    guard let token = UserDefaults.standard.string(forKey: "authToken") else {
+        print("no auth token found")
+        return nil
+    }
+
+    do {
+        let headers: HTTPHeaders = [
+            "Authorization": token
+        ]
+
+        let result = await AF.request(
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/tasks/\(taskId)?requester_id=\(requesterId)",
+            method: .get,
+            headers: headers
+        )
+        .validate()
+        .serializingDecodable(GetTaskResponse.self)
+        .response
+
+        switch result.result {
+        case .success(let response):
+            if response.success {
+                return convertToLocalTask(response.task)
+            } else {
+                print(
+                    "failed to fetch task: \(response.message ?? "unknown error")"
+                )
+                return nil
+            }
+        case .failure(let error):
+            print("failed to fetch task: \(error.localizedDescription)")
+            return nil
+        }
     }
 }

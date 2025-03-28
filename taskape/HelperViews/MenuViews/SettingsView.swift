@@ -32,15 +32,12 @@ struct SettingsView: View {
                 .padding()
                 .frame(maxWidth: .infinity)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: 30)
                         .fill(Color(UIColor.secondarySystemBackground))
                 )
                 .padding(.horizontal)
             }
 
-            Spacer()
-
-            // Logout button at the bottom
             Button(action: {
                 showLogoutConfirmation = true
             }) {
@@ -55,15 +52,16 @@ struct SettingsView: View {
                     )
             }
             .padding(.bottom, 32)
-            .alert("Logout Confirmation", isPresented: $showLogoutConfirmation)
+            .alert("logout confirmation", isPresented: $showLogoutConfirmation)
             {
-                Button("Cancel", role: .cancel) {}
-                Button("Logout", role: .destructive) {
+                Button("cancel", role: .cancel) {}
+                Button("logout", role: .destructive) {
                     performLogout()
                 }
             } message: {
-                Text("Are you sure you want to logout from your account?")
+                Text("are you sure you want to logout?")
             }
+            Spacer()
         }
         .onAppear {
             currentUser = UserManager.shared.getCurrentUser(

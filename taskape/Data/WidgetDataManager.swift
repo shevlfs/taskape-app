@@ -43,16 +43,16 @@ class WidgetDataManager {
         do {
             let data = try JSONEncoder().encode(widgetTasks)
             let userDefaults = UserDefaults(suiteName: appGroupIdentifier)
-            print("WidgetDataManager: Writing to UserDefaults group: \(appGroupIdentifier ?? "nil")")
+            //print("WidgetDataManager: Writing to UserDefaults group: \(appGroupIdentifier ?? "nil")")
             userDefaults?.set(data, forKey: "taskape_widget_tasks")
             let success = userDefaults?.synchronize() ?? false
-            print("WidgetDataManager: Save and synchronize \(success ? "succeeded" : "failed")")
+            //print("WidgetDataManager: Save and synchronize \(success ? "succeeded" : "failed")")
 
             // Add verification step
             if let savedData = userDefaults?.data(forKey: "taskape_widget_tasks") {
-                print("WidgetDataManager: Verified data exists in UserDefaults (\(savedData.count) bytes)")
+               // print("WidgetDataManager: Verified data exists in UserDefaults (\(savedData.count) bytes)")
             } else {
-                print("WidgetDataManager: ⚠️ Verification FAILED - data not found after save")
+                // print("WidgetDataManager: ⚠️ Verification FAILED - data not found after save")
             }
 
             WidgetCenter.shared.reloadAllTimelines()
@@ -64,12 +64,12 @@ class WidgetDataManager {
     // Load tasks from shared container (used by widget)
     func loadTasks() -> [WidgetTaskModel] {
         let userDefaults = UserDefaults(suiteName: appGroupIdentifier)
-        print(
-            "Widget attempting to load data from group: \(appGroupIdentifier)")
+        // print(
+         //   "Widget attempting to load data from group: \(appGroupIdentifier)")
 
         guard let data = userDefaults?.data(forKey: "taskape_widget_tasks")
         else {
-            print("Widget: No data found for key 'taskape_widget_tasks'")
+          //   print("Widget: No data found for key 'taskape_widget_tasks'")
             return []
         }
 

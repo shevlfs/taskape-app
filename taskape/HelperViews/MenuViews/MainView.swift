@@ -85,14 +85,14 @@ struct MainView: View {
                                                     event: singleEvent,
                                                     eventSize: singleEvent
                                                         .eventSize
-                                                ).padding(.trailing, 12)
+                                                ).padding(.trailing, 15)
                                             } else {
                                                 // Event on the left
                                                 EventCard(
                                                     event: singleEvent,
                                                     eventSize: singleEvent
                                                         .eventSize
-                                                ).padding(.leading, 12)
+                                                ).padding(.leading, 15)
 
                                                 // Empty space (nothing) on the right
                                                 Spacer()
@@ -288,25 +288,74 @@ struct MainView: View {
         events = []  // Clear any existing events
 
         Task {
+            // First, preload all tasks for all friends
+            await friendManager.preloadAllFriendTasks()
+
             var allEvents: [taskapeEvent] = []
 
-            // We don't need to fetch events for each friend because our backend
-            // implementation already ensures we get one event per friend
-            // when we call fetchEvents with the current user's ID as the target
             if let userEvents = await taskape.fetchEvents(userId: user.id) {
-                allEvents = userEvents
+                // Filter to only include events from friends
+                let friendIds = friendManager.friends.map { $0.id }
+
+                // Group events by friend ID
+                var latestEventByFriend: [String: taskapeEvent] = [:]
+
+                // For each event, check if it's from a friend and if it's the latest one
+                for event in userEvents {
+                    // Only process events from friends
+                    if friendIds.contains(event.userId) {
+                        // If we don't have an event for this friend yet, or this event is newer
+                        if let existingEvent = latestEventByFriend[event.userId]
+                        {
+                            if event.createdAt > existingEvent.createdAt {
+                                latestEventByFriend[event.userId] = event
+                            }
+                        } else {
+                            latestEventByFriend[event.userId] = event
+                        }
+                    }
+                }
+
+                // Convert dictionary values to array
+                let filteredEvents = Array(latestEventByFriend.values)
+
+                // For each event, associate the relevant tasks from the pre-loaded tasks
+                for event in filteredEvents {
+                    if !event.taskIds.isEmpty {
+                        // Get the tasks for this friend that match the task IDs in the event
+                        let relevantTasks = await friendManager.getTasksByIds(
+                            friendId: event.userId,
+                            taskIds: event.taskIds
+                        )
+
+                        await MainActor.run {
+                            // Add these tasks to the event
+                            for task in relevantTasks {
+                                if !event.relatedTasks.contains(where: {
+                                    $0.id == task.id
+                                }) {
+                                    event.relatedTasks.append(task)
+
+                                    // Ensure the task is in the model context
+                                    modelContext.insert(task)
+                                }
+                            }
+                        }
+                    }
+
+                    allEvents.append(event)
+                }
             }
 
             await MainActor.run {
                 events = allEvents
                 isLoadingEvents = false
 
-                // Load associated tasks for better display
-                if !events.isEmpty {
-                    Task {
-                        await loadRelatedTasksForEvents(
-                            events: events, modelContext: modelContext)
-                    }
+                // Save context after adding tasks
+                do {
+                    try modelContext.save()
+                } catch {
+                    print("error saving context after loading tasks: \(error)")
                 }
             }
         }

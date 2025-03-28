@@ -46,5 +46,10 @@
 		<string>PathwayExtreme-ThinCondIta.otf</string>
 		<string>PathwayExtreme-ThinItalic.otf</string>
 	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
 </dict>
 </plist>
