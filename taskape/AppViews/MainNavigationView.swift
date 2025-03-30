@@ -10,7 +10,7 @@ import SwiftData
 import SwiftUI
 
 struct navigationItem {
-    
+
 }
 
 struct MainNavigationView: View {
