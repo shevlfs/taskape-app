@@ -23,6 +23,7 @@ struct WidgetTaskModel: Identifiable, Codable {
 
 class WidgetDataManager {
     static let shared = WidgetDataManager()
+    private let appGroupIdentifier = "group.com.shevlfs.taskape" // Make sure this matches your app group identifier
 
     private init() {}
 
@@ -30,7 +31,16 @@ class WidgetDataManager {
     func saveTasks(_ tasks: [taskapeTask]) {
         print("WidgetDataManager: Attempting to save \(tasks.count) tasks")
 
-        let widgetTasks = tasks.map { task -> WidgetTaskModel in
+        // Deduplicate tasks based on ID (keeping only the latest version of each task)
+        var uniqueTasks = [String: taskapeTask]()
+        for task in tasks {
+            uniqueTasks[task.id] = task
+        }
+
+        let deduplicatedTasks = Array(uniqueTasks.values)
+        print("WidgetDataManager: After deduplication, saving \(deduplicatedTasks.count) tasks")
+
+        let widgetTasks = deduplicatedTasks.map { task -> WidgetTaskModel in
             return WidgetTaskModel(
                 id: task.id,
                 name: task.name,
@@ -43,16 +53,14 @@ class WidgetDataManager {
         do {
             let data = try JSONEncoder().encode(widgetTasks)
             let userDefaults = UserDefaults(suiteName: appGroupIdentifier)
-            //print("WidgetDataManager: Writing to UserDefaults group: \(appGroupIdentifier ?? "nil")")
             userDefaults?.set(data, forKey: "taskape_widget_tasks")
             let success = userDefaults?.synchronize() ?? false
-            //print("WidgetDataManager: Save and synchronize \(success ? "succeeded" : "failed")")
 
             // Add verification step
             if let savedData = userDefaults?.data(forKey: "taskape_widget_tasks") {
-               // print("WidgetDataManager: Verified data exists in UserDefaults (\(savedData.count) bytes)")
+                // Verification succeeded
             } else {
-                // print("WidgetDataManager: ⚠️ Verification FAILED - data not found after save")
+                print("WidgetDataManager: ⚠️ Verification FAILED - data not found after save")
             }
 
             WidgetCenter.shared.reloadAllTimelines()
@@ -64,12 +72,9 @@ class WidgetDataManager {
     // Load tasks from shared container (used by widget)
     func loadTasks() -> [WidgetTaskModel] {
         let userDefaults = UserDefaults(suiteName: appGroupIdentifier)
-        // print(
-         //   "Widget attempting to load data from group: \(appGroupIdentifier)")
 
         guard let data = userDefaults?.data(forKey: "taskape_widget_tasks")
         else {
-          //   print("Widget: No data found for key 'taskape_widget_tasks'")
             return []
         }
 

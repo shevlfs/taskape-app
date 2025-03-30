@@ -32,7 +32,7 @@ struct MainView: View {
                             UserJungleCard(user: user).matchedTransitionSource(
                                 id: "jungleCard", in: mainNamespace
                             )
-                        }.buttonStyle(PlainButtonStyle())
+                        }.buttonStyle(PlainButtonStyle()).padding(.top,10)
                         if isLoadingEvents {
                             HStack {
                                 ProgressView()
@@ -133,86 +133,85 @@ struct MainView: View {
                                     .padding(.vertical, 20)
                             }
                         }
-                    }
-
-                    HStack(spacing: 20) {
-                        Button(action: {}) {
-                            ZStack(alignment: .leading) {
-                                MenuItem(
-                                    mainColor: Color(hex: "#FF7AAD"),
-                                    widthProportion: 0.56,
-                                    heightProportion: 0.16
-                                )
-
-                                HStack(alignment: .center, spacing: 10) {
-                                    VStack {
-                                        Text("🐒")
-                                            .font(.system(size: 50))
-                                    }.padding(.leading, 20)
-
-                                    VStack(
-                                        alignment: .leading, spacing: 2
-                                    ) {
-                                        Text("ape-ify")
-                                            .font(.pathwayBlack(21))
-                                        Text(
-                                            "your friends'\nlives today!"
-                                        )
-                                        .font(.pathwaySemiBold(19))
-                                    }
-                                }
-                            }
-                        }
-                        .buttonStyle(PlainButtonStyle())
-
-                        // Right button - "new friend?" with notification badge
-                        Button(action: {
-                            navigationPath.append("friendSearch")
-                        }) {
-                            ZStack {
-                                // Background using MenuItem component
-                                MenuItem(
-                                    mainColor: Color(hex: "#E97451"),
-                                    widthProportion: 0.32,
-                                    heightProportion: 0.16
-                                )
-
-                                VStack(alignment: .center, spacing: 6) {
-                                    // Add notification badge to image if we have friend requests
-                                    ZStack {
-                                        Image(systemName: "plus.circle")
-                                            .font(
-                                                .system(
-                                                    size: 45,
-                                                    weight: .medium)
-                                            )
-                                            .foregroundColor(.primary)
-                                    }
-
-                                    Text("new\nfriend?")
-                                        .font(.pathwaySemiBold(19))
-                                        .foregroundColor(.primary)
-                                        .multilineTextAlignment(.center)
-                                }
-
-                                if friendManager.incomingRequests.count > 0 {
-                                    Text(
-                                        "\(friendManager.incomingRequests.count)"
+                        HStack(spacing: 20) {
+                            Button(action: {}) {
+                                ZStack(alignment: .leading) {
+                                    MenuItem(
+                                        mainColor: Color(hex: "#FF7AAD"),
+                                        widthProportion: 0.56,
+                                        heightProportion: 0.16
                                     )
-                                    .font(.pathwayBoldCondensed(12))
-                                    .foregroundColor(.white)
-                                    .padding(10)
-                                    .background(Color.red)
-                                    .clipShape(Circle())
-                                    .offset(x: 30, y: -50)
+
+                                    HStack(alignment: .center, spacing: 10) {
+                                        VStack {
+                                            Text("🐒")
+                                                .font(.system(size: 50))
+                                        }.padding(.leading, 20)
+
+                                        VStack(
+                                            alignment: .leading, spacing: 2
+                                        ) {
+                                            Text("ape-ify")
+                                                .font(.pathwayBlack(21))
+                                            Text(
+                                                "your friends'\nlives today!"
+                                            )
+                                            .font(.pathwaySemiBold(19))
+                                        }
+                                    }
                                 }
                             }
-                        }.matchedTransitionSource(
-                            id: "friendSearch", in: mainNamespace
-                        )
-                        .buttonStyle(PlainButtonStyle())
+                            .buttonStyle(PlainButtonStyle())
+
+                            // Right button - "new friend?" with notification badge
+                            Button(action: {
+                                navigationPath.append("friendSearch")
+                            }) {
+                                ZStack {
+                                    // Background using MenuItem component
+                                    MenuItem(
+                                        mainColor: Color(hex: "#E97451"),
+                                        widthProportion: 0.32,
+                                        heightProportion: 0.16
+                                    )
+
+                                    VStack(alignment: .center, spacing: 6) {
+                                        // Add notification badge to image if we have friend requests
+                                        ZStack {
+                                            Image(systemName: "plus.circle")
+                                                .font(
+                                                    .system(
+                                                        size: 45,
+                                                        weight: .medium)
+                                                )
+                                                .foregroundColor(.primary)
+                                        }
+
+                                        Text("new\nfriend?")
+                                            .font(.pathwaySemiBold(19))
+                                            .foregroundColor(.primary)
+                                            .multilineTextAlignment(.center)
+                                    }
+
+                                    if friendManager.incomingRequests.count > 0 {
+                                        Text(
+                                            "\(friendManager.incomingRequests.count)"
+                                        )
+                                        .font(.pathwayBoldCondensed(12))
+                                        .foregroundColor(.white)
+                                        .padding(10)
+                                        .background(Color.red)
+                                        .clipShape(Circle())
+                                        .offset(x: 30, y: -50)
+                                    }
+                                }
+                            }.matchedTransitionSource(
+                                id: "friendSearch", in: mainNamespace
+                            )
+                            .buttonStyle(PlainButtonStyle())
+                        }
                     }
-                }
+                }.fadeOutTop(fadeLength: 10)
             } else {
                 VStack(alignment: .center) {
                     Spacer()
@@ -364,6 +363,7 @@ struct MainView: View {
         }
     }
 
+
     // Add this helper function inside the MainView struct
     private func createLayoutGroups(from events: [taskapeEvent])
         -> [[taskapeEvent]]
@@ -431,6 +431,8 @@ struct MainView: View {
     }
 }
 
+
+
 extension taskapeEvent {
     var position: EventPosition {
         // Use the UUID as a deterministic way to decide position
@@ -482,5 +484,24 @@ enum EventPosition {
             .modelContainer(container)
     } catch {
         return Text("Failed to create preview: \(error.localizedDescription)")
+    }
+}
+
+extension View {
+    func fadeOutTop(fadeLength:CGFloat=50) -> some View {
+        return mask(
+            VStack(spacing: 0) {
+
+                // Top gradient
+                LinearGradient(gradient:
+                   Gradient(
+                       colors: [Color.black.opacity(0), Color.black]),
+                       startPoint: .top, endPoint: .bottom
+                   )
+                   .frame(height: fadeLength)
+
+                Rectangle().fill(Color.black)
+            }
+        )
     }
 }

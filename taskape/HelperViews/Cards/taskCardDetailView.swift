@@ -76,6 +76,8 @@ struct TaskDescriptionField: View {
     @Binding var description: String
     @FocusState var isFocused: Bool
 
+    @Binding var accentcolor: Color
+
     var body: some View {
         TextEditor(text: $description)
             .font(.pathway(17))
@@ -83,7 +85,7 @@ struct TaskDescriptionField: View {
             .foregroundColor(Color.primary)
             .padding()
             .scrollContentBackground(.hidden)
-            .accentColor(Color.taskapeOrange)
+            .accentColor(accentcolor)
             .background(
                 RoundedRectangle(cornerRadius: 30)
                     .fill(Color(UIColor.secondarySystemBackground))
@@ -96,6 +98,7 @@ struct TaskDescriptionField: View {
 // COMPONENT 4: Deadline date picker
 struct TaskDeadlinePicker: View {
     @Binding var deadline: Date?
+    @Binding var accentcolor: Color
 
     var body: some View {
         DatePicker(
@@ -108,7 +111,7 @@ struct TaskDeadlinePicker: View {
         )
         .font(.pathway(17))
         .padding()
-        .accentColor(Color.taskapeOrange)
+        .accentColor(accentcolor)
         .background(
             RoundedRectangle(cornerRadius: 30)
                 .fill(Color(UIColor.secondarySystemBackground))
@@ -124,6 +127,7 @@ struct TaskPrioritySelector: View {
     @Binding var flagName: String?
     @Binding var labels: [TaskFlag]
     @State private var showPriorityPicker: Bool = false
+    @Binding var accentcolor: Color
 
     // Predefined flag options
     @State var priorityOptions: [TaskFlag] = [
@@ -162,7 +166,7 @@ struct TaskPrioritySelector: View {
                     }
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12))
-                        .foregroundColor(Color.taskapeOrange).padding(
+                        .foregroundColor(accentcolor).padding(
                             .trailing, 12)
                 }
             }
@@ -210,7 +214,8 @@ struct PriorityPickerContent: View {
     @State private var customLabelName: String = ""
 
     private let defaultColors: [Color] = [
-        .red, .orange, .yellow, .green, .blue, .purple, .pink,.mint, .cyan, .teal,.indigo
+        .red, .orange, .yellow, .green, .blue, .purple, .pink, .mint, .cyan,
+        .teal, .indigo,
     ]
 
     var body: some View {
@@ -254,7 +259,7 @@ struct PriorityPickerContent: View {
                         RoundedRectangle(cornerRadius: 30)
                             .stroke(.regularMaterial, lineWidth: 1)
                     )
-                    .padding(.horizontal).padding(.top).padding(.bottom,25)
+                    .padding(.horizontal).padding(.top).padding(.bottom, 25)
 
                 Text("label color")
                     .font(.pathway(17))
@@ -282,7 +287,7 @@ struct PriorityPickerContent: View {
                     }
                     .padding(8)
                 }
-                .padding(.top).padding(.horizontal).padding(.bottom,20)
+                .padding(.top).padding(.horizontal).padding(.bottom, 20)
 
                 Spacer()
                 Button(action: {
@@ -434,6 +439,7 @@ struct PriorityPickerContent: View {
 // COMPONENT 6: Privacy selector
 struct TaskPrivacySelector: View {
     @Binding var privacyLevel: PrivacySettings.PrivacyLevel
+    @Binding var accentcolor: Color
 
     var body: some View {
         HStack {
@@ -449,7 +455,7 @@ struct TaskPrivacySelector: View {
                     PrivacySettings.PrivacyLevel.except)
             }.font(.pathwayBold(17))
                 .pickerStyle(MenuPickerStyle())
-                .accentColor(Color.taskapeOrange)
+                .accentColor(accentcolor)
         }
         .padding()
         .background(
@@ -466,6 +472,7 @@ struct ExceptPeopleSelector: View {
     @ObservedObject private var friendManager = FriendManager.shared
     @State private var isLoading: Bool = false
     @State private var showingFriendsList: Bool = false
+    @Binding var accentcolor: Color
 
     var body: some View {
         VStack(spacing: 8) {
@@ -487,7 +494,7 @@ struct ExceptPeopleSelector: View {
                 HStack {
                     Text("select people to exclude")
                         .font(.pathway(17))
-                        .foregroundColor(Color.taskapeOrange)
+                        .foregroundColor(accentcolor)
 
                     Spacer()
 
@@ -501,13 +508,13 @@ struct ExceptPeopleSelector: View {
 
                         Image(systemName: "chevron.right")
                             .font(.system(size: 14))
-                            .foregroundColor(Color.taskapeOrange)
+                            .foregroundColor(accentcolor)
                     }
                 }
-                .padding(.horizontal).padding(.vertical,20)
+                .padding(.horizontal).padding(.vertical, 20)
                 .background(
                     RoundedRectangle(cornerRadius: 30)
-                        .stroke(Color.taskapeOrange.opacity(0.3), lineWidth: 1)
+                        .stroke(accentcolor.opacity(0.3), lineWidth: 1)
                         .background(
                             RoundedRectangle(cornerRadius: 30).fill(
                                 Color(UIColor.secondarySystemBackground)))
@@ -536,7 +543,7 @@ struct ExceptPeopleSelector: View {
         }
         .padding(.horizontal)
         .sheet(isPresented: $showingFriendsList) {
-            FriendSelectionSheet(task: task)
+            FriendSelectionSheet(task: task, accentcolor: $accentcolor)
                 .presentationDetents([.medium])
         }
     }
@@ -587,6 +594,8 @@ struct FriendSelectionSheet: View {
     @ObservedObject private var friendManager = FriendManager.shared
     @State private var searchText: String = ""
 
+    @Binding var accentcolor: Color
+
     private var filteredFriends: [Friend] {
         if searchText.isEmpty {
             return friendManager.friends
@@ -610,7 +619,7 @@ struct FriendSelectionSheet: View {
                     dismiss()
                 }
                 .font(.pathway(16))
-                .foregroundColor(Color.taskapeOrange)
+                .foregroundColor(accentcolor)
             }
             .padding()
 
@@ -639,7 +648,8 @@ struct FriendSelectionSheet: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 30)
-                    .fill(Color(UIColor.systemGray6)).stroke(.regularMaterial, lineWidth: 1)
+                    .fill(Color(UIColor.systemGray6)).stroke(
+                        .regularMaterial, lineWidth: 1)
             )
             .padding(.horizontal)
             .padding(.bottom, 10)
@@ -789,6 +799,7 @@ struct FriendSelectRow: View {
 
 struct ProofSelectRow: View {
     @Binding var proofNeeded: Bool
+    @Binding var accentcolor: Color
 
     var body: some View {
         HStack {
@@ -800,7 +811,7 @@ struct ProofSelectRow: View {
                 Text("no").tag(false)
             }.font(.pathwayBold(17))
                 .pickerStyle(MenuPickerStyle())
-                .accentColor(Color.taskapeOrange)
+                .accentColor(accentcolor)
         }
         .padding()
         .background(
@@ -818,7 +829,7 @@ struct taskCardDetailView: View {
     @State var labels: [TaskFlag] = []
     @FocusState var isFocused: Bool
     @State var proofNeeded: Bool = false
-
+    @State var taskColor: Color = .taskapeOrange
     @State var detents: Set<PresentationDetent> = [.large]
 
     var body: some View {
@@ -834,20 +845,23 @@ struct taskCardDetailView: View {
 
                 // Component 3: Task description field
                 TaskDescriptionField(
-                    description: $task.taskDescription, isFocused: _isFocused)
+                    description: $task.taskDescription, isFocused: _isFocused, accentcolor: $taskColor)
 
                 // Component 4: Deadline picker
-                TaskDeadlinePicker(deadline: $task.deadline)
+                TaskDeadlinePicker(deadline: $task.deadline, accentcolor: $taskColor)
 
                 // Component 5: Priority selector
                 TaskPrioritySelector(
                     flagStatus: $task.flagStatus,
                     flagColor: $task.flagColor,
-                    flagName: $task.flagName, labels: $labels
+                    flagName: $task.flagName, labels: $labels, accentcolor: $taskColor
                 )
 
                 // Component 6: Privacy selector
-                TaskPrivacySelector(privacyLevel: $task.privacy.level)
+                TaskPrivacySelector(
+                    privacyLevel: $task.privacy.level,
+                    accentcolor: $taskColor
+                )
 
                 // Conditional content based on privacy level
                 switch task.privacy.level {
@@ -860,33 +874,51 @@ struct taskCardDetailView: View {
                 }
 
                 if task.privacy.level == .except {
-                    ExceptPeopleSelector(task: task)
+                    ExceptPeopleSelector(task: task, accentcolor: $taskColor)
                         .transition(
                             .move(edge: .bottom).combined(with: .opacity))
                 }
 
-                ProofSelectRow(proofNeeded: $proofNeeded)
+                ProofSelectRow(
+                    proofNeeded: $proofNeeded,
+                    accentcolor: $taskColor
+                )
 
             }.animation(.easeInOut(duration: 0.3), value: task.privacy.level)
                 .padding(.top, 20)
 
             Spacer()
         }
-        .presentationDetents(detents).animation(.easeInOut, value: detents)
+        .presentationDetents(detents).animation(.easeInOut, value: detents).onAppear{
+            self.taskColor = self.getTaskColor()
+        }.onChange(of: task.flagColor){
+            self.taskColor = self.getTaskColor()
+        }
+    }
+
+    private func getTaskColor()
+        -> Color
+    {
+        if task.flagColor != nil && task.flagName != "" {
+            return Color(hex: task.flagColor!)
+        }
+        return Color.taskapeOrange.opacity(0.8)
     }
 }
 
 // Preview
-#Preview {
-    @State var task = taskapeTask(
-        name: "Complete project",
-        taskDescription: "Finish all the views and connect them",
-        author: "shevlfs",
-        privacy: "private",
-        flagStatus: true,
-        flagColor: "#FF6B6B",
-        flagName: "High"
-    )
 
-    return taskCardDetailView(detailIsPresent: .constant(true), task: task)
-}
+
+//#Preview {
+//    @State var task = taskapeTask(
+//        name: "Complete project",
+//        taskDescription: "Finish all the views and connect them",
+//        author: "shevlfs",
+//        privacy: "private",
+//        flagStatus: true,
+//        flagColor: "#FF6B6B",
+//        flagName: "High"
+//    )
+//
+//    return taskCardDetailView(detailIsPresent: .constant(true), task: task, taskColor: .constant("#FF6B6B"))
+//}

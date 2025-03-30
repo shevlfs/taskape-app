@@ -68,7 +68,7 @@ struct RootView: View {
     var body: some View {
         VStack {
             if isLoading {
-                ProgressView("Loading...")
+                EmptyView()
                     .onAppear {
                         loadEnvironment()
                     }

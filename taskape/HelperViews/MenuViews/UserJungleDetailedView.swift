@@ -212,7 +212,29 @@ struct UserJungleDetailedView: View {
                     saveTaskChanges(task: task)
                 }
             }
-        }.onAppear(perform: { uniqueFlags = getUserFlags(currentUser!) })
+        }.onAppear(perform: { uniqueFlags = getUserFlags(currentUser!) }).gesture(
+            DragGesture(
+                minimumDistance: 20,
+                coordinateSpace: .global
+            ).onEnded { value in
+                let horizontalAmount = value.translation.width
+                let verticalAmount = value.translation.height
+
+                if abs(horizontalAmount) > abs(verticalAmount) {
+                    if horizontalAmount < 0 {
+                        withAnimation {
+                            self.tabBarViewIndex = min(
+                                self.tabBarViewIndex + 1,
+                                self.tabBarItems.count - 1)
+                        }
+                    } else {
+                        withAnimation {
+                            self.tabBarViewIndex = max(
+                                0, self.tabBarViewIndex - 1)
+                        }
+                    }
+                }
+            })
     }
 
     // Update the tab bar items with standard tabs and flag tabs

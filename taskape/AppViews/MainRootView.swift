@@ -1,5 +1,5 @@
 //
-//  MainNavigationView.swift
+//  MainRootView.swift
 //  taskape
 //
 //  Created by shevlfs on 2/5/25.
@@ -16,30 +16,40 @@ struct MainRootView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var appState: AppStateManager
 
-    var body: some View {
-        VStack {
-            if isLoading {
-                ProgressView("loading your profile...")
-            } else if let error = loadingError {
-                VStack {
-                    Text(error.lowercased()).font(.pathway(26))
-                        .padding()
-                        .multilineTextAlignment(.center)
+    @State var fullyLoaded = false
 
-                    Button("return to login") {
-                        appState.logout()
-                    }.font(.pathway(20))
-                        .padding()
-                        .background(Color.taskapeOrange)
-                        .foregroundColor(.white)
-                        .cornerRadius(30)
-                        .padding(.top, 20)
-                }
-            } else {
-                MainNavigationView()
-                    .modelContext(modelContext)
-                    .environmentObject(appState)
+    var body: some View {
+        ZStack {
+            if isLoading {
+                AnimatedLogoView().transition(.opacity)
             }
+
+
+            VStack {
+                if !isLoading {
+                    if let error = loadingError {
+                        VStack {
+                            Text(error.lowercased()).font(.pathway(26))
+                                .padding()
+                                .multilineTextAlignment(.center)
+
+                            Button("return to login") {
+                                appState.logout()
+                            }.font(.pathway(20))
+                                .padding()
+                                .background(Color.taskapeOrange)
+                                .foregroundColor(.white)
+                                .cornerRadius(30)
+                                .padding(.top, 20)
+                        }
+                    } else {
+                        MainNavigationView(fullyLoaded: $fullyLoaded)
+                            .modelContext(modelContext)
+                            .environmentObject(appState)
+                    }
+                }
+            }
+
         }
         .onAppear {
             Task {
@@ -55,9 +65,6 @@ struct MainRootView: View {
                         print(
                             "User found in local database, no need to fetch from server"
                         )
-                        await MainActor.run {
-                            isLoading = false
-                        }
                         return
                     }
 
@@ -84,18 +91,36 @@ struct MainRootView: View {
                                     userId: userId, modelContext: modelContext)
                             }
 
+                            loadData()
+
                             isLoading = false
                         } else {
                             loadingError =
                                 "could not load your profile.\nplease try again."
-                            isLoading = false
+
                         }
                     }
-                } else {
-                    await MainActor.run {
-                        loadingError = "no user id found.\nplease log in again."
-                        isLoading = false
-                    }
+                }
+            }
+        }
+    }
+
+    private func loadData() {
+        _ = UserManager.shared.getCurrentUser(
+            context: modelContext)
+        Task {
+            if let remoteTasks = await UserManager.shared
+                .fetchCurrentUserTasks()
+            {
+                await MainActor.run {
+                    syncUserTasks(
+                        userId: UserManager.shared.currentUserId,
+                        remoteTasks: remoteTasks,
+                        modelContext: modelContext
+                    )
+                    updateWidgetWithTasks(
+                        userId: UserManager.shared.currentUserId,
+                        modelContext: modelContext)
                 }
             }
         }

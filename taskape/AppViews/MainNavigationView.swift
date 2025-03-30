@@ -73,7 +73,24 @@ struct MainNavigationView: View {
 
     @State private var mainNavigationPath = NavigationPath()
 
+    // Loading and animation states
+    @State private var isLoading: Bool = true
+    @State private var logoOpacity: Double = 1.0
+    @State private var contentOpacity: Double = 0.0
+    @State private var contentScale: CGFloat = 0.8
+
+    @Binding var fullyLoaded: Bool
+
     var body: some View {
+        ZStack {
+            // Main Navigation content
+            mainContent
+        }.onAppear{
+            currentUser = UserManager.shared.getCurrentUser(context: modelContext)
+        }
+    }
+
+    private var mainContent: some View {
         NavigationStack(path: $mainNavigationPath) {
             VStack {
                 userGreetingCard()
@@ -87,36 +104,82 @@ struct MainNavigationView: View {
                 switch selectedTabIndex {
                 case 0:
                     SettingsView().modelContext(modelContext).environmentObject(
-                        appState)
+                        appState
+                    ).gesture(
+                        DragGesture(
+                            minimumDistance: 20,
+                            coordinateSpace: .global
+                        ).onEnded { value in
+                            let horizontalAmount = value.translation.width
+                            let verticalAmount = value.translation.height
+
+                            if abs(horizontalAmount) > abs(verticalAmount) {
+                                if horizontalAmount < 0 {
+                                    withAnimation {
+                                        self.selectedTabIndex = min(
+                                            self.selectedTabIndex + 1,
+                                            self.mainTabBarItems.count - 1)
+                                    }
+                                } else {
+                                    withAnimation {
+                                        self.selectedTabIndex = max(
+                                            0, self.selectedTabIndex - 1)
+                                    }
+                                }
+                            }
+                        })
                 case 1:
                     MainView(navigationPath: $mainNavigationPath)
                         .modelContext(modelContext)
                         .ignoresSafeArea(.all)
                         .edgesIgnoringSafeArea(.all)
-                        .frame(maxHeight: .infinity).toolbar(.hidden)
+                        .frame(maxHeight: .infinity).toolbar(.hidden).gesture(
+                            DragGesture(
+                                minimumDistance: 20,
+                                coordinateSpace: .global
+                            ).onEnded { value in
+                                let horizontalAmount = value.translation.width
+                                let verticalAmount = value.translation.height
+
+                                if abs(horizontalAmount) > abs(verticalAmount) {
+                                    if horizontalAmount < 0 {
+                                        withAnimation {
+                                            self.selectedTabIndex = min(
+                                                self.selectedTabIndex + 1,
+                                                self.mainTabBarItems.count - 1)
+                                        }
+                                    } else {
+                                        withAnimation {
+                                            self.selectedTabIndex = max(
+                                                0, self.selectedTabIndex - 1)
+                                        }
+                                    }
+                                }
+                            })
                 default:
-                    Text("Unknown")
+                    Text("unknown")
                 }
                 Spacer()
             }
             .edgesIgnoringSafeArea(.bottom)
-               .toolbar(.hidden)
-        }       .onAppear {
-            currentUser = UserManager.shared.getCurrentUser(
-                context: modelContext)
-            Task {
-                if let remoteTasks = await UserManager.shared.fetchCurrentUserTasks() {
-                    await MainActor.run {
-                        syncUserTasks(
-                            userId: UserManager.shared.currentUserId,
-                            remoteTasks: remoteTasks,
-                            modelContext: modelContext
-                        )
-                        updateWidgetWithTasks(userId: UserManager.shared.currentUserId, modelContext: modelContext)
-                    }
+            .toolbar(.hidden)
+        }
+        .navigationDestination(
+            for: String.self,
+            destination: {
+                route in
+                switch route {
+                case "self_jungle_view":
+                    UserJungleDetailedView()
+                        .modelContext(self.modelContext)
+                case "friendSearch":
+                    FriendSearchView().toolbar(.hidden).modelContext(
+                        self.modelContext)
+                default:
+                    EmptyView()
                 }
             }
-        }
+        )
     }
 }
 
@@ -151,10 +214,10 @@ struct MainNavigationView: View {
 
         try container.mainContext.save()
 
-        return MainNavigationView()
+        return MainNavigationView(fullyLoaded: .constant(true))
             .modelContainer(container)
             .environmentObject(AppStateManager())
     } catch {
-        return Text("Failed to create preview: \(error.localizedDescription)")
+        return Text("failed to create preview: \(error.localizedDescription)")
     }
 }

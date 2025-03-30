@@ -70,15 +70,6 @@ struct TaskapeWidgetEntryView : View {
 //                endPoint: UnitPoint(x: 0.5, y: 0)
 //            )
             RoundedRectangle(cornerRadius: 30).fill(.background)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .inset(by: 0.5)
-                    .stroke(
-                        colorScheme == .dark ?
-                            Color.taskapeOrange.opacity(0.3) : Color.taskapeOrange.opacity(0.15),
-                        lineWidth: colorScheme == .dark ? 1.5 : 1
-                    )
-            )
 
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
@@ -163,7 +154,7 @@ struct TaskapeWidget: Widget {
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
-            TaskapeWidgetEntryView(entry: entry)
+            TaskapeWidgetEntryView(entry: entry).containerBackground(.windowBackground, for: .widget)
         }.contentMarginsDisabled()
         .configurationDisplayName("taskape")
         .description("view your tasks at a glance")

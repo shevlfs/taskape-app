@@ -15,53 +15,55 @@ struct SettingsView: View {
     @State private var showLogoutConfirmation = false
 
     var body: some View {
-        VStack(spacing: 24) {
-
-
-
-            if let user = currentUser {
-                // User profile section
-                VStack(alignment: .center, spacing: 12) {
-                    Text("logged in as")
-                        .font(.pathway(16))
-                        .foregroundColor(.secondary)
-
-                    Text("\(user.handle)")
-                        .font(.pathwayBlack(22))
-                }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(
-                    RoundedRectangle(cornerRadius: 30)
-                        .fill(Color(UIColor.secondarySystemBackground))
-                )
-                .padding(.horizontal)
-            }
-
-            Button(action: {
-                showLogoutConfirmation = true
-            }) {
-                Text("logout")
-                    .font(.pathway(18))
-                    .foregroundColor(.white)
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(spacing: 24) {
+                
+                
+                
+                if let user = currentUser {
+                    // User profile section
+                    VStack(alignment: .center, spacing: 12) {
+                        Text("logged in as")
+                            .font(.pathway(16))
+                            .foregroundColor(.secondary)
+                        
+                        Text("\(user.handle)")
+                            .font(.pathwayBlack(22))
+                    }
                     .padding()
-                    .frame(width: 200)
+                    .frame(maxWidth: .infinity)
                     .background(
-                        RoundedRectangle(cornerRadius: 25)
-                            .fill(Color.red.opacity(0.8))
+                        RoundedRectangle(cornerRadius: 30)
+                            .fill(Color(UIColor.secondarySystemBackground))
                     )
-            }
-            .padding(.bottom, 32)
-            .alert("logout confirmation", isPresented: $showLogoutConfirmation)
-            {
-                Button("cancel", role: .cancel) {}
-                Button("logout", role: .destructive) {
-                    performLogout()
+                    .padding(.horizontal)
                 }
-            } message: {
-                Text("are you sure you want to logout?")
-            }
-            Spacer()
+                
+                Button(action: {
+                    showLogoutConfirmation = true
+                }) {
+                    Text("logout")
+                        .font(.pathway(18))
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(width: 200)
+                        .background(
+                            RoundedRectangle(cornerRadius: 25)
+                                .fill(Color.red.opacity(0.8))
+                        )
+                }
+                .padding(.bottom, 32)
+                .alert("logout confirmation", isPresented: $showLogoutConfirmation)
+                {
+                    Button("cancel", role: .cancel) {}
+                    Button("logout", role: .destructive) {
+                        performLogout()
+                    }
+                } message: {
+                    Text("are you sure you want to logout?")
+                }
+                Spacer()
+            }.frame(maxWidth: .infinity)
         }
         .onAppear {
             currentUser = UserManager.shared.getCurrentUser(
