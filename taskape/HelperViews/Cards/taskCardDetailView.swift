@@ -798,7 +798,7 @@ struct FriendSelectRow: View {
 }
 
 struct ProofSelectRow: View {
-    @Binding var proofNeeded: Bool
+    @Binding var proofNeeded: Bool?
     @Binding var accentcolor: Color
 
     var body: some View {
@@ -828,7 +828,6 @@ struct taskCardDetailView: View {
     @Bindable var task: taskapeTask
     @State var labels: [TaskFlag] = []
     @FocusState var isFocused: Bool
-    @State var proofNeeded: Bool = false
     @State var taskColor: Color = .taskapeOrange
     @State var detents: Set<PresentationDetent> = [.large]
 
@@ -878,9 +877,8 @@ struct taskCardDetailView: View {
                         .transition(
                             .move(edge: .bottom).combined(with: .opacity))
                 }
-
                 ProofSelectRow(
-                    proofNeeded: $proofNeeded,
+                    proofNeeded: $task.proofNeeded,
                     accentcolor: $taskColor
                 )
 
@@ -889,16 +887,17 @@ struct taskCardDetailView: View {
 
             Spacer()
         }
-        .presentationDetents(detents).animation(.easeInOut, value: detents).onAppear{
+        .presentationDetents(detents)
+        .animation(.easeInOut, value: detents)
+        .onAppear {
             self.taskColor = self.getTaskColor()
-        }.onChange(of: task.flagColor){
+        }
+        .onChange(of: task.flagColor) { _, _ in
             self.taskColor = self.getTaskColor()
         }
     }
 
-    private func getTaskColor()
-        -> Color
-    {
+    private func getTaskColor() -> Color {
         if task.flagColor != nil && task.flagName != "" {
             return Color(hex: task.flagColor!)
         }

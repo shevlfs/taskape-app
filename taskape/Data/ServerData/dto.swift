@@ -99,6 +99,7 @@ struct BatchTaskSubmissionRequest: Codable {
     let token: String
 }
 
+// Updates for TaskSubmission struct in dto.swift
 struct TaskSubmission: Codable {
     let id: String
     let user_id: String
@@ -113,6 +114,35 @@ struct TaskSubmission: Codable {
     let custom_hours: Int?
     let privacy_level: String
     let privacy_except_ids: [String]
+    let flag_status: Bool
+    let flag_color: String?
+    let flag_name: String?
+    let display_order: Int
+    let proof_needed: Bool
+    let proof_description: String?
+}
+
+// Updates for TaskUpdateRequest struct in dto.swift
+struct TaskUpdateRequest: Codable {
+    let id: String
+    let user_id: String
+    let name: String
+    let description: String
+    let deadline: String?
+    let assigned_to: [String]
+    let difficulty: String
+    let customHours: Int?
+    let is_completed: Bool
+    let proof_url: String?
+    let privacy_level: String
+    let privacy_except_ids: [String]
+    let flag_status: Bool
+    let flag_color: String?
+    let flag_name: String?
+    let display_order: Int
+    let proof_needed: Bool
+    let proof_description: String?
+    let token: String
 }
 
 struct TaskResponse: Codable {
@@ -236,26 +266,6 @@ struct TaskOrderItem: Codable {
 struct TaskOrderUpdateResponse: Codable {
     let success: Bool
     let message: String?
-}
-
-struct TaskUpdateRequest: Codable {
-    let id: String
-    let user_id: String
-    let name: String
-    let description: String
-    let deadline: String?
-    let assigned_to: [String]
-    let difficulty: String
-    let customHours: Int?
-    let is_completed: Bool
-    let proof_url: String?
-    let privacy_level: String
-    let privacy_except_ids: [String]
-    let flag_status: Bool
-    let flag_color: String?
-    let flag_name: String?
-    let display_order: Int
-    let token: String
 }
 
 struct Friend: Codable {
@@ -395,4 +405,3 @@ struct ConfirmTaskCompletionResponse: Codable {
     let success: Bool
     let message: String?
 }
-

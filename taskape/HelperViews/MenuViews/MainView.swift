@@ -32,7 +32,7 @@ struct MainView: View {
                             UserJungleCard(user: user).matchedTransitionSource(
                                 id: "jungleCard", in: mainNamespace
                             )
-                        }.buttonStyle(PlainButtonStyle()).padding(.top,10)
+                        }.buttonStyle(PlainButtonStyle()).padding(.top, 10)
                         if isLoadingEvents {
                             HStack {
                                 ProgressView()
@@ -193,7 +193,8 @@ struct MainView: View {
                                             .multilineTextAlignment(.center)
                                     }
 
-                                    if friendManager.incomingRequests.count > 0 {
+                                    if friendManager.incomingRequests.count > 0
+                                    {
                                         Text(
                                             "\(friendManager.incomingRequests.count)"
                                         )
@@ -239,14 +240,14 @@ struct MainView: View {
                         )
                 case "friendSearch":
                     ZStack {
-                            Color.clear // Ensures we have a transparent base
-                            FriendSearchView()
+                        Color.clear  // Ensures we have a transparent base
+                        FriendSearchView()
                             .modelContext(self.modelContext)
-                        }.toolbar(.hidden)
+                    }.toolbar(.hidden)
 
-                    .navigationTransition(
-                        .zoom(sourceID: "friendSearch", in: mainNamespace)
-                    )
+                        .navigationTransition(
+                            .zoom(sourceID: "friendSearch", in: mainNamespace)
+                        )
                 default:
                     EmptyView()
                 }
@@ -256,21 +257,15 @@ struct MainView: View {
             currentUser = UserManager.shared.getCurrentUser(
                 context: modelContext)
 
-            // Fetch friend data when view appears
-            if !isLoadingFriendData {
-                isLoadingFriendData = true
-                Task {
-                    await friendManager.refreshFriendData()
-                    await MainActor.run {
-                        isLoadingFriendData = false
+            isLoadingFriendData = true
+            Task {
+                await friendManager.refreshFriendData()
+                await MainActor.run {
+                    isLoadingFriendData = false
 
-                        // Fetch events after we have friend data
-                        fetchEvents()
-                    }
+                    // Fetch events after we have friend data
+                    fetchEvents()
                 }
-            } else {
-                // If we're already loading friend data, just fetch events
-                fetchEvents()
             }
 
             setupWidgetSync()
@@ -363,7 +358,6 @@ struct MainView: View {
         }
     }
 
-
     // Add this helper function inside the MainView struct
     private func createLayoutGroups(from events: [taskapeEvent])
         -> [[taskapeEvent]]
@@ -431,8 +425,6 @@ struct MainView: View {
     }
 }
 
-
-
 extension taskapeEvent {
     var position: EventPosition {
         // Use the UUID as a deterministic way to decide position
@@ -488,17 +480,18 @@ enum EventPosition {
 }
 
 extension View {
-    func fadeOutTop(fadeLength:CGFloat=50) -> some View {
+    func fadeOutTop(fadeLength: CGFloat = 50) -> some View {
         return mask(
             VStack(spacing: 0) {
 
                 // Top gradient
-                LinearGradient(gradient:
-                   Gradient(
-                       colors: [Color.black.opacity(0), Color.black]),
-                       startPoint: .top, endPoint: .bottom
-                   )
-                   .frame(height: fadeLength)
+                LinearGradient(
+                    gradient:
+                        Gradient(
+                            colors: [Color.black.opacity(0), Color.black]),
+                    startPoint: .top, endPoint: .bottom
+                )
+                .frame(height: fadeLength)
 
                 Rectangle().fill(Color.black)
             }

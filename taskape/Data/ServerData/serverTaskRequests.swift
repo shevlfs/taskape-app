@@ -55,8 +55,14 @@ func submitTasksBatch(tasks: [taskapeTask]) async
             assigned_to: task.assignedToTask,
             difficulty: task.task_difficulty.rawValue,
             custom_hours: task.custom_hours,
-            privacy_level: privacyLevelString,  // Use the converted string value
-            privacy_except_ids: task.privacy.exceptIDs
+            privacy_level: privacyLevelString,
+            privacy_except_ids: task.privacy.exceptIDs,
+            flag_status: task.flagStatus,
+            flag_color: task.flagColor,
+            flag_name: task.flagName,
+            display_order: task.displayOrder,
+            proof_needed: task.proofNeeded ?? false,
+            proof_description: task.proofDescription
         )
     }
 
@@ -86,7 +92,6 @@ func submitTasksBatch(tasks: [taskapeTask]) async
         }
     }
 }
-
 func updateTaskOrder(userID: String, taskOrders: [(taskID: String, order: Int)])
     async -> Bool
 {
@@ -176,6 +181,8 @@ func updateTask(task: taskapeTask) async -> Bool {
         flag_color: task.flagColor,
         flag_name: task.flagName,
         display_order: task.displayOrder,
+        proof_needed: task.proofNeeded ?? false,
+        proof_description: task.proofDescription,
         token: token
     )
 

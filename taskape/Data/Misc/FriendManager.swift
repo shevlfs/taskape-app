@@ -12,7 +12,6 @@ class FriendManager: ObservableObject {
 
     func refreshFriendData() async {
         isLoading = true
-
         if let userId = UserDefaults.standard.string(forKey: "user_id"),
             let userFriends = await getUserFriends(userId: userId)
         {
@@ -43,11 +42,6 @@ class FriendManager: ObservableObject {
 
     // Function to load tasks for a friend
     func loadTasksForFriend(userId: String) async -> [taskapeTask]? {
-        // Check if we already have tasks loaded
-        if let tasks = friendTasks[userId], !tasks.isEmpty {
-            return tasks
-        }
-
         // If not, fetch them
         if let tasks = await fetchTasks(
             userId: userId)

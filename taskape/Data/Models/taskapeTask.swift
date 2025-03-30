@@ -95,11 +95,15 @@ final class taskapeTask: Identifiable {
     var privacyGroupID: String?
     var privacyExceptIDs: [String] = []
 
-    // New properties for flags and order
+    // Flags and order properties
     var flagStatus: Bool = false
     var flagColor: String? = nil
     var flagName: String? = nil
     var displayOrder: Int = 0
+
+    // Proof-related properties
+    var proofNeeded: Bool? = false
+    var proofDescription: String? = nil
 
     var privacy: PrivacySettings {
         get {
@@ -133,7 +137,9 @@ final class taskapeTask: Identifiable {
         flagStatus: Bool = false,
         flagColor: String? = nil,
         flagName: String? = nil,
-        displayOrder: Int = 0
+        displayOrder: Int = 0,
+        proofNeeded: Bool? = false,
+        proofDescription: String? = nil
     ) {
         self.id = id
         self.user_id = user_id
@@ -153,8 +159,9 @@ final class taskapeTask: Identifiable {
         self.flagColor = flagColor
         self.flagName = flagName
         self.displayOrder = displayOrder
+        self.proofNeeded = proofNeeded
+        self.proofDescription = proofDescription
     }
-
     func toggleFlag() {
         self.flagStatus.toggle()
         if !self.flagStatus {
@@ -171,8 +178,6 @@ final class taskapeTask: Identifiable {
         self.flagName = name
         self.flagStatus = true
     }
-
-    // Other methods remain the same...
 }
 
 // Update convenience initializer
