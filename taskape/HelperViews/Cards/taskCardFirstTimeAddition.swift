@@ -16,7 +16,7 @@ struct taskCardFirstTimeAddition: View {
     var body: some View {
         Button(action: { detailIsPresent.toggle() }) {
             HStack {
-                Group {
+                VStack {
                     HStack {
                         if !task.name.isEmpty {
                             Text(" \(task.name)")
@@ -79,13 +79,13 @@ struct taskCardFirstTimeAddition: View {
             }
         }
         .sheet(isPresented: $detailIsPresent) {
-            Group {
+            VStack {
                 VStack {
                     Button(action: { detailIsPresent.toggle() }) {
                         Image(systemName: "chevron.down")
                     }.buttonStyle(PlainButtonStyle())
                     HStack {
-                        Group {
+                        VStack {
                             HStack {
                                 TextField(
                                     "what needs to be done?", text: $task.name

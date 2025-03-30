@@ -101,7 +101,7 @@ struct MainNavigationView: View {
             }
             .edgesIgnoringSafeArea(.bottom)
                .toolbar(.hidden)
-        }        .onAppear {
+        }       .onAppear {
             currentUser = UserManager.shared.getCurrentUser(
                 context: modelContext)
             Task {

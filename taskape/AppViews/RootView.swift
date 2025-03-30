@@ -66,7 +66,7 @@ struct RootView: View {
     }
 
     var body: some View {
-        Group {
+        VStack {
             if isLoading {
                 ProgressView("Loading...")
                     .onAppear {

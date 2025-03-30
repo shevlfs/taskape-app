@@ -123,7 +123,6 @@ struct AuthenticationView: View {
                     phoneNumberReceived: $phoneNumberReceived,
                     phoneCode: $phoneCode
                 )
-                .ignoresSafeArea(.all)
                 .opacity(
                     LandingButtonPressed && !phoneNumberReceived ? 1 : 0
                 ).onTapGesture {
@@ -140,19 +139,22 @@ struct AuthenticationView: View {
                     !LandingButtonPressed || phoneNumberReceived
                 )
 
-                Button(action: {
-                    LandingButtonPressed = true
-                }) {
-                    LandingButton()
-                }.sensoryFeedback(.success, trigger: LandingButtonPressed)
-                    .buttonStyle(.plain)
-                    .opacity(LandingButtonPressed ? 0 : 1).blur(
-                        radius:
-                            LandingButtonPressed ? 10 : 0
-                    ).animation(
-                        .snappy(duration: 1.0), value: LandingButtonPressed
-                    ).percentageOffset(y: 0.7)
+                VStack {
+                    Spacer()
+                    Button(action: {
+                        LandingButtonPressed = true
+                    }) {
+                        LandingButton()
+                    }.sensoryFeedback(.success, trigger: LandingButtonPressed)
+                        .buttonStyle(.plain)
+                        .opacity(LandingButtonPressed ? 0 : 1).blur(
+                            radius:
+                                LandingButtonPressed ? 10 : 0
+                        ).animation(
+                            .snappy(duration: 1.0), value: LandingButtonPressed
+                        )
 
+                }.padding(.bottom, 120)
                 PhoneVerificationView(
                     code: $verifyCode,
                     codeReceived: $verifyCodeReceived,
@@ -165,7 +167,6 @@ struct AuthenticationView: View {
                         from: nil,
                         for: nil)
                 }
-                .ignoresSafeArea(.keyboard)
                 .opacity(phoneNumberReceived ? 1 : 0)
                 .animation(
                     .snappy(duration: 1.0), value: phoneNumberReceived
@@ -255,7 +256,16 @@ struct AuthenticationView: View {
                             EmptyView()
                         }
                     }
-                )
+                ).onAppear {
+                    async {
+                        let handshake_result = await serverHandShake()
+                        if handshake_result {
+                            print("Successfully connected to server")
+                        } else {
+                            print("Failed to connect to server")
+                        }
+                    }
+                }
         }
     }
 }

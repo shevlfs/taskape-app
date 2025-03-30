@@ -141,7 +141,7 @@ struct FriendSearchView: View {
                 await friendManager.refreshFriendData()
                 await fetchAllUsers()
             }
-        }
+        }.background(Color.clear)
     }
 
     // Function to fetch all users (empty search query)
@@ -508,7 +508,7 @@ struct UserSearchResultRow: View {
             RoundedRectangle(cornerRadius: 25)
                 .fill(Color(UIColor.secondarySystemBackground))
                 .overlay(
-                    Group {
+                    VStack {
                         if isLoadingUserProfile {
                             ProgressView().padding()
                         } else if let error = loadingError {

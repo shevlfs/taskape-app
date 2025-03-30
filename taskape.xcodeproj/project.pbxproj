@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		56376EED2D57E3D900553A6E /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 56376EEC2D57E3D900553A6E /* Alamofire */; };
+		5651F9C42D986ED70000C8AA /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = 5651F9C32D986ED70000C8AA /* SwiftUIIntrospect */; };
 		567BD5842D9480B6007BF4FB /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 567BD5832D9480B6007BF4FB /* WidgetKit.framework */; };
 		567BD5862D9480B6007BF4FB /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 567BD5852D9480B6007BF4FB /* SwiftUI.framework */; };
 		567BD5972D9480B7007BF4FB /* taskapeWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 567BD5812D9480B6007BF4FB /* taskapeWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -167,6 +168,7 @@
 				56A85DA32D30A1BE008B1623 /* Lottie in Frameworks */,
 				56F9DDA42D7640A500DA5BBE /* CachedAsyncImage in Frameworks */,
 				56E7F0CC2D6A7E740064AAA4 /* SwiftDotenv in Frameworks */,
+				5651F9C42D986ED70000C8AA /* SwiftUIIntrospect in Frameworks */,
 				56376EED2D57E3D900553A6E /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -246,6 +248,7 @@
 				56376EEC2D57E3D900553A6E /* Alamofire */,
 				56E7F0CB2D6A7E740064AAA4 /* SwiftDotenv */,
 				56F9DDA32D7640A500DA5BBE /* CachedAsyncImage */,
+				5651F9C32D986ED70000C8AA /* SwiftUIIntrospect */,
 			);
 			productName = taskape;
 			productReference = 568228942D2C60650023C192 /* taskape.app */;
@@ -283,6 +286,7 @@
 				56376EEB2D57E3D900553A6E /* XCRemoteSwiftPackageReference "Alamofire" */,
 				56E7F0CA2D6A7E740064AAA4 /* XCRemoteSwiftPackageReference "swift-dotenv" */,
 				56F9DDA22D7640A500DA5BBE /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */,
+				5651F9C22D986E6F0000C8AA /* XCRemoteSwiftPackageReference "swiftui-introspect" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 56FA4D632D2C102E00C5D8FE;
@@ -549,6 +553,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = taskape/taskape.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"taskape/Preview Content\"";
@@ -569,6 +574,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = shevlfs.taskape;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -585,6 +591,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = taskape/taskape.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"taskape/Preview Content\"";
@@ -605,6 +612,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = shevlfs.taskape;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -656,6 +664,14 @@
 				minimumVersion = 5.10.2;
 			};
 		};
+		5651F9C22D986E6F0000C8AA /* XCRemoteSwiftPackageReference "swiftui-introspect" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/siteline/swiftui-introspect.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.0;
+			};
+		};
 		56A85DA12D30A1BE008B1623 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
@@ -687,6 +703,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 56376EEB2D57E3D900553A6E /* XCRemoteSwiftPackageReference "Alamofire" */;
 			productName = Alamofire;
+		};
+		5651F9C32D986ED70000C8AA /* SwiftUIIntrospect */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5651F9C22D986E6F0000C8AA /* XCRemoteSwiftPackageReference "swiftui-introspect" */;
+			productName = SwiftUIIntrospect;
 		};
 		567BD5A72D948C19007BF4FB /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;

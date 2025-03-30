@@ -171,7 +171,7 @@ struct UserProfileView: View {
     }
 
     var body: some View {
-        Group {
+        VStack {
             if isLoading {
                 ProgressView("loading profile...")
             } else if let error = errorMessage {
@@ -694,9 +694,8 @@ extension Color {
             if colorScheme == .light && isBlueish {
                 threshold = 0.65
             }
-
             else if colorScheme == .dark {
-                threshold = 0.4
+                threshold = 0.75
             }
 
             return luminance > threshold ? Color.black : Color.white

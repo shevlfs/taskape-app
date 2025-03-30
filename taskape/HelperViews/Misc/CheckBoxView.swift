@@ -149,7 +149,7 @@ struct TaskCardWithCheckbox: View {
 
             Button(action: { detailIsPresent.toggle() }) {
                 HStack {
-                    Group {
+                    VStack {
                         HStack {
                             if !task.name.isEmpty {
                                 Text(" \(task.name)")

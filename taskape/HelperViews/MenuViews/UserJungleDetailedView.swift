@@ -163,7 +163,7 @@ struct UserJungleDetailedView: View {
             Spacer()
         }
         .overlay(
-            Group {
+            VStack {
                 if isRefreshing {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())

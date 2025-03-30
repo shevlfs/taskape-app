@@ -168,7 +168,7 @@ struct EventCard: View {
                             .fixedSize(horizontal: false, vertical: true)
                             .padding(.leading).padding(.top, 8)
 
-                        Group {
+                        VStack {
                             if !event.relatedTasks.isEmpty {
                                 HStack(alignment: .top, spacing: 6) {
                                     Text("•")
@@ -265,7 +265,7 @@ struct EventCard: View {
                             .multilineTextAlignment(.leading)
                         Spacer()
 
-                        Group {
+                        VStack {
                             if !event.relatedTasks.isEmpty {
                                 HStack(alignment: .top, spacing: 6) {
                                     Text("•")

@@ -137,18 +137,7 @@ struct RegistrationView: View {
     @Binding var phoneCode: String
 
     var body: some View {
-        GeometryReader { geometry in
             ZStack {
-                VStack {
-                    Button(action: {
-                        phoneCode = selectedCountry.dial_code
-                        phoneNumberReceived = true
-                    }) {
-                        taskapeContinueButton()
-                    }.buttonStyle(.plain).disabled(
-                        !numberOk)
-                }.percentageOffset(y: 4)
-
                 Color.black
                     .opacity(countryPickerActive ? 0.5 : 0)
                     .ignoresSafeArea()
@@ -162,9 +151,8 @@ struct RegistrationView: View {
                 VStack {
                     Text("heyyy, so, uh...\n what's your number?")
                         .multilineTextAlignment(.center)
-                        .font(.pathway(30))
-                        .percentageOffset(y: 2).padding(.bottom, 280)
-
+                        .font(.pathway(30)).padding(.top, 40)
+                    Spacer()
                     HStack {
                         Button(action: {
                             isFocused = false
@@ -180,8 +168,15 @@ struct RegistrationView: View {
                             country: selectedCountry, isFocused: _isFocused,
                             isCorrect: $numberOk
                         )
-                    }.percentageOffset(y: 0.5)
+                    }
                     Spacer()
+                    Button(action: {
+                        phoneCode = selectedCountry.dial_code
+                        phoneNumberReceived = true
+                    }) {
+                        taskapeContinueButton()
+                    }.buttonStyle(.plain).disabled(
+                        !numberOk).padding(.bottom,120)
                 }.overlay(
                     countryPicker(
                         selectedCountry: $selectedCountry,
@@ -190,13 +185,11 @@ struct RegistrationView: View {
                     ).disabled(!countryPickerActive).opacity(
                         countryPickerActive ? 1 : 0
                     )
-                    .percentageOffset(x: -0.15, y: 0.5).transition(.opacity)
+                 .transition(.opacity)
                     .animation(
                         .bouncy(duration: 0.25), value: countryPickerActive))
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.clear)
-        }.ignoresSafeArea()
+        }
     }
 }
 

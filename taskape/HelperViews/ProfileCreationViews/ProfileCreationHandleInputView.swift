@@ -49,7 +49,7 @@ struct taskapeHandleField: View {
                     )
             )
             .overlay(
-                Group {
+                VStack {
                     if isChecking {
                         ProgressView()
                             .progressViewStyle(CircularProgressViewStyle())
@@ -99,7 +99,7 @@ struct ProfileCreationHandleInputView: View {
                 wasChecked: $wasHandleChecked,
                 onHandleChanged: handleTypingDebounce
             ).overlay(
-                Group {
+                VStack {
                     if wasHandleChecked && isHandleAvailable == false {
                         Text("this username is already taken")
                             .font(.pathway(15))

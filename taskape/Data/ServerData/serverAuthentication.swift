@@ -41,7 +41,7 @@ func sendVerificationCode(phoneNumber: String, country_code: String) async {
             "phone": user_phone
         ]
 
-        _ = await AF.request(
+        let result = await AF.request(
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/sendVerificationCode",
             method: .post, parameters: parameters,
             encoding: JSONEncoding.default

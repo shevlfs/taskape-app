@@ -1,18 +1,6 @@
 import SwiftUI
 
-struct taskapeContinueButton: View {
-    var body: some View {
-        Text("continue")
-            .padding()
-            .frame(maxWidth: 230)
-            .font(.pathway(21))
-            .background(
-                RoundedRectangle(cornerRadius: 30)
-                    .fill(.regularMaterial)
-                    .stroke(.thinMaterial, lineWidth: 1)
-            )
-    }
-}
+
 
 struct TaskapeCodeField: View {
     let formatter: NumberFormatter = {
@@ -79,21 +67,20 @@ struct PhoneVerificationView: View {
         VStack(alignment: .center) {
             Text("uh, sent you a code...\nyada-yada...")
                 .multilineTextAlignment(.center)
-                .font(.pathway(30))
-                .percentageOffset(y: 1.25)
-                .padding(.bottom, 200)
+                .font(.pathway(30)).padding(.top,40)
+
+            Spacer()
 
             TaskapeCodeField(
                 current_string: $code,
                 placeholder: "beep-boop",
                 isCorrect: $isValid
             )
-            .percentageOffset(y: 0.5)
             .overlay(
                 Text("that's not quite right...")
                     .foregroundColor(Color.taskapeOrange)
                     .font(.pathway(15))
-                    .offset(y: 150)
+                    .offset(y: 120)
                     .opacity(displayError ? 1 : 0)
             )
 
@@ -138,8 +125,7 @@ struct PhoneVerificationView: View {
                 taskapeContinueButton()
             }
             .buttonStyle(.plain)
-            .disabled(!isValid)
-            .percentageOffset(y: -1.35)
+            .disabled(!isValid).padding(.bottom,120)
         }
     }
 

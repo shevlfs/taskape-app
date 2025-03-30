@@ -17,7 +17,7 @@ struct MainRootView: View {
     @EnvironmentObject private var appState: AppStateManager
 
     var body: some View {
-        Group {
+        VStack {
             if isLoading {
                 ProgressView("loading your profile...")
             } else if let error = loadingError {

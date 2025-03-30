@@ -12,7 +12,7 @@ struct MainView: View {
 
     @State var showFriendInvitationSheet: Bool = false
 
-    // Add ObservedObject for friend manager to get request counts
+    // Add ObservedObject for friend manager to get request countsr
     @ObservedObject private var friendManager = FriendManager.shared
 
     // State to track if we're currently fetching friend data
@@ -239,9 +239,12 @@ struct MainView: View {
                             .zoom(sourceID: "jungleCard", in: mainNamespace)
                         )
                 case "friendSearch":
-                    FriendSearchView().toolbar(.hidden).modelContext(
-                        self.modelContext
-                    )
+                    ZStack {
+                            Color.clear // Ensures we have a transparent base
+                            FriendSearchView()
+                            .modelContext(self.modelContext)
+                        }.toolbar(.hidden)
+
                     .navigationTransition(
                         .zoom(sourceID: "friendSearch", in: mainNamespace)
                     )

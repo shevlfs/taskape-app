@@ -14,49 +14,53 @@ struct MenuItem: View {
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        Rectangle()
-            .foregroundColor(.clear)
-            .frame(
-                width: UIScreen.main.bounds.width * widthProportion,
-                height: UIScreen.main.bounds.height * heightProportion
-            )
-            .background(
-                LinearGradient(
-                    stops: colorScheme == .dark
-                        ? [
-                            // Enhanced gradient stops for dark mode
-                            Gradient.Stop(
-                                color: mainColor.opacity(0.95), location: 0.05),
-                            Gradient.Stop(
-                                color: mainColor.opacity(0.75), location: 0.4),
-                            Gradient.Stop(
-                                color: mainColor.opacity(0.5), location: 0.8),
-                        ]
-                        : [
-                            // Original gradient stops for light mode
-                            Gradient.Stop(color: mainColor, location: 0.06),
-                            Gradient.Stop(
-                                color: mainColor.opacity(0.6), location: 0.31),
-                            Gradient.Stop(
-                                color: mainColor.opacity(0.25), location: 0.81),
-                        ],
-                    startPoint: UnitPoint(x: 0.5, y: 1),
-                    endPoint: UnitPoint(x: 0.5, y: 0)
+        VStack {
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.clear).frame(
+                    width: UIScreen.main.bounds.width * widthProportion,
+                    height: UIScreen.main.bounds.height * heightProportion
                 )
-            )
+                .background(
+                    LinearGradient(
+                        stops: colorScheme == .dark
+                            ? [
+                                // Enhanced gradient stops for dark mode
+                                Gradient.Stop(
+                                    color: mainColor.opacity(0.95),
+                                    location: 0.05),
+                                Gradient.Stop(
+                                    color: mainColor.opacity(0.75),
+                                    location: 0.4),
+                                Gradient.Stop(
+                                    color: mainColor.opacity(0.5), location: 0.8
+                                ),
+                            ]
+                            : [
+                                // Original gradient stops for light mode
+                                Gradient.Stop(color: mainColor, location: 0.06),
+                                Gradient.Stop(
+                                    color: mainColor.opacity(0.6),
+                                    location: 0.31),
+                                Gradient.Stop(
+                                    color: mainColor.opacity(0.25),
+                                    location: 0.81),
+                            ],
+                        startPoint: UnitPoint(x: 0.5, y: 1),
+                        endPoint: UnitPoint(x: 0.5, y: 0)
+                    ).clipShape(RoundedRectangle(cornerRadius: 20))
+                )
 
-            .glow(color: mainColor.opacity(0.15), radius: 2).blur(radius: 0.5, opaque: false)
 
-            .cornerRadius(10)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .inset(by: 0.5)
-                    .stroke(
-                        colorScheme == .dark
-                            ? mainColor.opacity(0.4) : mainColor.opacity(0.15),
-                        lineWidth: colorScheme == .dark ? 1.5 : 1
-                    )
-            )
+        } .overlay(
+            RoundedRectangle(cornerRadius: 30)
+
+                .stroke(
+                    colorScheme == .dark
+                        ? mainColor.opacity(0.3)
+                        : mainColor.opacity(0.3),
+                    lineWidth: colorScheme == .dark ? 1 : 1
+                ).blur(radius: 3)
+        )
     }
 }
 
@@ -74,5 +78,171 @@ extension View {
             .shadow(color: color, radius: radius / 3)
             .shadow(color: color, radius: radius / 3)
             .shadow(color: color, radius: radius / 3)
+    }
+}
+
+struct VisionProShadowStyle {
+    let primary: Shadow
+    let secondary: Shadow
+    let tertiary: Shadow?
+    let backgroundBlur: CGFloat
+
+    struct Shadow {
+        let color: Color
+        let radius: CGFloat
+        let x: CGFloat
+        let y: CGFloat
+        let opacity: CGFloat
+    }
+
+    // Preset for a floating card effect
+    static let floatingCard = VisionProShadowStyle(
+        primary: Shadow(
+            color: .black,
+            radius: 16,
+            x: 0,
+            y: 4,
+            opacity: 0.1
+        ),
+        secondary: Shadow(
+            color: .black,
+            radius: 30,
+            x: 0,
+            y: 12,
+            opacity: 0.08
+        ),
+        tertiary: Shadow(
+            color: .white,
+            radius: 3,
+            x: 0,
+            y: -1,
+            opacity: 0.1
+        ),
+        backgroundBlur: 0.3
+    )
+
+    // Preset for buttons
+    static let button = VisionProShadowStyle(
+        primary: Shadow(
+            color: .black,
+            radius: 10,
+            x: 0,
+            y: 2,
+            opacity: 0.12
+        ),
+        secondary: Shadow(
+            color: .black,
+            radius: 16,
+            x: 0,
+            y: 5,
+            opacity: 0.05
+        ),
+        tertiary: nil,
+        backgroundBlur: 0.15
+    )
+
+    // Preset for text elements
+    static let text = VisionProShadowStyle(
+        primary: Shadow(
+            color: .black,
+            radius: 5,
+            x: 0,
+            y: 1,
+            opacity: 0.12
+        ),
+        secondary: Shadow(
+            color: .black,
+            radius: 10,
+            x: 0,
+            y: 3,
+            opacity: 0.05
+        ),
+        tertiary: nil,
+        backgroundBlur: 0
+    )
+}
+
+// MARK: - View Extension
+extension View {
+    @ViewBuilder
+    func visionProShadow(style: VisionProShadowStyle = .floatingCard)
+        -> some View
+    {
+        self
+            .shadow(
+                color: style.primary.color.opacity(style.primary.opacity),
+                radius: style.primary.radius,
+                x: style.primary.x,
+                y: style.primary.y
+            )
+            .shadow(
+                color: style.secondary.color.opacity(style.secondary.opacity),
+                radius: style.secondary.radius,
+                x: style.secondary.x,
+                y: style.secondary.y
+            )
+            .overlay(
+                style.tertiary.map { tertiary in
+                    Color.clear
+                        .shadow(
+                            color: tertiary.color.opacity(tertiary.opacity),
+                            radius: tertiary.radius,
+                            x: tertiary.x,
+                            y: tertiary.y
+                        )
+                        .allowsHitTesting(false)
+                }
+            )
+            .background(
+                BlurEffect(style: .systemUltraThinMaterial)
+                    .opacity(style.backgroundBlur)
+                    .allowsHitTesting(false)
+            )
+    }
+
+    // A more immersive floating card with additional depth cues
+    func visionProFloatingCard(
+        cornerRadius: CGFloat = 16,
+        backgroundOpacity: CGFloat = 0.5,
+        backgroundBlur: CGFloat = 0.7
+    ) -> some View {
+        self
+            .cornerRadius(cornerRadius)
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .fill(Color.white.opacity(0.05))
+                    .background(
+                        BlurEffect(style: .systemThinMaterial)
+                            .opacity(backgroundBlur)
+                    )
+                    .opacity(backgroundOpacity)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.2),
+                                Color.white.opacity(0.05),
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.5
+                    )
+            )
+            .visionProShadow(style: .floatingCard)
+    }
+}
+
+struct BlurEffect: UIViewRepresentable {
+    let style: UIBlurEffect.Style
+
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        return UIVisualEffectView(effect: UIBlurEffect(style: style))
+    }
+
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
+        uiView.effect = UIBlurEffect(style: style)
     }
 }
