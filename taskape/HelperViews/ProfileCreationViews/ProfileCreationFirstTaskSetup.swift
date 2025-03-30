@@ -243,9 +243,13 @@ struct ProfileCreationFirstTaskSetup: View {
                     if !tasks.isEmpty {
                         saveTasks()
                         UserDefaults.standard.set(true, forKey: "profileExists")
-                        appState.login()
-                        userAlreadyExists = true
-                        progress = 1.0
+                        withAnimation(.spring(response: 1, dampingFraction: 0.5)){
+
+
+                            appState.login()
+                            userAlreadyExists = true
+                            progress = 1.0
+                        }
                     }
                 }) {
                     taskapeContinueButton()

@@ -18,10 +18,17 @@ struct MainRootView: View {
 
     @State var fullyLoaded = false
 
+    @State var animationAppeared: Bool = false
+    @State private var isVisible = false
+
     var body: some View {
         ZStack {
             if isLoading {
-                AnimatedLogoView().transition(.opacity)
+                AnimatedLogoView().opacity(isVisible ? 1.0 : 0.0).onAppear {
+                    withAnimation(.easeIn(duration: 0.5)) {
+                        isVisible = true
+                    }
+                }
             }
 
 
@@ -62,9 +69,16 @@ struct MainRootView: View {
                         context: modelContext)
 
                     if existingUser != nil {
+                        loadData()
                         print(
                             "User found in local database, no need to fetch from server"
                         )
+
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            withAnimation(.spring(response: 1, dampingFraction: 0.6)){
+                                isLoading = false
+                            }
+                        }
                         return
                     }
 

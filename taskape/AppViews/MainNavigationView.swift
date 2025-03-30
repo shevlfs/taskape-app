@@ -82,58 +82,22 @@ struct MainNavigationView: View {
     @Binding var fullyLoaded: Bool
 
     var body: some View {
-        ZStack {
             // Main Navigation content
-            mainContent
-        }.onAppear{
-            currentUser = UserManager.shared.getCurrentUser(context: modelContext)
-        }
-    }
-
-    private var mainContent: some View {
-        NavigationStack(path: $mainNavigationPath) {
-            VStack {
-                userGreetingCard()
-                TabBarView(
-                    tabBarItems: $mainTabBarItems,
-                    tabBarViewIndex: $selectedTabIndex
-                ).ignoresSafeArea(.all)
-                    .edgesIgnoringSafeArea(.all)
-                    .toolbar(.hidden)
-
-                switch selectedTabIndex {
-                case 0:
-                    SettingsView().modelContext(modelContext).environmentObject(
-                        appState
-                    ).gesture(
-                        DragGesture(
-                            minimumDistance: 20,
-                            coordinateSpace: .global
-                        ).onEnded { value in
-                            let horizontalAmount = value.translation.width
-                            let verticalAmount = value.translation.height
-
-                            if abs(horizontalAmount) > abs(verticalAmount) {
-                                if horizontalAmount < 0 {
-                                    withAnimation {
-                                        self.selectedTabIndex = min(
-                                            self.selectedTabIndex + 1,
-                                            self.mainTabBarItems.count - 1)
-                                    }
-                                } else {
-                                    withAnimation {
-                                        self.selectedTabIndex = max(
-                                            0, self.selectedTabIndex - 1)
-                                    }
-                                }
-                            }
-                        })
-                case 1:
-                    MainView(navigationPath: $mainNavigationPath)
-                        .modelContext(modelContext)
-                        .ignoresSafeArea(.all)
+            NavigationStack(path: $mainNavigationPath) {
+                VStack {
+                    userGreetingCard()
+                    TabBarView(
+                        tabBarItems: $mainTabBarItems,
+                        tabBarViewIndex: $selectedTabIndex
+                    ).ignoresSafeArea(.all)
                         .edgesIgnoringSafeArea(.all)
-                        .frame(maxHeight: .infinity).toolbar(.hidden).gesture(
+                        .toolbar(.hidden)
+
+                    switch selectedTabIndex {
+                    case 0:
+                        SettingsView().modelContext(modelContext).environmentObject(
+                            appState
+                        ).gesture(
                             DragGesture(
                                 minimumDistance: 20,
                                 coordinateSpace: .global
@@ -156,31 +120,63 @@ struct MainNavigationView: View {
                                     }
                                 }
                             })
-                default:
-                    Text("unknown")
+                    case 1:
+                        MainView(navigationPath: $mainNavigationPath)
+                            .modelContext(modelContext)
+                            .ignoresSafeArea(.all)
+                            .edgesIgnoringSafeArea(.all)
+                            .frame(maxHeight: .infinity).toolbar(.hidden).gesture(
+                                DragGesture(
+                                    minimumDistance: 20,
+                                    coordinateSpace: .global
+                                ).onEnded { value in
+                                    let horizontalAmount = value.translation.width
+                                    let verticalAmount = value.translation.height
+
+                                    if abs(horizontalAmount) > abs(verticalAmount) {
+                                        if horizontalAmount < 0 {
+                                            withAnimation {
+                                                self.selectedTabIndex = min(
+                                                    self.selectedTabIndex + 1,
+                                                    self.mainTabBarItems.count - 1)
+                                            }
+                                        } else {
+                                            withAnimation {
+                                                self.selectedTabIndex = max(
+                                                    0, self.selectedTabIndex - 1)
+                                            }
+                                        }
+                                    }
+                                })
+                    default:
+                        Text("unknown")
+                    }
+                    Spacer()
                 }
-                Spacer()
+                .edgesIgnoringSafeArea(.bottom)
+                .toolbar(.hidden)
             }
-            .edgesIgnoringSafeArea(.bottom)
-            .toolbar(.hidden)
+            .navigationDestination(
+                for: String.self,
+                destination: {
+                    route in
+                    switch route {
+                    case "self_jungle_view":
+                        UserJungleDetailedView()
+                            .modelContext(self.modelContext)
+                    case "friendSearch":
+                        FriendSearchView().toolbar(.hidden).modelContext(
+                            self.modelContext)
+                    default:
+                        EmptyView()
+                    }
+                }
+            )
+        .onAppear{
+            currentUser = UserManager.shared.getCurrentUser(context: modelContext)
         }
-        .navigationDestination(
-            for: String.self,
-            destination: {
-                route in
-                switch route {
-                case "self_jungle_view":
-                    UserJungleDetailedView()
-                        .modelContext(self.modelContext)
-                case "friendSearch":
-                    FriendSearchView().toolbar(.hidden).modelContext(
-                        self.modelContext)
-                default:
-                    EmptyView()
-                }
-            }
-        )
     }
+
 }
 
 #Preview {

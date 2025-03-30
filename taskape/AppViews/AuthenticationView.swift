@@ -201,8 +201,9 @@ struct AuthenticationView: View {
                             print(
                                 "Existing user detected with ID: \(UserManager.shared.currentUserId)"
                             )
-
-                            userAlreadyExists = true
+                            withAnimation(.spring(response: 1, dampingFraction: 0.5)){
+                                userAlreadyExists = true
+                            }
                         }
                     }
                 }

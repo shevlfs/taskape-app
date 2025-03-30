@@ -86,7 +86,9 @@ struct RootView: View {
                         userAlreadyExists = false
                     }
                     .onChange(of: userAlreadyExists) {
-                        appState.login()
+                        withAnimation(.spring(response: 1, dampingFraction: 0.5)){
+                            appState.login()
+                        }
                     }
                 } else {
                     MainRootView()
