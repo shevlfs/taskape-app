@@ -4,31 +4,37 @@ struct CheckBoxView: View {
     @Bindable var task: taskapeTask
     @State private var isAnimating: Bool = false
     @Binding var newCompletionStatus: Bool
+    @State private var showProofSubmission: Bool = false
     @Environment(\.modelContext) var modelContext
 
     var body: some View {
         Button(action: {
-            // Toggle the visual state immediately for responsive UI
-            newCompletionStatus.toggle()
+            // If task requires proof, show proof submission view
+            if task.proofNeeded == true && !task.completion.isCompleted {
+                showProofSubmission = true
+            } else {
+                // Toggle the visual state immediately for responsive UI
+                newCompletionStatus.toggle()
 
-            // Start animation
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                isAnimating = true
-            }
-
-            // Reset animation state after a short delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                // Start animation
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    isAnimating = false
+                    isAnimating = true
                 }
 
-                // Update the actual task completion status after animation completes
-                // This will trigger any onChange listeners in parent views
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    task.completion.isCompleted = newCompletionStatus
-                    saveTask()
-                    task.syncWithWidget()
-                    TaskNotifier.notifyTasksUpdated()
+                // Reset animation state after a short delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        isAnimating = false
+                    }
+
+                    // Update the actual task completion status after animation completes
+                    // This will trigger any onChange listeners in parent views
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        task.completion.requiresConfirmation = true
+                        saveTask()
+                        task.syncWithWidget()
+                        TaskNotifier.notifyTasksUpdated()
+                    }
                 }
             }
         }) {
@@ -66,6 +72,10 @@ struct CheckBoxView: View {
             newCompletionStatus = newValue
         }
         .buttonStyle(PlainButtonStyle())
+        .sheet(isPresented: $showProofSubmission) {
+            ProofSubmissionView(task: task, isPresented: $showProofSubmission)
+                .modelContext(modelContext)
+        }
     }
 
     func saveTask() {
@@ -89,8 +99,7 @@ struct CheckBoxView: View {
     }
 }
 
-// Modifier to apply the completed task style
-// Updated taskCard to incorporate the checkbox
+// Updated TaskCardWithCheckbox for new proof functionality
 struct TaskCardWithCheckbox: View {
     @Bindable var task: taskapeTask
     @State var detailIsPresent: Bool = false
@@ -185,11 +194,9 @@ struct TaskCardWithCheckbox: View {
                     .background(
                         RoundedRectangle(cornerRadius: 30)
                             .fill(
-
                                 getTaskColor(
                                     flagColor: task.flagColor,
                                     newCompletionStatus: newCompletionStatus)
-
                             )
                             .stroke(.regularMaterial, lineWidth: 1)
                             .blur(radius: 0.25)
@@ -239,15 +246,4 @@ struct TaskCardWithCheckbox: View {
             await syncTaskChanges(task: task)
         }
     }
-}
-
-#Preview {
-    TaskCardWithCheckbox(
-        task: taskapeTask(
-            name: "Design new UI",
-            taskDescription: "Create mockups in Figma",
-            author: "shevlfs",
-            privacy: "private"
-        ), labels: .constant([])
-    )
 }

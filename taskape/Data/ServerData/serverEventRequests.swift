@@ -330,7 +330,7 @@ func confirmTaskCompletion(taskId: String, confirmerId: String, isConfirmed: Boo
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/confirmTaskCompletion",
             method: .post,
             parameters: request,
-            encoder: JSONParameterEncoder.default
+            encoder: JSONParameterEncoder.default, headers: ["Authorization": token]
         )
         .validate()
         .serializingDecodable(ConfirmTaskCompletionResponse.self)

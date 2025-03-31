@@ -56,20 +56,19 @@ struct MainView: View {
                                 if group.count == 2 {
                                     HStack(spacing: 20) {
                                         ForEach(group) { event in
-                                            Button(action: {
-                                                navigationPath
-                                                    .append(event.id)
-                                            }) {
-                                                EventCard(
-                                                    event: event,
-                                                    eventSize: event
-                                                        .eventSize
-                                                )
-                                                .matchedTransitionSource(
-                                                    id: event.id,
-                                                    in: mainNamespace
-                                                )
-                                            }.buttonStyle(PlainButtonStyle())
+                                            NavigationLink(
+                                                destination: {EventCardDetailedView(event: event).modelContext(modelContext)}) {
+                                                    EventCard(
+                                                        event: event,
+                                                        eventSize: event
+                                                            .eventSize
+                                                    )
+                                                    .matchedTransitionSource(
+                                                        id: event.id,
+                                                        in: mainNamespace
+                                                    )
+                                                }
+
                                         }
                                     }
                                 }
@@ -79,20 +78,20 @@ struct MainView: View {
                                 {
                                     if singleEvent.eventSize == .large {
                                         // Large events get full width
-                                        Button(action: {
-                                            navigationPath
-                                                .append(singleEvent.id)
-                                        }) {
-                                            EventCard(
-                                                event: singleEvent,
-                                                eventSize: singleEvent
-                                                    .eventSize
-                                            )
-                                            .matchedTransitionSource(
-                                                id: singleEvent.id,
-                                                in: mainNamespace
-                                            )
-                                        }.buttonStyle(PlainButtonStyle())
+                                        NavigationLink(
+                                            destination: {EventCardDetailedView(event: singleEvent).modelContext(modelContext)}) {
+                                                EventCard(
+                                                    event: singleEvent,
+                                                    eventSize: singleEvent
+                                                        .eventSize
+                                                )
+                                                .matchedTransitionSource(
+                                                    id: singleEvent.id,
+                                                    in: mainNamespace
+                                                )
+                                            }
+
+
                                     } else {
                                         // For small or medium events, create a layout with appropriate spacing
                                         HStack(spacing: 20) {
@@ -101,39 +100,33 @@ struct MainView: View {
                                                 Spacer()
                                                     .frame(maxWidth: .infinity)
 
-                                                // Event on the right
-                                                Button(action: {
-                                                    navigationPath
-                                                        .append(singleEvent.id)
-                                                }) {
-                                                    EventCard(
-                                                        event: singleEvent,
-                                                        eventSize: singleEvent
-                                                            .eventSize
-                                                    ).padding(.trailing, 15)
+                                                NavigationLink(
+                                                    destination: {EventCardDetailedView(event: singleEvent).modelContext(modelContext)}) {
+                                                        EventCard(
+                                                            event: singleEvent,
+                                                            eventSize: singleEvent
+                                                                .eventSize
+                                                        ).padding(.trailing, 15)
                                                         .matchedTransitionSource(
                                                             id: singleEvent.id,
                                                             in: mainNamespace
                                                         )
-                                                }.buttonStyle(
-                                                    PlainButtonStyle())
+                                                    }
                                             } else {
                                                 // Event on the left
-                                                Button(action: {
-                                                    navigationPath
-                                                        .append(singleEvent.id)
-                                                }) {
-                                                    EventCard(
-                                                        event: singleEvent,
-                                                        eventSize: singleEvent
-                                                            .eventSize
-                                                    ).padding(.leading, 15)
+                                                NavigationLink(
+                                                    destination: {EventCardDetailedView(event: singleEvent).modelContext(modelContext)}) {
+                                                        EventCard(
+                                                            event: singleEvent,
+                                                            eventSize: singleEvent
+                                                                .eventSize
+                                                        ).padding(.leading, 15)
                                                         .matchedTransitionSource(
                                                             id: singleEvent.id,
                                                             in: mainNamespace
                                                         )
-                                                }.buttonStyle(
-                                                    PlainButtonStyle())
+                                                    }
+
 
                                                 // Empty space (nothing) on the right
                                                 Spacer()
@@ -288,17 +281,18 @@ struct MainView: View {
                             .zoom(sourceID: "friendSearch", in: mainNamespace)
                         )
                 default:
-                    if let event = events.first(where: { $0.id == route }) {
-                        EventCardDetailedView(event: event)
-                            .navigationTransition(
-                                .zoom(sourceID: event.id, in: mainNamespace)
-                            )
-                            .modelContext(self.modelContext)
-                            .navigationBarBackButtonHidden().toolbar(.hidden)
-                    } else {
-
-                        Text("error in the mainview navigation!")
-                    }
+                    EmptyView()
+//                    if let event = events.first(where: { $0.id == route }) {
+//                        EventCardDetailedView(event: event)
+//                            .navigationTransition(
+//                                .zoom(sourceID: event.id, in: mainNamespace)
+//                            )
+//                            .modelContext(self.modelContext)
+//                            .navigationBarBackButtonHidden().toolbar(.hidden)
+//                    } else {
+//
+//                        Text("error in the mainview navigation!")
+//                    }
                 }
             }
         )

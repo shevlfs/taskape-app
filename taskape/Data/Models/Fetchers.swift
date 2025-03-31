@@ -163,6 +163,11 @@ func convertToLocalTask(_ taskResponse: TaskResponse) -> taskapeTask {
 
     let createdAt = dateFormatter.date(from: taskResponse.created_at) ?? Date()
 
+    var confirmedAt: Date? = nil
+    if let confirmedAtString = taskResponse.confirmed_at {
+        confirmedAt = dateFormatter.date(from: confirmedAtString)
+    }
+
     let privacyLevel: PrivacySettings.PrivacyLevel
     if taskResponse.privacy_level.isEmpty {
         privacyLevel = .everyone
@@ -187,7 +192,12 @@ func convertToLocalTask(_ taskResponse: TaskResponse) -> taskapeTask {
         level: privacyLevel, exceptIDs: taskResponse.privacy_except_ids)
 
     let completionStatus = CompletionStatus(
-        isCompleted: taskResponse.is_completed, proofURL: taskResponse.proof_url
+        isCompleted: taskResponse.is_completed,
+        proofURL: taskResponse.proof_url,
+        requiresConfirmation: taskResponse.requires_confirmation,
+        isConfirmed: taskResponse.is_confirmed,
+        confirmedBy: taskResponse.confirmation_user_id,
+        confirmedAt: confirmedAt
     )
 
     let difficulty: TaskDifficulty
@@ -220,7 +230,8 @@ func convertToLocalTask(_ taskResponse: TaskResponse) -> taskapeTask {
         flagStatus: taskResponse.flag_status,
         flagColor: taskResponse.flag_color,
         flagName: taskResponse.flag_name,
-        displayOrder: taskResponse.display_order
+        displayOrder: taskResponse.display_order,
+        proofNeeded: taskResponse.requires_confirmation
     )
 
     task.createdAt = createdAt

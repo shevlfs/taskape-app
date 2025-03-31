@@ -1,5 +1,5 @@
 {
-  "originHash" : "7ff7144e998e9446d87daf861592f8589b3d3ea6a48e69dff503a89339c42246",
+  "originHash" : "6af0e87e613243efb17523ff0fed34b50f9773b5032262e32685cd955218a4c2",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "513364f870f6bfc468f9d2ff0a95caccc10044c5",
         "version" : "5.10.2"
+      }
+    },
+    {
+      "identity" : "image-picker-module",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftui-packages/image-picker-module.git",
+      "state" : {
+        "revision" : "5c4e813e86d8dec2977693f4f4a4f84427ba7f9a",
+        "version" : "1.0.7"
       }
     },
     {

@@ -12,10 +12,22 @@ enum TaskDifficulty: String, Codable {
 struct CompletionStatus: Codable {
     var isCompleted: Bool
     var proofURL: String?
+    var requiresConfirmation: Bool = false
+    var isConfirmed: Bool = false
+    var confirmedBy: String? = nil
+    var confirmedAt: Date? = nil
 
-    init(isCompleted: Bool = false, proofURL: String? = nil) {
+    init(
+        isCompleted: Bool = false, proofURL: String? = nil,
+        requiresConfirmation: Bool = false, isConfirmed: Bool = false,
+        confirmedBy: String? = nil, confirmedAt: Date? = nil
+    ) {
         self.isCompleted = isCompleted
         self.proofURL = proofURL
+        self.requiresConfirmation = requiresConfirmation
+        self.isConfirmed = isConfirmed
+        self.confirmedBy = confirmedBy
+        self.confirmedAt = confirmedAt
     }
 }
 
@@ -104,7 +116,6 @@ final class taskapeTask: Identifiable {
     // Proof-related properties
     var proofNeeded: Bool? = false
     var proofDescription: String? = nil
-
     var privacy: PrivacySettings {
         get {
             let level =

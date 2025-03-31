@@ -60,6 +60,10 @@ struct MainRootView: View {
         }
         .onAppear {
             Task {
+                if !appState.isLoggedIn{
+                    isLoading = false
+                    loadingError = "couldn't load your profile\nplease login again"
+                }
                 let userId = UserManager.shared.currentUserId
                 if !userId.isEmpty {
                     print("Loading profile for user ID: \(userId)")
@@ -111,7 +115,7 @@ struct MainRootView: View {
                         } else {
                             loadingError =
                                 "could not load your profile.\nplease try again."
-
+                            isLoading = false
                         }
                     }
                 }

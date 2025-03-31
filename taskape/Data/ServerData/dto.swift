@@ -111,6 +111,7 @@ struct TaskSubmission: Codable {
     let group_id: String?
     let assigned_to: [String]
     let difficulty: String
+    let is_completed: Bool
     let custom_hours: Int?
     let privacy_level: String
     let privacy_except_ids: [String]
@@ -120,9 +121,10 @@ struct TaskSubmission: Codable {
     let display_order: Int
     let proof_needed: Bool
     let proof_description: String?
+    let requires_confirmation: Bool
+    let is_confirmed: Bool
 }
 
-// Updates for TaskUpdateRequest struct in dto.swift
 struct TaskUpdateRequest: Codable {
     let id: String
     let user_id: String
@@ -142,6 +144,8 @@ struct TaskUpdateRequest: Codable {
     let display_order: Int
     let proof_needed: Bool
     let proof_description: String?
+    let requires_confirmation: Bool
+    let is_confirmed: Bool
     let token: String
 }
 
@@ -160,6 +164,10 @@ struct TaskResponse: Codable {
     let custom_hours: Int?
     let is_completed: Bool
     let proof_url: String?
+    let requires_confirmation: Bool
+    let is_confirmed: Bool
+    let confirmation_user_id: String?
+    let confirmed_at: String?
     let privacy_level: String
     let privacy_except_ids: [String]
     let flag_status: Bool
@@ -197,6 +205,17 @@ struct TaskResponse: Codable {
         is_completed = try container.decode(Bool.self, forKey: .is_completed)
         proof_url = try container.decodeIfPresent(
             String.self, forKey: .proof_url)
+
+        // New fields
+        requires_confirmation = try container.decodeIfPresent(
+            Bool.self, forKey: .requires_confirmation) ?? false
+        is_confirmed = try container.decodeIfPresent(
+            Bool.self, forKey: .is_confirmed) ?? false
+        confirmation_user_id = try container.decodeIfPresent(
+            String.self, forKey: .confirmation_user_id)
+        confirmed_at = try container.decodeIfPresent(
+            String.self, forKey: .confirmed_at)
+
         privacy_level = try container.decode(
             String.self, forKey: .privacy_level)
 
@@ -209,7 +228,7 @@ struct TaskResponse: Codable {
             privacy_except_ids = []
         }
 
-        // New fields
+        // Flags
         flag_status =
             try container.decodeIfPresent(Bool.self, forKey: .flag_status)
             ?? false
@@ -232,6 +251,10 @@ struct TaskResponse: Codable {
         case custom_hours = "custom_hours"
         case is_completed = "is_completed"
         case proof_url = "proof_url"
+        case requires_confirmation = "requires_confirmation"
+        case is_confirmed = "is_confirmed"
+        case confirmation_user_id = "confirmation_user_id"
+        case confirmed_at = "confirmed_at"
         case privacy_level = "privacy_level"
         case privacy_except_ids = "privacy_except_ids"
         case flag_status = "flag_status"

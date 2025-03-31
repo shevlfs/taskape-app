@@ -54,6 +54,7 @@ func submitTasksBatch(tasks: [taskapeTask]) async
             group_id: task.group_id,
             assigned_to: task.assignedToTask,
             difficulty: task.task_difficulty.rawValue,
+            is_completed: task.completion.isCompleted,
             custom_hours: task.custom_hours,
             privacy_level: privacyLevelString,
             privacy_except_ids: task.privacy.exceptIDs,
@@ -62,7 +63,9 @@ func submitTasksBatch(tasks: [taskapeTask]) async
             flag_name: task.flagName,
             display_order: task.displayOrder,
             proof_needed: task.proofNeeded ?? false,
-            proof_description: task.proofDescription
+            proof_description: task.proofDescription,
+            requires_confirmation: task.completion.requiresConfirmation,
+            is_confirmed: task.completion.isConfirmed
         )
     }
 
@@ -92,6 +95,7 @@ func submitTasksBatch(tasks: [taskapeTask]) async
         }
     }
 }
+
 func updateTaskOrder(userID: String, taskOrders: [(taskID: String, order: Int)])
     async -> Bool
 {
@@ -183,6 +187,8 @@ func updateTask(task: taskapeTask) async -> Bool {
         display_order: task.displayOrder,
         proof_needed: task.proofNeeded ?? false,
         proof_description: task.proofDescription,
+        requires_confirmation: task.completion.requiresConfirmation,
+        is_confirmed: task.completion.isConfirmed,
         token: token
     )
 
@@ -207,7 +213,6 @@ func updateTask(task: taskapeTask) async -> Bool {
         }
     }
 }
-
 func syncTaskChanges(task: taskapeTask) async {
     let success = await updateTask(task: task)
 
@@ -228,26 +233,26 @@ func syncTaskChanges(task: taskapeTask) async {
 }
 
 func updateWidgetWithTasks(userId: String, modelContext: ModelContext) {
-//    // Get the current user's tasks
-//    let taskDescriptor = FetchDescriptor<taskapeTask>(
-//        predicate: #Predicate<taskapeTask> { task in
-//            task.user_id == userId && !task.completion.isCompleted
-//        }
-//    )
-//
-//    do {
-//        // Fetch incomplete tasks for the widget
-//        let tasks = try modelContext.fetch(taskDescriptor)
-//        print("Updating widget with \(tasks.count) tasks")
-//
-//        // Sort by display order
-//        let sortedTasks = tasks.sorted { $0.displayOrder > $1.displayOrder }
-//
-//        // Update widget data
-//        WidgetDataManager.shared.saveTasks(sortedTasks)
-//    } catch {
-//        print("Error fetching tasks for widget: \(error)")
-//    }
+    //    // Get the current user's tasks
+    //    let taskDescriptor = FetchDescriptor<taskapeTask>(
+    //        predicate: #Predicate<taskapeTask> { task in
+    //            task.user_id == userId && !task.completion.isCompleted
+    //        }
+    //    )
+    //
+    //    do {
+    //        // Fetch incomplete tasks for the widget
+    //        let tasks = try modelContext.fetch(taskDescriptor)
+    //        print("Updating widget with \(tasks.count) tasks")
+    //
+    //        // Sort by display order
+    //        let sortedTasks = tasks.sorted { $0.displayOrder > $1.displayOrder }
+    //
+    //        // Update widget data
+    //        WidgetDataManager.shared.saveTasks(sortedTasks)
+    //    } catch {
+    //        print("Error fetching tasks for widget: \(error)")
+    //    }
 }
 
 func syncUserTasks(

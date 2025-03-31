@@ -15,31 +15,31 @@ struct EventCardDetailedView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.modelContext) var modelContext
-    
+
     // State variables
     @State private var isLoadingComments: Bool = false
     @State private var comments: [EventComment] = []
     @State private var newCommentText: String = ""
     @State private var isLiked: Bool = false
     @State private var likesCount: Int = 0
-    
+
     // User info
     @State private var userName: String = ""
     @State private var userColor: String = "000000"
     @State private var userImage: String = ""
-    
+
     // For task confirmation
     @State private var isConfirming: Bool = false
     @State private var confirmationSuccess: Bool = false
     @State private var showConfirmationAlert: Bool = false
     @State private var confirmationAlertType: ConfirmationAlertType = .confirming
-    
+
     enum ConfirmationAlertType {
         case confirming
         case success
         case failure
     }
-    
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -52,17 +52,17 @@ struct EventCardDetailedView: View {
                             .font(.system(size: 20, weight: .medium))
                             .foregroundColor(.primary)
                     }
-                    
+
                     Spacer()
-                    
+
                     Text("event details")
                         .font(.pathwayBlack(20))
-                    
+
                     Spacer()
                 }
                 .padding(.horizontal)
                 .padding(.top, 16)
-                
+
                 // Event owner info
                 HStack(spacing: 12) {
                     // Profile picture
@@ -84,53 +84,64 @@ struct EventCardDetailedView: View {
                     }
                     .frame(width: 50, height: 50)
                     .clipShape(Circle())
-                    
+
                     VStack(alignment: .leading, spacing: 4) {
                         Text(userName)
                             .font(.pathwayBlack(18))
-                        
+
                         Text(getEventTypeText())
                             .font(.pathwaySemiBold(14))
                             .foregroundColor(.secondary)
                     }
-                    
+
                     Spacer()
-                    
+
                     // Time ago
                     Text(timeAgoSinceDate(event.createdAt))
                         .font(.pathway(12))
                         .foregroundColor(.secondary)
                 }
                 .padding(.horizontal)
-                
+
                 // Related tasks
                 if !event.relatedTasks.isEmpty {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("related tasks")
                             .font(.pathwayBlack(18))
                             .padding(.horizontal)
-                        
+
                         ForEach(event.relatedTasks) { task in
                             RelatedTaskRow(task: task)
                         }
                     }
                 }
-                
+
                 // Confirmation UI for requires_confirmation events
                 if event.eventType == .requiresConfirmation && !confirmationSuccess {
-                    ConfirmationSection(
-                        isConfirming: $isConfirming,
-                        showAlert: $showConfirmationAlert,
-                        alertType: $confirmationAlertType,
-                        onConfirm: {
-                            confirmTask(isConfirmed: true)
-                        },
-                        onReject: {
-                            confirmTask(isConfirmed: false)
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("confirmation needed")
+                            .font(.pathwayBlack(18))
+                            .padding(.horizontal)
+
+                        // Proof section - Show the proof image and description
+                        if let task = event.relatedTasks.first {
+                            ProofView(task: task)
                         }
-                    )
+
+                        ConfirmationButtons(
+                            isConfirming: $isConfirming,
+                            showAlert: $showConfirmationAlert,
+                            alertType: $confirmationAlertType,
+                            onConfirm: {
+                                confirmTask(isConfirmed: true)
+                            },
+                            onReject: {
+                                confirmTask(isConfirmed: false)
+                            }
+                        )
+                    }
                 }
-                
+
                 // Likes section
                 LikesSection(
                     isLiked: $isLiked,
@@ -140,15 +151,15 @@ struct EventCardDetailedView: View {
                     }
                 )
                 .padding(.horizontal)
-                
+
                 // Comments section
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("comments")
                             .font(.pathwayBlack(18))
-                        
+
                         Spacer()
-                        
+
                         if isLoadingComments {
                             ProgressView()
                                 .scaleEffect(0.7)
@@ -159,7 +170,7 @@ struct EventCardDetailedView: View {
                         }
                     }
                     .padding(.horizontal)
-                    
+
                     // Comments list
                     if comments.isEmpty && !isLoadingComments {
                         VStack {
@@ -175,7 +186,7 @@ struct EventCardDetailedView: View {
                             CommentRow(comment: comment)
                         }
                     }
-                    
+
                     // Add comment
                     HStack {
                         TextField("add a comment...", text: $newCommentText)
@@ -185,7 +196,7 @@ struct EventCardDetailedView: View {
                                 RoundedRectangle(cornerRadius: 20)
                                     .fill(Color(UIColor.secondarySystemBackground))
                             )
-                        
+
                         Button(action: {
                             addComment()
                         }) {
@@ -234,7 +245,7 @@ struct EventCardDetailedView: View {
             checkLikeStatus()
         }
     }
-    
+
     private func loadEventData() {
         // Load user data if not available
         if event.user == nil {
@@ -252,11 +263,11 @@ struct EventCardDetailedView: View {
             userColor = event.user!.profileColor
             userImage = event.user!.profileImageURL
         }
-        
+
         // Set likes count
         likesCount = event.likesCount
     }
-    
+
     private func getEventTypeText() -> String {
         switch event.eventType {
         case .newTasksAdded:
@@ -274,10 +285,10 @@ struct EventCardDetailedView: View {
             return "due soon"
         }
     }
-    
+
     private func fetchComments() {
         isLoadingComments = true
-        
+
         Task {
             if let fetchedComments = await fetchEventComments(eventId: event.id) {
                 await MainActor.run {
@@ -291,18 +302,18 @@ struct EventCardDetailedView: View {
             }
         }
     }
-    
+
     private func addComment() {
         guard !newCommentText.isEmpty else { return }
-        
+
         Task {
             let commentText = newCommentText
-            
+
             // Clear the text field immediately for better UX
             await MainActor.run {
                 newCommentText = ""
             }
-            
+
             if let comment = await addEventComment(
                 eventId: event.id,
                 userId: UserManager.shared.currentUserId,
@@ -314,27 +325,27 @@ struct EventCardDetailedView: View {
             }
         }
     }
-    
+
     private func checkLikeStatus() {
         isLiked = event.isLikedByCurrentUser()
     }
-    
+
     private func toggleLike() {
         let wasLiked = isLiked
-        
+
         // Optimistically update UI
         isLiked.toggle()
         likesCount += isLiked ? 1 : -1
-        
+
         Task {
             let success: Bool
-            
+
             if isLiked {
                 success = await likeEvent(eventId: event.id, userId: UserManager.shared.currentUserId)
             } else {
                 success = await unlikeEvent(eventId: event.id, userId: UserManager.shared.currentUserId)
             }
-            
+
             if !success {
                 // Revert on failure
                 await MainActor.run {
@@ -344,10 +355,10 @@ struct EventCardDetailedView: View {
             }
         }
     }
-    
+
     private func confirmTask(isConfirmed: Bool) {
         isConfirming = true
-        
+
         // Assuming the first task in relatedTasks is the one to confirm
         guard let task = event.relatedTasks.first else {
             isConfirming = false
@@ -355,67 +366,197 @@ struct EventCardDetailedView: View {
             showConfirmationAlert = true
             return
         }
-        
+
         Task {
             let success = await confirmTaskCompletion(
                 taskId: task.id,
                 confirmerId: UserManager.shared.currentUserId,
                 isConfirmed: isConfirmed
             )
-            
+
             await MainActor.run {
                 isConfirming = false
                 confirmationSuccess = success
-                
+
                 if success {
                     confirmationAlertType = .success
                 } else {
                     confirmationAlertType = .failure
                 }
-                
+
                 showConfirmationAlert = true
             }
         }
     }
-    
+
     private func timeAgoSinceDate(_ date: Date) -> String {
         let calendar = Calendar.current
         let now = Date()
         let components = calendar.dateComponents([.minute, .hour, .day, .weekOfYear, .month, .year], from: date, to: now)
-        
+
         if let year = components.year, year >= 1 {
             return year == 1 ? "1 year ago" : "\(year) years ago"
         }
-        
+
         if let month = components.month, month >= 1 {
             return month == 1 ? "1 month ago" : "\(month) months ago"
         }
-        
+
         if let weekOfYear = components.weekOfYear, weekOfYear >= 1 {
             return weekOfYear == 1 ? "1 week ago" : "\(weekOfYear) weeks ago"
         }
-        
+
         if let day = components.day, day >= 1 {
             return day == 1 ? "1 day ago" : "\(day) days ago"
         }
-        
+
         if let hour = components.hour, hour >= 1 {
             return hour == 1 ? "1 hour ago" : "\(hour) hours ago"
         }
-        
+
         if let minute = components.minute, minute >= 1 {
             return minute == 1 ? "1 minute ago" : "\(minute) minutes ago"
         }
-        
+
         return "just now"
     }
 }
 
-// MARK: - Supporting Views
+// MARK: - Proof View
+
+struct ProofView: View {
+    var task: taskapeTask
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Proof Description
+            if let proofDescription = task.proofDescription, !proofDescription.isEmpty {
+                Text("proof description:")
+                    .font(.pathwayBold(16))
+                    .padding(.horizontal)
+
+                Text(proofDescription)
+                    .font(.pathway(14))
+                    .padding(.horizontal)
+                    .padding(.bottom, 8)
+            }
+
+            // Proof Image
+            if let proofURL = task.completion.proofURL, !proofURL.isEmpty {
+                Text("submitted proof:")
+                    .font(.pathwayBold(16))
+                    .padding(.horizontal)
+
+                CachedAsyncImage(url: URL(string: proofURL)) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxHeight: 300)
+                            .cornerRadius(12)
+                    case .failure:
+                        VStack {
+                            Image(systemName: "photo.fill")
+                                .font(.system(size: 40))
+                                .foregroundColor(.gray)
+                            Text("could not load image")
+                                .font(.pathway(14))
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(height: 200)
+                        .frame(maxWidth: .infinity)
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .cornerRadius(12)
+                    case .empty:
+                        ProgressView()
+                            .frame(height: 200)
+                            .frame(maxWidth: .infinity)
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 12)
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(UIColor.secondarySystemBackground))
+        )
+        .padding(.horizontal)
+    }
+}
+
+// MARK: - Confirmation Buttons
+
+struct ConfirmationButtons: View {
+    @Binding var isConfirming: Bool
+    @Binding var showAlert: Bool
+    @Binding var alertType: EventCardDetailedView.ConfirmationAlertType
+    var onConfirm: () -> Void
+    var onReject: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("this task requires confirmation to be marked as complete")
+                .font(.pathway(14))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            HStack(spacing: 20) {
+                Button(action: {
+                    alertType = .confirming
+                    showAlert = true
+                }) {
+                    Text("confirm")
+                        .font(.pathway(16))
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 24)
+                        .foregroundColor(.white)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color.green)
+                        )
+                }
+
+                Button(action: {
+                    onReject()
+                }) {
+                    Text("reject")
+                        .font(.pathway(16))
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 24)
+                        .foregroundColor(.white)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color.red)
+                        )
+                }
+            }
+            .disabled(isConfirming)
+            .overlay(
+                Group {
+                    if isConfirming {
+                        ProgressView()
+                    }
+                }
+            )
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(UIColor.secondarySystemBackground))
+        )
+        .padding(.horizontal)
+    }
+}
+
+// MARK: - Supporting Views (Unchanged)
 
 struct RelatedTaskRow: View {
     var task: taskapeTask
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             // Task status indicator
@@ -423,12 +564,12 @@ struct RelatedTaskRow: View {
                 .fill(task.completion.isCompleted ? Color.green : Color.gray)
                 .frame(width: 10, height: 10)
                 .padding(.top, 6)
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(task.name.isEmpty ? "unnamed task" : task.name)
                     .font(.pathwayBold(16))
                     .strikethrough(task.completion.isCompleted)
-                
+
                 if !task.taskDescription.isEmpty {
                     Text(task.taskDescription)
                         .font(.pathway(14))
@@ -436,7 +577,7 @@ struct RelatedTaskRow: View {
                         .lineLimit(2)
                 }
             }
-            
+
             Spacer()
         }
         .padding(.vertical, 8)
@@ -449,79 +590,11 @@ struct RelatedTaskRow: View {
     }
 }
 
-struct ConfirmationSection: View {
-    @Binding var isConfirming: Bool
-    @Binding var showAlert: Bool
-    @Binding var alertType: EventCardDetailedView.ConfirmationAlertType
-    var onConfirm: () -> Void
-    var onReject: () -> Void
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("confirmation needed")
-                .font(.pathwayBlack(18))
-                .padding(.horizontal)
-            
-            VStack(spacing: 16) {
-                Text("this task requires confirmation to be marked as complete")
-                    .font(.pathway(14))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                
-                HStack(spacing: 20) {
-                    Button(action: {
-                        alertType = .confirming
-                        showAlert = true
-                    }) {
-                        Text("confirm")
-                            .font(.pathway(16))
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 24)
-                            .foregroundColor(.white)
-                            .background(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .fill(Color.green)
-                            )
-                    }
-                    
-                    Button(action: {
-                        onReject()
-                    }) {
-                        Text("reject")
-                            .font(.pathway(16))
-                            .padding(.vertical, 12)
-                            .padding(.horizontal, 24)
-                            .foregroundColor(.white)
-                            .background(
-                                RoundedRectangle(cornerRadius: 20)
-                                    .fill(Color.red)
-                            )
-                    }
-                }
-                .disabled(isConfirming)
-                .overlay(
-                    Group {
-                        if isConfirming {
-                            ProgressView()
-                        }
-                    }
-                )
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(UIColor.secondarySystemBackground))
-            )
-            .padding(.horizontal)
-        }
-    }
-}
-
 struct LikesSection: View {
     @Binding var isLiked: Bool
     @Binding var likesCount: Int
     var onLike: () -> Void
-    
+
     var body: some View {
         HStack {
             Button(action: {
@@ -531,12 +604,12 @@ struct LikesSection: View {
                     .font(.system(size: 22))
                     .foregroundColor(isLiked ? .red : .primary)
             }
-            
+
             Text("\(likesCount)")
                 .font(.pathway(14))
                 .foregroundColor(.secondary)
                 .padding(.leading, 4)
-            
+
             Spacer()
         }
     }
@@ -547,7 +620,7 @@ struct CommentRow: View {
     @State private var userName: String = ""
     @State private var userColor: String = "000000"
     @State private var userImage: String = ""
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             // User avatar
@@ -569,19 +642,19 @@ struct CommentRow: View {
             }
             .frame(width: 36, height: 36)
             .clipShape(Circle())
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(userName.isEmpty ? "user" : userName)
                         .font(.pathwayBold(14))
-                    
+
                     Spacer()
-                    
+
                     Text(timeAgoText(from: comment.createdAt))
                         .font(.pathway(12))
                         .foregroundColor(.secondary)
                 }
-                
+
                 Text(comment.content)
                     .font(.pathway(14))
                     .lineLimit(nil)
@@ -593,7 +666,7 @@ struct CommentRow: View {
             loadUserData()
         }
     }
-    
+
     private func loadUserData() {
         Task {
             if let user = await fetchUser(userId: comment.userId) {
@@ -605,7 +678,7 @@ struct CommentRow: View {
             }
         }
     }
-    
+
     private func timeAgoText(from date: Date) -> String {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
