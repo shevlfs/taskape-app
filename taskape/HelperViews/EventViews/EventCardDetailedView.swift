@@ -213,7 +213,7 @@ struct EventCardDetailedView: View {
                 }
             }
             .padding(.bottom, 30)
-        }
+        }.navigationBarBackButtonHidden(true).toolbar(.hidden)
         .alert(isPresented: $showConfirmationAlert) {
             switch confirmationAlertType {
             case .confirming:

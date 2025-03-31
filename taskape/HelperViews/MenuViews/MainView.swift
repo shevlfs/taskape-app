@@ -79,7 +79,7 @@ struct MainView: View {
                                     if singleEvent.eventSize == .large {
                                         // Large events get full width
                                         NavigationLink(
-                                            destination: {EventCardDetailedView(event: singleEvent).modelContext(modelContext)}) {
+                                            destination: {EventCardDetailedView(event: singleEvent).modelContext(modelContext).navigationBarBackButtonHidden(true).toolbar(.hidden)}) {
                                                 EventCard(
                                                     event: singleEvent,
                                                     eventSize: singleEvent
