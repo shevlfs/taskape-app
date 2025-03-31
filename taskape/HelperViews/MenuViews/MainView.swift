@@ -11,6 +11,12 @@ struct MainView: View {
     // Event-related state
     @State private var events: [taskapeEvent] = []
     @State private var isLoadingEvents: Bool = false
+    @State private var lastRefreshTime: Date = Date().addingTimeInterval(-60)
+    @State private var newEventIds: Set<String> = [] // Track new events for animation
+    @State private var seenEventIds: Set<String> = [] // Track events user has already seen
+
+    // Animation properties
+    @State private var animateNewEvents: Bool = false
 
     @State var showFriendInvitationSheet: Bool = false
 
@@ -35,14 +41,15 @@ struct MainView: View {
                                 id: "jungleCard", in: mainNamespace
                             )
                         }.buttonStyle(PlainButtonStyle()).padding(.top, 10)
-                        if isLoadingEvents {
+
+                        if isLoadingEvents && events.isEmpty {
                             HStack {
                                 ProgressView()
                                     .padding(.trailing, 16)
                             }
                         }
 
-                        if !events.isEmpty && !isLoadingEvents {
+                        if !events.isEmpty {
                             // Group events into pairs or individual cards based on size
                             let chunkedEvents = createLayoutGroups(
                                 from: events)
@@ -67,8 +74,10 @@ struct MainView: View {
                                                         id: event.id,
                                                         in: mainNamespace
                                                     )
+                                                    .opacity(newEventIds.contains(event.id) && !animateNewEvents ? 0 : 1)
+                                                    .scaleEffect(newEventIds.contains(event.id) && !animateNewEvents ? 0.8 : 1)
+                                                    .animation(.spring(response: 0.6, dampingFraction: 0.7), value: animateNewEvents)
                                                 }
-
                                         }
                                     }
                                 }
@@ -89,9 +98,10 @@ struct MainView: View {
                                                     id: singleEvent.id,
                                                     in: mainNamespace
                                                 )
+                                                .opacity(newEventIds.contains(singleEvent.id) && !animateNewEvents ? 0 : 1)
+                                                .scaleEffect(newEventIds.contains(singleEvent.id) && !animateNewEvents ? 0.8 : 1)
+                                                .animation(.spring(response: 0.6, dampingFraction: 0.7), value: animateNewEvents)
                                             }
-
-
                                     } else {
                                         // For small or medium events, create a layout with appropriate spacing
                                         HStack(spacing: 20) {
@@ -111,6 +121,9 @@ struct MainView: View {
                                                             id: singleEvent.id,
                                                             in: mainNamespace
                                                         )
+                                                        .opacity(newEventIds.contains(singleEvent.id) && !animateNewEvents ? 0 : 1)
+                                                        .scaleEffect(newEventIds.contains(singleEvent.id) && !animateNewEvents ? 0.8 : 1)
+                                                        .animation(.spring(response: 0.6, dampingFraction: 0.7), value: animateNewEvents)
                                                     }
                                             } else {
                                                 // Event on the left
@@ -125,8 +138,10 @@ struct MainView: View {
                                                             id: singleEvent.id,
                                                             in: mainNamespace
                                                         )
+                                                        .opacity(newEventIds.contains(singleEvent.id) && !animateNewEvents ? 0 : 1)
+                                                        .scaleEffect(newEventIds.contains(singleEvent.id) && !animateNewEvents ? 0.8 : 1)
+                                                        .animation(.spring(response: 0.6, dampingFraction: 0.7), value: animateNewEvents)
                                                     }
-
 
                                                 // Empty space (nothing) on the right
                                                 Spacer()
@@ -246,7 +261,11 @@ struct MainView: View {
                             .buttonStyle(PlainButtonStyle())
                         }
                     }
-                }.fadeOutTop(fadeLength: 10)
+                }
+                .refreshable {
+                    await refreshEventsManually()
+                }
+                .fadeOutTop(fadeLength: 10)
             } else {
                 VStack(alignment: .center) {
                     Spacer()
@@ -282,17 +301,6 @@ struct MainView: View {
                         )
                 default:
                     EmptyView()
-//                    if let event = events.first(where: { $0.id == route }) {
-//                        EventCardDetailedView(event: event)
-//                            .navigationTransition(
-//                                .zoom(sourceID: event.id, in: mainNamespace)
-//                            )
-//                            .modelContext(self.modelContext)
-//                            .navigationBarBackButtonHidden().toolbar(.hidden)
-//                    } else {
-//
-//                        Text("error in the mainview navigation!")
-//                    }
                 }
             }
         )
@@ -300,21 +308,26 @@ struct MainView: View {
             currentUser = UserManager.shared.getCurrentUser(
                 context: modelContext)
 
+            // On first appear, load friend data and events if needed
             isLoadingFriendData = true
             Task {
                 await friendManager.refreshFriendData()
                 await MainActor.run {
                     isLoadingFriendData = false
 
-                    // Fetch events after we have friend data
-                    fetchEvents()
+                    // Only load events on first appear if we don't have any
+                    if events.isEmpty {
+                        Task {
+                            await fetchEvents()
+                        }
+                    }
                 }
             }
         }
     }
 
     // Function to fetch events from the server
-    private func fetchEvents() {
+    private func fetchEvents() async {
         guard let user = currentUser else { return }
 
         // Don't continue if there are no friends
@@ -322,13 +335,24 @@ struct MainView: View {
             return
         }
 
-        isLoadingEvents = true
-        events = []  // Clear any existing events
+        // Limit refresh frequency to prevent flickering
+        let currentTime = Date()
+        let minRefreshInterval: TimeInterval = 30 // Seconds between refreshes
+
+        if currentTime.timeIntervalSince(lastRefreshTime) < minRefreshInterval && !events.isEmpty {
+            return // Skip refresh if too recent and we already have events
+        }
+
+        lastRefreshTime = currentTime
+
+        if events.isEmpty {
+            isLoadingEvents = true
+        }
 
         Task {
             // First, preload all tasks for all friends
             await friendManager.preloadAllFriendTasks()
-            var allEvents: [taskapeEvent] = []
+            var fetchedEvents: [taskapeEvent] = []
 
             if let userEvents = await taskape.fetchEvents(userId: user.id) {
                 // Filter to only include events from friends
@@ -357,7 +381,6 @@ struct MainView: View {
                 let filteredEvents = Array(latestEventByFriend.values)
 
                 // For each event, associate the relevant tasks from the pre-loaded tasks
-
                 for event in filteredEvents {
                     if !event.taskIds.isEmpty {
                         // Get the tasks for this friend that match the task IDs in the event
@@ -381,13 +404,44 @@ struct MainView: View {
                         }
                     }
 
-                    allEvents.append(event)
+                    fetchedEvents.append(event)
                 }
             }
 
             await MainActor.run {
-                events = allEvents
+                // Identify truly new events for animation - those never seen before
+                let incomingIds = Set(fetchedEvents.map { $0.id })
+                let trulyNewIds = incomingIds.subtracting(seenEventIds)
+
+                // Update seen events list to include all current events
+                seenEventIds.formUnion(incomingIds)
+
+                // Keep track of new events for animation
+                newEventIds = trulyNewIds
+
+                // Prepare animation if truly new events exist
+                let hasNewEvents = !trulyNewIds.isEmpty
+                animateNewEvents = false
+
+                // First update the events array stably
+                updateEventsStably(with: fetchedEvents)
+
                 isLoadingEvents = false
+
+                // Start animation for new events after a slight delay
+                if hasNewEvents {
+                    // Trigger animation after a brief delay
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation {
+                            animateNewEvents = true
+                        }
+                    }
+
+                    // Clear newEventIds after animation completes
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        newEventIds = []
+                    }
+                }
 
                 // Save context after adding tasks
                 do {
@@ -397,6 +451,59 @@ struct MainView: View {
                 }
             }
             eventsUpdated = true
+        }
+    }
+
+    // Update events array while maintaining stability
+    private func updateEventsStably(with newEvents: [taskapeEvent]) {
+        // Create a dictionary of existing events for fast lookup
+        var existingEventsDict = [String: taskapeEvent]()
+        for event in events {
+            existingEventsDict[event.id] = event
+        }
+
+        // Build a new array that preserves existing events where possible
+        var updatedEvents: [taskapeEvent] = []
+
+        // First, add all existing events that are still present
+        for newEvent in newEvents {
+            if let existingEvent = existingEventsDict[newEvent.id] {
+                // Keep the existing event object but update properties if needed
+                // This is important to maintain identity and prevent UI rebuilds
+                updateEventProperties(existingEvent, from: newEvent)
+                updatedEvents.append(existingEvent)
+                existingEventsDict.removeValue(forKey: newEvent.id) // Mark as processed
+            } else {
+                // This is a genuinely new event
+                updatedEvents.append(newEvent)
+            }
+        }
+
+        // Sort the events by creation date (newest first)
+        updatedEvents.sort { $0.createdAt > $1.createdAt }
+
+        // Update the events array
+        events = updatedEvents
+    }
+
+    // Update properties of an existing event from a new one
+    private func updateEventProperties(_ target: taskapeEvent, from source: taskapeEvent) {
+        // Update only the properties that might change
+        target.likesCount = source.likesCount
+        target.commentsCount = source.commentsCount
+        target.likedByUserIds = source.likedByUserIds
+
+        // For related tasks, update without replacing the array
+        // Remove tasks no longer present
+        target.relatedTasks.removeAll { task in
+            !source.taskIds.contains(task.id)
+        }
+
+        // Add new tasks
+        for task in source.relatedTasks {
+            if !target.relatedTasks.contains(where: { $0.id == task.id }) {
+                target.relatedTasks.append(task)
+            }
         }
     }
 
@@ -463,6 +570,30 @@ struct MainView: View {
     func setupWidgetSync() {
         if let user = currentUser {
             UserManager.shared.syncTasksWithWidget(context: modelContext)
+        }
+    }
+
+    // Manually refresh events when user pulls to refresh
+    @MainActor
+    func refreshEventsManually() async {
+        guard !isLoadingEvents else { return }
+
+        // Reset refresh state
+        lastRefreshTime = Date()
+
+        // Refresh all data
+
+        // First, refresh friend data
+        await friendManager.refreshFriendData()
+
+        // Then, refresh all friend tasks
+        await friendManager.preloadAllFriendTasks()
+
+        // Finally fetch events
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask {
+                await self.fetchEvents()
+            }
         }
     }
 }

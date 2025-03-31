@@ -466,7 +466,11 @@ struct TaskListItem: View {
                             Circle().stroke(style: StrokeStyle(lineWidth: 0.5))
                                 .foregroundColor(.gray)
                                 .frame(width: 20, height: 20))
-                } else {
+                } else if task.completion.requiresConfirmation{
+                    Circle().stroke(style: StrokeStyle(lineWidth: 0.5))
+                        .foregroundColor(.yellow)
+                        .frame(width: 20, height: 20)
+                }else {
                     Circle().stroke(style: StrokeStyle(lineWidth: 0.5))
                         .foregroundColor(.gray)
                         .frame(width: 20, height: 20)

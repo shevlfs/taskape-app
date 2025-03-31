@@ -1,6 +1,5 @@
 import AVFoundation
 import Alamofire
-import ImagePickerModule
 import Photos
 import PhotosUI
 import SwiftDotenv

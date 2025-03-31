@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		56376EED2D57E3D900553A6E /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 56376EEC2D57E3D900553A6E /* Alamofire */; };
 		5651F9C42D986ED70000C8AA /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = 5651F9C32D986ED70000C8AA /* SwiftUIIntrospect */; };
-		567618832D9A2D87006BEBFB /* ImagePickerModule in Frameworks */ = {isa = PBXBuildFile; productRef = 567618822D9A2D87006BEBFB /* ImagePickerModule */; };
 		56A85DA32D30A1BE008B1623 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 56A85DA22D30A1BE008B1623 /* Lottie */; };
 		56E7F0CC2D6A7E740064AAA4 /* SwiftDotenv in Frameworks */ = {isa = PBXBuildFile; productRef = 56E7F0CB2D6A7E740064AAA4 /* SwiftDotenv */; };
 		56F9DDA42D7640A500DA5BBE /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 56F9DDA32D7640A500DA5BBE /* CachedAsyncImage */; };
@@ -65,7 +64,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				567618832D9A2D87006BEBFB /* ImagePickerModule in Frameworks */,
 				56A85DA32D30A1BE008B1623 /* Lottie in Frameworks */,
 				56F9DDA42D7640A500DA5BBE /* CachedAsyncImage in Frameworks */,
 				56E7F0CC2D6A7E740064AAA4 /* SwiftDotenv in Frameworks */,
@@ -123,7 +121,6 @@
 				56E7F0CB2D6A7E740064AAA4 /* SwiftDotenv */,
 				56F9DDA32D7640A500DA5BBE /* CachedAsyncImage */,
 				5651F9C32D986ED70000C8AA /* SwiftUIIntrospect */,
-				567618822D9A2D87006BEBFB /* ImagePickerModule */,
 			);
 			productName = taskape;
 			productReference = 568228942D2C60650023C192 /* taskape.app */;
@@ -159,7 +156,6 @@
 				56E7F0CA2D6A7E740064AAA4 /* XCRemoteSwiftPackageReference "swift-dotenv" */,
 				56F9DDA22D7640A500DA5BBE /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */,
 				5651F9C22D986E6F0000C8AA /* XCRemoteSwiftPackageReference "swiftui-introspect" */,
-				567618812D9A2D87006BEBFB /* XCRemoteSwiftPackageReference "image-picker-module" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 56FA4D632D2C102E00C5D8FE;
@@ -340,7 +336,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"taskape/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 757AQD525H;
@@ -381,7 +377,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"taskape/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 757AQD525H;
@@ -453,14 +449,6 @@
 				minimumVersion = 1.3.0;
 			};
 		};
-		567618812D9A2D87006BEBFB /* XCRemoteSwiftPackageReference "image-picker-module" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/swiftui-packages/image-picker-module.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.7;
-			};
-		};
 		56A85DA12D30A1BE008B1623 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
@@ -497,11 +485,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5651F9C22D986E6F0000C8AA /* XCRemoteSwiftPackageReference "swiftui-introspect" */;
 			productName = SwiftUIIntrospect;
-		};
-		567618822D9A2D87006BEBFB /* ImagePickerModule */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 567618812D9A2D87006BEBFB /* XCRemoteSwiftPackageReference "image-picker-module" */;
-			productName = ImagePickerModule;
 		};
 		56A85DA22D30A1BE008B1623 /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;

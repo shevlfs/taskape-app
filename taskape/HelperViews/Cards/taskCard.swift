@@ -144,7 +144,9 @@ struct taskCard: View {
                     )
                     .completedTaskStyle(
                         isCompleted: newCompletionStatus,
-                        isAnimating: isAnimating
+                        isAnimating: isAnimating,
+                        requiresConfirmation: task.completion
+                            .requiresConfirmation
                     )
                     .padding(.leading, 5)
                     .padding(.trailing, 15)
@@ -214,12 +216,17 @@ extension taskCard {
 struct CompletedTaskModifier: ViewModifier {
     let isCompleted: Bool
     let isAnimating: Bool
+    let requiresConfirmation: Bool
 
     func body(content: Content) -> some View {
         content
             .opacity(isCompleted ? 0.7 : 1.0)
             .overlay(
                 RoundedRectangle(cornerRadius: 25)
+                    .stroke(
+                        requiresConfirmation ? Color.yellow : Color.clear,
+                        lineWidth: 1
+                    )
                     .fill(Color.black.opacity(isCompleted ? 0.1 : 0))
                     .allowsHitTesting(false)
             )
@@ -235,6 +242,8 @@ struct CompletedTaskModifier: ViewModifier {
                             )
                             .animation(
                                 .easeInOut(duration: 0.3), value: isAnimating)
+                    } else if requiresConfirmation {
+
                     }
                 }
             )
@@ -242,10 +251,13 @@ struct CompletedTaskModifier: ViewModifier {
 }
 
 extension View {
-    func completedTaskStyle(isCompleted: Bool, isAnimating: Bool) -> some View {
+    func completedTaskStyle(
+        isCompleted: Bool, isAnimating: Bool, requiresConfirmation: Bool = false
+    ) -> some View {
         self.modifier(
             CompletedTaskModifier(
-                isCompleted: isCompleted, isAnimating: isAnimating))
+                isCompleted: isCompleted, isAnimating: isAnimating,
+                requiresConfirmation: requiresConfirmation))
     }
 }
 

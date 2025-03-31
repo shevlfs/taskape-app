@@ -30,7 +30,11 @@ struct CheckBoxView: View {
                     // Update the actual task completion status after animation completes
                     // This will trigger any onChange listeners in parent views
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        task.completion.requiresConfirmation = true
+                        if task.proofNeeded == true {
+                            task.completion.requiresConfirmation = true
+                        } else {
+                            task.completion.isCompleted = newCompletionStatus
+                        }
                         saveTask()
                         task.syncWithWidget()
                         TaskNotifier.notifyTasksUpdated()
@@ -203,7 +207,7 @@ struct TaskCardWithCheckbox: View {
                     )
                     .completedTaskStyle(
                         isCompleted: newCompletionStatus,
-                        isAnimating: isAnimating
+                        isAnimating: isAnimating, requiresConfirmation: task.completion.requiresConfirmation
                     )
                     .padding(.leading, 5)
                     .padding(.trailing, 5)

@@ -800,25 +800,36 @@ struct FriendSelectRow: View {
 struct ProofSelectRow: View {
     @Binding var proofNeeded: Bool?
     @Binding var accentcolor: Color
+    @Binding var confirmationRequired: Bool
 
     var body: some View {
-        HStack {
-            Text("proof needed").font(.pathway(17))
-            Spacer()
+        VStack{
+            HStack {
+                Text("proof needed").font(.pathway(17))
+                Spacer()
 
-            Picker("", selection: $proofNeeded) {
-                Text("yes").tag(true)
-                Text("no").tag(false)
-            }.font(.pathwayBold(17))
-                .pickerStyle(MenuPickerStyle())
-                .accentColor(accentcolor)
+                Picker("", selection: $proofNeeded) {
+                    Text("yes").tag(true)
+                    Text("no").tag(false)
+                }.font(.pathwayBold(17))
+                    .pickerStyle(MenuPickerStyle())
+                    .accentColor(accentcolor)
+            }.disabled(confirmationRequired)
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 30)
+                        .fill(Color(UIColor.secondarySystemBackground))
+                )
+                .padding(.horizontal)
+            if confirmationRequired {
+                Text(
+                    "this task is completed and\nrequires a confirmation from your friends..."
+                )
+                .multilineTextAlignment(.center)
+                .font(.pathway(15))
+                .padding(.top)
+            }
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 30)
-                .fill(Color(UIColor.secondarySystemBackground))
-        )
-        .padding(.horizontal)
     }
 }
 
@@ -879,7 +890,7 @@ struct taskCardDetailView: View {
                 }
                 ProofSelectRow(
                     proofNeeded: $task.proofNeeded,
-                    accentcolor: $taskColor
+                    accentcolor: $taskColor, confirmationRequired: $task.completion.requiresConfirmation
                 )
 
             }.animation(.easeInOut(duration: 0.3), value: task.privacy.level)
