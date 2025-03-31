@@ -6,6 +6,8 @@ struct MainView: View {
     @State private var currentUser: taskapeUser?
     @Namespace var mainNamespace
 
+    @Binding var eventsUpdated: Bool
+
     // Event-related state
     @State private var events: [taskapeEvent] = []
     @State private var isLoadingEvents: Bool = false
@@ -58,7 +60,9 @@ struct MainView: View {
                                                 event: event,
                                                 eventSize: event
                                                     .eventSize
-                                            )
+                                            ).onTapGesture(perform: {
+                                                navigationPath.append(event.id)
+                                            })
                                         }
                                     }
                                 }
@@ -71,7 +75,10 @@ struct MainView: View {
                                         EventCard(
                                             event: singleEvent,
                                             eventSize: .large
-                                        )
+                                        ).onTapGesture(perform: {
+                                            navigationPath
+                                                .append(singleEvent.id)
+                                        })
                                     } else {
                                         // For small or medium events, create a layout with appropriate spacing
                                         HStack(spacing: 20) {
@@ -85,14 +92,20 @@ struct MainView: View {
                                                     event: singleEvent,
                                                     eventSize: singleEvent
                                                         .eventSize
-                                                ).padding(.trailing, 15)
+                                                ).onTapGesture(perform: {
+                                                    navigationPath
+                                                        .append(singleEvent.id)
+                                                }).padding(.trailing, 15)
                                             } else {
                                                 // Event on the left
                                                 EventCard(
                                                     event: singleEvent,
                                                     eventSize: singleEvent
                                                         .eventSize
-                                                ).padding(.leading, 15)
+                                                ).onTapGesture(perform: {
+                                                    navigationPath
+                                                        .append(singleEvent.id)
+                                                }).padding(.leading, 15)
 
                                                 // Empty space (nothing) on the right
                                                 Spacer()
@@ -244,7 +257,6 @@ struct MainView: View {
                         FriendSearchView()
                             .modelContext(self.modelContext)
                     }.toolbar(.hidden)
-
                         .navigationTransition(
                             .zoom(sourceID: "friendSearch", in: mainNamespace)
                         )
@@ -254,6 +266,8 @@ struct MainView: View {
             }
         )
         .onAppear {
+            print(navigationPath)
+            print(allEvents)
             currentUser = UserManager.shared.getCurrentUser(
                 context: modelContext)
 
@@ -267,8 +281,6 @@ struct MainView: View {
                     fetchEvents()
                 }
             }
-
-            setupWidgetSync()
         }
     }
 
@@ -287,8 +299,6 @@ struct MainView: View {
         Task {
             // First, preload all tasks for all friends
             await friendManager.preloadAllFriendTasks()
-
-            var allEvents: [taskapeEvent] = []
 
             if let userEvents = await taskape.fetchEvents(userId: user.id) {
                 // Filter to only include events from friends
@@ -317,6 +327,7 @@ struct MainView: View {
                 let filteredEvents = Array(latestEventByFriend.values)
 
                 // For each event, associate the relevant tasks from the pre-loaded tasks
+                allEvents = []
                 for event in filteredEvents {
                     if !event.taskIds.isEmpty {
                         // Get the tasks for this friend that match the task IDs in the event
@@ -355,6 +366,7 @@ struct MainView: View {
                     print("error saving context after loading tasks: \(error)")
                 }
             }
+            eventsUpdated = true
         }
     }
 
@@ -441,6 +453,8 @@ enum EventPosition {
     case right
 }
 
+var allEvents: [taskapeEvent] = []
+
 #Preview {
     do {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
@@ -472,7 +486,7 @@ enum EventPosition {
 
         try container.mainContext.save()
 
-        return MainView(navigationPath: .constant(NavigationPath()))
+        return MainView(eventsUpdated: .constant(false), navigationPath: .constant(NavigationPath()))
             .modelContainer(container)
     } catch {
         return Text("Failed to create preview: \(error.localizedDescription)")

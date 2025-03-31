@@ -50,7 +50,7 @@ func fetchEvents(userId: String, includeExpired: Bool = false, limit: Int = 20) 
                 // Try decoding manually to see detailed error
                 do {
                     let decoded = try JSONDecoder().decode(GetEventsResponse.self, from: data)
-                    print("Manual decode successful: \(decoded)")
+                  
                 } catch {
                     print("Decode error: \(error)")
 

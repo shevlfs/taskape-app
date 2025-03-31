@@ -27,19 +27,19 @@ struct Provider: TimelineProvider {
         completion(timeline)
     }
 
-    func loadTasks() -> [WidgetTaskModel] {
-        let userDefaults = UserDefaults(suiteName: appGroupIdentifier)
-        guard let data = userDefaults?.data(forKey: "taskape_widget_tasks"),
-            let widgetTasks = try? JSONDecoder().decode(
-                [WidgetTaskModel].self, from: data)
-        else {
-            print("Widget: No tasks found in shared UserDefaults")
-            return []
-        }
-
-        print("Widget: Loaded \(widgetTasks.count) tasks from shared UserDefaults")
-        return widgetTasks
-    }
+//    func loadTasks() -> [WidgetTaskModel] {
+//        let userDefaults = UserDefaults(suiteName: appGroupIdentifier)
+//        guard let data = userDefaults?.data(forKey: "taskape_widget_tasks"),
+//            let widgetTasks = try? JSONDecoder().decode(
+//                [WidgetTaskModel].self, from: data)
+//        else {
+//            print("Widget: No tasks found in shared UserDefaults")
+//            return []
+//        }
+//
+//        print("Widget: Loaded \(widgetTasks.count) tasks from shared UserDefaults")
+//        return widgetTasks
+//    }
 
 }
 

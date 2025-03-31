@@ -228,26 +228,26 @@ func syncTaskChanges(task: taskapeTask) async {
 }
 
 func updateWidgetWithTasks(userId: String, modelContext: ModelContext) {
-    // Get the current user's tasks
-    let taskDescriptor = FetchDescriptor<taskapeTask>(
-        predicate: #Predicate<taskapeTask> { task in
-            task.user_id == userId && !task.completion.isCompleted
-        }
-    )
-
-    do {
-        // Fetch incomplete tasks for the widget
-        let tasks = try modelContext.fetch(taskDescriptor)
-        print("Updating widget with \(tasks.count) tasks")
-
-        // Sort by display order
-        let sortedTasks = tasks.sorted { $0.displayOrder > $1.displayOrder }
-
-        // Update widget data
-        WidgetDataManager.shared.saveTasks(sortedTasks)
-    } catch {
-        print("Error fetching tasks for widget: \(error)")
-    }
+//    // Get the current user's tasks
+//    let taskDescriptor = FetchDescriptor<taskapeTask>(
+//        predicate: #Predicate<taskapeTask> { task in
+//            task.user_id == userId && !task.completion.isCompleted
+//        }
+//    )
+//
+//    do {
+//        // Fetch incomplete tasks for the widget
+//        let tasks = try modelContext.fetch(taskDescriptor)
+//        print("Updating widget with \(tasks.count) tasks")
+//
+//        // Sort by display order
+//        let sortedTasks = tasks.sorted { $0.displayOrder > $1.displayOrder }
+//
+//        // Update widget data
+//        WidgetDataManager.shared.saveTasks(sortedTasks)
+//    } catch {
+//        print("Error fetching tasks for widget: \(error)")
+//    }
 }
 
 func syncUserTasks(

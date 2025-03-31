@@ -9,16 +9,14 @@ import CachedAsyncImage
 import SwiftData
 import SwiftUI
 
-struct navigationItem {
-
-}
-
 struct MainNavigationView: View {
     @State private var selectedTabIndex: Int = 1
     @State var mainTabBarItems: [tabBarItem] = [
         tabBarItem(title: "settings"),
         tabBarItem(title: "main"),
     ]
+
+    @State var eventsUpdated: Bool = false
 
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var appState: AppStateManager
@@ -36,98 +34,112 @@ struct MainNavigationView: View {
     @Binding var fullyLoaded: Bool
 
     var body: some View {
-            // Main Navigation content
-            NavigationStack(path: $mainNavigationPath) {
-                VStack {
-                    userGreetingCard()
-                    TabBarView(
-                        tabBarItems: $mainTabBarItems,
-                        tabBarViewIndex: $selectedTabIndex
-                    ).ignoresSafeArea(.all)
-                        .edgesIgnoringSafeArea(.all)
-                        .toolbar(.hidden)
+        // Main Navigation content
+        NavigationStack(path: $mainNavigationPath) {
+            VStack {
+                userGreetingCard()
+                TabBarView(
+                    tabBarItems: $mainTabBarItems,
+                    tabBarViewIndex: $selectedTabIndex
+                ).ignoresSafeArea(.all)
+                    .edgesIgnoringSafeArea(.all)
+                    .toolbar(.hidden)
 
-                    switch selectedTabIndex {
-                    case 0:
-                        SettingsView().modelContext(modelContext).environmentObject(
-                            appState
-                        ).gesture(
-                            DragGesture(
-                                minimumDistance: 20,
-                                coordinateSpace: .global
-                            ).onEnded { value in
-                                let horizontalAmount = value.translation.width
-                                let verticalAmount = value.translation.height
+                switch selectedTabIndex {
+                case 0:
+                    SettingsView().modelContext(modelContext).environmentObject(
+                        appState
+                    ).gesture(
+                        DragGesture(
+                            minimumDistance: 20,
+                            coordinateSpace: .global
+                        ).onEnded { value in
+                            let horizontalAmount = value.translation.width
+                            let verticalAmount = value.translation.height
 
-                                if abs(horizontalAmount) > abs(verticalAmount) {
-                                    if horizontalAmount < 0 {
-                                        withAnimation {
-                                            self.selectedTabIndex = min(
-                                                self.selectedTabIndex + 1,
-                                                self.mainTabBarItems.count - 1)
-                                        }
-                                    } else {
-                                        withAnimation {
-                                            self.selectedTabIndex = max(
-                                                0, self.selectedTabIndex - 1)
-                                        }
+                            if abs(horizontalAmount) > abs(verticalAmount) {
+                                if horizontalAmount < 0 {
+                                    withAnimation {
+                                        self.selectedTabIndex = min(
+                                            self.selectedTabIndex + 1,
+                                            self.mainTabBarItems.count - 1)
+                                    }
+                                } else {
+                                    withAnimation {
+                                        self.selectedTabIndex = max(
+                                            0, self.selectedTabIndex - 1)
                                     }
                                 }
-                            })
-                    case 1:
-                        MainView(navigationPath: $mainNavigationPath)
-                            .modelContext(modelContext)
-                            .ignoresSafeArea(.all)
-                            .edgesIgnoringSafeArea(.all)
-                            .frame(maxHeight: .infinity).toolbar(.hidden).gesture(
-                                DragGesture(
-                                    minimumDistance: 20,
-                                    coordinateSpace: .global
-                                ).onEnded { value in
-                                    let horizontalAmount = value.translation.width
-                                    let verticalAmount = value.translation.height
+                            }
+                        })
+                case 1:
+                    MainView(
+                        eventsUpdated: $eventsUpdated,
+                        navigationPath: $mainNavigationPath
+                    )
+                    .modelContext(modelContext)
+                    .ignoresSafeArea(.all)
+                    .edgesIgnoringSafeArea(.all)
+                    .frame(maxHeight: .infinity).toolbar(.hidden).gesture(
+                        DragGesture(
+                            minimumDistance: 20,
+                            coordinateSpace: .global
+                        ).onEnded { value in
+                            let horizontalAmount = value.translation.width
+                            let verticalAmount = value.translation.height
 
-                                    if abs(horizontalAmount) > abs(verticalAmount) {
-                                        if horizontalAmount < 0 {
-                                            withAnimation {
-                                                self.selectedTabIndex = min(
-                                                    self.selectedTabIndex + 1,
-                                                    self.mainTabBarItems.count - 1)
-                                            }
-                                        } else {
-                                            withAnimation {
-                                                self.selectedTabIndex = max(
-                                                    0, self.selectedTabIndex - 1)
-                                            }
-                                        }
+                            if abs(horizontalAmount) > abs(verticalAmount) {
+                                if horizontalAmount < 0 {
+                                    withAnimation {
+                                        self.selectedTabIndex = min(
+                                            self.selectedTabIndex + 1,
+                                            self.mainTabBarItems.count - 1)
                                     }
-                                })
-                    default:
-                        Text("unknown")
-                    }
-                    Spacer()
+                                } else {
+                                    withAnimation {
+                                        self.selectedTabIndex = max(
+                                            0, self.selectedTabIndex - 1)
+                                    }
+                                }
+                            }
+                        })
+                default:
+                    Text("unknown")
                 }
-                .edgesIgnoringSafeArea(.bottom)
-                .toolbar(.hidden)
+                Spacer()
             }
-            .navigationDestination(
-                for: String.self,
-                destination: {
-                    route in
-                    switch route {
-                    case "self_jungle_view":
-                        UserJungleDetailedView()
-                            .modelContext(self.modelContext)
-                    case "friendSearch":
-                        FriendSearchView().toolbar(.hidden).modelContext(
-                            self.modelContext)
-                    default:
-                        EmptyView()
+            .edgesIgnoringSafeArea(.bottom)
+            .toolbar(.hidden)
+        }
+        .navigationDestination(
+            for: String.self,
+            destination: {
+                route in
+                switch route {
+                case "self_jungle_view":
+                    UserJungleDetailedView()
+                        .modelContext(self.modelContext)
+                case "friendSearch":
+                    FriendSearchView().toolbar(.hidden).modelContext(
+                        self.modelContext)
+                default:
+                    if let event = allEvents.first(where: { $0.id == route }) {
+//                        EventCardDetailedView(event: event)
+//                            .modelContext(self.modelContext)
+                        Text("\(event.eventTypeRaw)")
+                    } else {
+                        // Route is not recognized
+                        Text("\(allEvents)")
+                        Text("error")
                     }
                 }
-            )
-        .onAppear{
-            currentUser = UserManager.shared.getCurrentUser(context: modelContext)
+            }
+        )
+        .onAppear {
+            print(mainNavigationPath)
+            print(allEvents)
+            currentUser = UserManager.shared.getCurrentUser(
+                context: modelContext)
         }
     }
 

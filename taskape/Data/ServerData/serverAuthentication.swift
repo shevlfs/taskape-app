@@ -75,7 +75,6 @@ func phoneNumberIsVerified(
             encoding: JSONEncoding.default
         ).validate().serializingDecodable(VerificationResponse.self).response
 
-        print(result.result)
 
         switch result.result {
         case .success(let response):

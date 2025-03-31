@@ -9,25 +9,10 @@
 /* Begin PBXBuildFile section */
 		56376EED2D57E3D900553A6E /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 56376EEC2D57E3D900553A6E /* Alamofire */; };
 		5651F9C42D986ED70000C8AA /* SwiftUIIntrospect in Frameworks */ = {isa = PBXBuildFile; productRef = 5651F9C32D986ED70000C8AA /* SwiftUIIntrospect */; };
-		567BD5842D9480B6007BF4FB /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 567BD5832D9480B6007BF4FB /* WidgetKit.framework */; };
-		567BD5862D9480B6007BF4FB /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 567BD5852D9480B6007BF4FB /* SwiftUI.framework */; };
-		567BD5972D9480B7007BF4FB /* taskapeWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 567BD5812D9480B6007BF4FB /* taskapeWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		567BD5A82D948C19007BF4FB /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 567BD5A72D948C19007BF4FB /* Alamofire */; };
-		567BD5AA2D948C25007BF4FB /* SwiftDotenv in Frameworks */ = {isa = PBXBuildFile; productRef = 567BD5A92D948C25007BF4FB /* SwiftDotenv */; };
 		56A85DA32D30A1BE008B1623 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 56A85DA22D30A1BE008B1623 /* Lottie */; };
 		56E7F0CC2D6A7E740064AAA4 /* SwiftDotenv in Frameworks */ = {isa = PBXBuildFile; productRef = 56E7F0CB2D6A7E740064AAA4 /* SwiftDotenv */; };
 		56F9DDA42D7640A500DA5BBE /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 56F9DDA32D7640A500DA5BBE /* CachedAsyncImage */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		567BD5952D9480B7007BF4FB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 56FA4D642D2C102E00C5D8FE /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 567BD5802D9480B6007BF4FB;
-			remoteInfo = taskapeWidgetsExtension;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		567BD59C2D9480B7007BF4FB /* Embed Foundation Extensions */ = {
@@ -36,7 +21,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				567BD5972D9480B7007BF4FB /* taskapeWidgetsExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -44,7 +28,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		567BD5812D9480B6007BF4FB /* taskapeWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = taskapeWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		567BD5832D9480B6007BF4FB /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		567BD5852D9480B6007BF4FB /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		568228942D2C60650023C192 /* taskape.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = taskape.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -58,71 +41,11 @@
 			);
 			target = 56FA4D6B2D2C102E00C5D8FE /* taskape */;
 		};
-		567BD59B2D9480B7007BF4FB /* Exceptions for "taskapeWidgets" folder in "taskapeWidgetsExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 567BD5802D9480B6007BF4FB /* taskapeWidgetsExtension */;
-		};
-		567BD59F2D948169007BF4FB /* Exceptions for "taskape" folder in "taskapeWidgetsExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Data/Models/Fetchers.swift,
-				Data/Models/taskapeEvent.swift,
-				Data/Models/taskapeGroup.swift,
-				Data/Models/taskapeTask.swift,
-				Data/Models/taskapeUser.swift,
-				Data/ServerData/dto.swift,
-				Data/UserManager.swift,
-				Data/WidgetDataManager.swift,
-				"Fonts/PathwayExtreme-Black.otf",
-				"Fonts/PathwayExtreme-BlackCondensed.otf",
-				"Fonts/PathwayExtreme-BlackCondIta.otf",
-				"Fonts/PathwayExtreme-BlackItalic.otf",
-				"Fonts/PathwayExtreme-Bold.otf",
-				"Fonts/PathwayExtreme-BoldCondensed.otf",
-				"Fonts/PathwayExtreme-BoldCondIta.otf",
-				"Fonts/PathwayExtreme-BoldItalic.otf",
-				"Fonts/PathwayExtreme-Condensed.otf",
-				"Fonts/PathwayExtreme-CondIta.otf",
-				"Fonts/PathwayExtreme-ExtBdCond.otf",
-				"Fonts/PathwayExtreme-ExtBdCondIta.otf",
-				"Fonts/PathwayExtreme-ExtBdIta.otf",
-				"Fonts/PathwayExtreme-ExtLtCond.otf",
-				"Fonts/PathwayExtreme-ExtLtCondIta.otf",
-				"Fonts/PathwayExtreme-ExtLtIta.otf",
-				"Fonts/PathwayExtreme-ExtraBold.otf",
-				"Fonts/PathwayExtreme-ExtraLight.otf",
-				"Fonts/PathwayExtreme-Italic.otf",
-				"Fonts/PathwayExtreme-Light.otf",
-				"Fonts/PathwayExtreme-LightCondIta.otf",
-				"Fonts/PathwayExtreme-LightItalic.otf",
-				"Fonts/PathwayExtreme-LigthCondensed.otf",
-				"Fonts/PathwayExtreme-MedCond.otf",
-				"Fonts/PathwayExtreme-MedCondIta.otf",
-				"Fonts/PathwayExtreme-Medium.otf",
-				"Fonts/PathwayExtreme-MediumItalic.otf",
-				"Fonts/PathwayExtreme-Regular.otf",
-				"Fonts/PathwayExtreme-SemBdCond.otf",
-				"Fonts/PathwayExtreme-SemBdCondIta.otf",
-				"Fonts/PathwayExtreme-SemiBold.otf",
-				"Fonts/PathwayExtreme-SemiBoldItalic.otf",
-				"Fonts/PathwayExtreme-Thin.otf",
-				"Fonts/PathwayExtreme-ThinCondensed.otf",
-				"Fonts/PathwayExtreme-ThinCondIta.otf",
-				"Fonts/PathwayExtreme-ThinItalic.otf",
-			);
-			target = 567BD5802D9480B6007BF4FB /* taskapeWidgetsExtension */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		567BD5872D9480B6007BF4FB /* taskapeWidgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				567BD59B2D9480B7007BF4FB /* Exceptions for "taskapeWidgets" folder in "taskapeWidgetsExtension" target */,
-			);
 			path = taskapeWidgets;
 			sourceTree = "<group>";
 		};
@@ -130,7 +53,6 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				562586EC2D2C5D8C00E90564 /* Exceptions for "taskape" folder in "taskape" target */,
-				567BD59F2D948169007BF4FB /* Exceptions for "taskape" folder in "taskapeWidgetsExtension" target */,
 			);
 			path = taskape;
 			sourceTree = "<group>";
@@ -138,17 +60,6 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		567BD57E2D9480B6007BF4FB /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				567BD5AA2D948C25007BF4FB /* SwiftDotenv in Frameworks */,
-				567BD5A82D948C19007BF4FB /* Alamofire in Frameworks */,
-				567BD5862D9480B6007BF4FB /* SwiftUI.framework in Frameworks */,
-				567BD5842D9480B6007BF4FB /* WidgetKit.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		56FA4D692D2C102E00C5D8FE /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -178,7 +89,6 @@
 			children = (
 				56FA4D6E2D2C102E00C5D8FE /* taskape */,
 				568228942D2C60650023C192 /* taskape.app */,
-				567BD5812D9480B6007BF4FB /* taskapeWidgetsExtension.appex */,
 				567BD5872D9480B6007BF4FB /* taskapeWidgets */,
 				567BD5822D9480B6007BF4FB /* Frameworks */,
 			);
@@ -187,30 +97,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		567BD5802D9480B6007BF4FB /* taskapeWidgetsExtension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 567BD5982D9480B7007BF4FB /* Build configuration list for PBXNativeTarget "taskapeWidgetsExtension" */;
-			buildPhases = (
-				567BD57D2D9480B6007BF4FB /* Sources */,
-				567BD57E2D9480B6007BF4FB /* Frameworks */,
-				567BD57F2D9480B6007BF4FB /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				567BD5872D9480B6007BF4FB /* taskapeWidgets */,
-			);
-			name = taskapeWidgetsExtension;
-			packageProductDependencies = (
-				567BD5A72D948C19007BF4FB /* Alamofire */,
-				567BD5A92D948C25007BF4FB /* SwiftDotenv */,
-			);
-			productName = taskapeWidgetsExtension;
-			productReference = 567BD5812D9480B6007BF4FB /* taskapeWidgetsExtension.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
 		56FA4D6B2D2C102E00C5D8FE /* taskape */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 56FA4D7C2D2C102F00C5D8FE /* Build configuration list for PBXNativeTarget "taskape" */;
@@ -224,7 +110,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				567BD5962D9480B7007BF4FB /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				56FA4D6E2D2C102E00C5D8FE /* taskape */,
@@ -251,9 +136,6 @@
 				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
-					567BD5802D9480B6007BF4FB = {
-						CreatedOnToolsVersion = 16.2;
-					};
 					56FA4D6B2D2C102E00C5D8FE = {
 						CreatedOnToolsVersion = 16.2;
 					};
@@ -281,19 +163,11 @@
 			projectRoot = "";
 			targets = (
 				56FA4D6B2D2C102E00C5D8FE /* taskape */,
-				567BD5802D9480B6007BF4FB /* taskapeWidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		567BD57F2D9480B6007BF4FB /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		56FA4D6A2D2C102E00C5D8FE /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -324,13 +198,6 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		567BD57D2D9480B6007BF4FB /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		56FA4D682D2C102E00C5D8FE /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -340,91 +207,7 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
-/* Begin PBXTargetDependency section */
-		567BD5962D9480B7007BF4FB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 567BD5802D9480B6007BF4FB /* taskapeWidgetsExtension */;
-			targetProxy = 567BD5952D9480B7007BF4FB /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
-
 /* Begin XCBuildConfiguration section */
-		567BD5992D9480B7007BF4FB /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = taskapeWidgetsExtension.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 757AQD525H;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = taskapeWidgets/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = taskape;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = galexandrov.taskape.taskapeWidgets;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = test;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Debug;
-		};
-		567BD59A2D9480B7007BF4FB /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_ENTITLEMENTS = taskapeWidgetsExtension.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 757AQD525H;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = taskapeWidgets/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = taskape;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = galexandrov.taskape.taskapeWidgets;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = test;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Release;
-		};
 		56FA4D7A2D2C102F00C5D8FE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -553,7 +336,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"taskape/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 757AQD525H;
@@ -594,7 +377,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"taskape/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 757AQD525H;
@@ -629,15 +412,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		567BD5982D9480B7007BF4FB /* Build configuration list for PBXNativeTarget "taskapeWidgetsExtension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				567BD5992D9480B7007BF4FB /* Debug */,
-				567BD59A2D9480B7007BF4FB /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		56FA4D672D2C102E00C5D8FE /* Build configuration list for PBXProject "taskape" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -711,16 +485,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5651F9C22D986E6F0000C8AA /* XCRemoteSwiftPackageReference "swiftui-introspect" */;
 			productName = SwiftUIIntrospect;
-		};
-		567BD5A72D948C19007BF4FB /* Alamofire */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 56376EEB2D57E3D900553A6E /* XCRemoteSwiftPackageReference "Alamofire" */;
-			productName = Alamofire;
-		};
-		567BD5A92D948C25007BF4FB /* SwiftDotenv */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 56E7F0CA2D6A7E740064AAA4 /* XCRemoteSwiftPackageReference "swift-dotenv" */;
-			productName = SwiftDotenv;
 		};
 		56A85DA22D30A1BE008B1623 /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;
