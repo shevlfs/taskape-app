@@ -111,33 +111,8 @@ struct MainNavigationView: View {
             .edgesIgnoringSafeArea(.bottom)
             .toolbar(.hidden)
         }
-        .navigationDestination(
-            for: String.self,
-            destination: {
-                route in
-                switch route {
-                case "self_jungle_view":
-                    UserJungleDetailedView()
-                        .modelContext(self.modelContext)
-                case "friendSearch":
-                    FriendSearchView().toolbar(.hidden).modelContext(
-                        self.modelContext)
-                default:
-                    if let event = allEvents.first(where: { $0.id == route }) {
-//                        EventCardDetailedView(event: event)
-//                            .modelContext(self.modelContext)
-                        Text("\(event.eventTypeRaw)")
-                    } else {
-                        // Route is not recognized
-                        Text("\(allEvents)")
-                        Text("error")
-                    }
-                }
-            }
-        )
         .onAppear {
-            print(mainNavigationPath)
-            print(allEvents)
+            print($mainNavigationPath)
             currentUser = UserManager.shared.getCurrentUser(
                 context: modelContext)
         }

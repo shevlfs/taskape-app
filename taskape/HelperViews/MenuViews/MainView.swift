@@ -56,13 +56,20 @@ struct MainView: View {
                                 if group.count == 2 {
                                     HStack(spacing: 20) {
                                         ForEach(group) { event in
-                                            EventCard(
-                                                event: event,
-                                                eventSize: event
-                                                    .eventSize
-                                            ).onTapGesture(perform: {
-                                                navigationPath.append(event.id)
-                                            })
+                                            Button(action: {
+                                                navigationPath
+                                                    .append(event.id)
+                                            }) {
+                                                EventCard(
+                                                    event: event,
+                                                    eventSize: event
+                                                        .eventSize
+                                                )
+                                                .matchedTransitionSource(
+                                                    id: event.id,
+                                                    in: mainNamespace
+                                                )
+                                            }.buttonStyle(PlainButtonStyle())
                                         }
                                     }
                                 }
@@ -72,13 +79,20 @@ struct MainView: View {
                                 {
                                     if singleEvent.eventSize == .large {
                                         // Large events get full width
-                                        EventCard(
-                                            event: singleEvent,
-                                            eventSize: .large
-                                        ).onTapGesture(perform: {
+                                        Button(action: {
                                             navigationPath
                                                 .append(singleEvent.id)
-                                        })
+                                        }) {
+                                            EventCard(
+                                                event: singleEvent,
+                                                eventSize: singleEvent
+                                                    .eventSize
+                                            )
+                                            .matchedTransitionSource(
+                                                id: singleEvent.id,
+                                                in: mainNamespace
+                                            )
+                                        }.buttonStyle(PlainButtonStyle())
                                     } else {
                                         // For small or medium events, create a layout with appropriate spacing
                                         HStack(spacing: 20) {
@@ -88,24 +102,38 @@ struct MainView: View {
                                                     .frame(maxWidth: .infinity)
 
                                                 // Event on the right
-                                                EventCard(
-                                                    event: singleEvent,
-                                                    eventSize: singleEvent
-                                                        .eventSize
-                                                ).onTapGesture(perform: {
+                                                Button(action: {
                                                     navigationPath
                                                         .append(singleEvent.id)
-                                                }).padding(.trailing, 15)
+                                                }) {
+                                                    EventCard(
+                                                        event: singleEvent,
+                                                        eventSize: singleEvent
+                                                            .eventSize
+                                                    ).padding(.trailing, 15)
+                                                        .matchedTransitionSource(
+                                                            id: singleEvent.id,
+                                                            in: mainNamespace
+                                                        )
+                                                }.buttonStyle(
+                                                    PlainButtonStyle())
                                             } else {
                                                 // Event on the left
-                                                EventCard(
-                                                    event: singleEvent,
-                                                    eventSize: singleEvent
-                                                        .eventSize
-                                                ).onTapGesture(perform: {
+                                                Button(action: {
                                                     navigationPath
                                                         .append(singleEvent.id)
-                                                }).padding(.leading, 15)
+                                                }) {
+                                                    EventCard(
+                                                        event: singleEvent,
+                                                        eventSize: singleEvent
+                                                            .eventSize
+                                                    ).padding(.leading, 15)
+                                                        .matchedTransitionSource(
+                                                            id: singleEvent.id,
+                                                            in: mainNamespace
+                                                        )
+                                                }.buttonStyle(
+                                                    PlainButtonStyle())
 
                                                 // Empty space (nothing) on the right
                                                 Spacer()
@@ -253,7 +281,6 @@ struct MainView: View {
                         )
                 case "friendSearch":
                     ZStack {
-                        Color.clear  // Ensures we have a transparent base
                         FriendSearchView()
                             .modelContext(self.modelContext)
                     }.toolbar(.hidden)
@@ -261,13 +288,21 @@ struct MainView: View {
                             .zoom(sourceID: "friendSearch", in: mainNamespace)
                         )
                 default:
-                    EmptyView()
+                    if let event = events.first(where: { $0.id == route }) {
+                        EventCardDetailedView(event: event)
+                            .navigationTransition(
+                                .zoom(sourceID: event.id, in: mainNamespace)
+                            )
+                            .modelContext(self.modelContext)
+                            .navigationBarBackButtonHidden().toolbar(.hidden)
+                    } else {
+
+                        Text("error in the mainview navigation!")
+                    }
                 }
             }
         )
         .onAppear {
-            print(navigationPath)
-            print(allEvents)
             currentUser = UserManager.shared.getCurrentUser(
                 context: modelContext)
 
@@ -299,6 +334,7 @@ struct MainView: View {
         Task {
             // First, preload all tasks for all friends
             await friendManager.preloadAllFriendTasks()
+            var allEvents: [taskapeEvent] = []
 
             if let userEvents = await taskape.fetchEvents(userId: user.id) {
                 // Filter to only include events from friends
@@ -327,7 +363,7 @@ struct MainView: View {
                 let filteredEvents = Array(latestEventByFriend.values)
 
                 // For each event, associate the relevant tasks from the pre-loaded tasks
-                allEvents = []
+
                 for event in filteredEvents {
                     if !event.taskIds.isEmpty {
                         // Get the tasks for this friend that match the task IDs in the event
@@ -453,8 +489,6 @@ enum EventPosition {
     case right
 }
 
-var allEvents: [taskapeEvent] = []
-
 #Preview {
     do {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
@@ -486,8 +520,11 @@ var allEvents: [taskapeEvent] = []
 
         try container.mainContext.save()
 
-        return MainView(eventsUpdated: .constant(false), navigationPath: .constant(NavigationPath()))
-            .modelContainer(container)
+        return MainView(
+            eventsUpdated: .constant(false),
+            navigationPath: .constant(NavigationPath())
+        )
+        .modelContainer(container)
     } catch {
         return Text("Failed to create preview: \(error.localizedDescription)")
     }

@@ -107,7 +107,10 @@ func likeEvent(eventId: String, userId: String) async -> Bool {
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/events/\(eventId)/like",
             method: .post,
             parameters: request,
-            encoder: JSONParameterEncoder.default
+            encoder: JSONParameterEncoder.default,
+            headers: [
+                "Authorization": token
+            ]
         )
         .validate()
         .serializingDecodable(LikeEventResponse.self)
@@ -238,7 +241,9 @@ func addEventComment(eventId: String, userId: String, content: String) async -> 
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/events/\(eventId)/comments",
             method: .post,
             parameters: request,
-            encoder: JSONParameterEncoder.default
+            encoder: JSONParameterEncoder.default, headers: [
+                "Authorization": token
+            ]
         )
         .validate()
         .serializingDecodable(AddEventCommentResponse.self)
