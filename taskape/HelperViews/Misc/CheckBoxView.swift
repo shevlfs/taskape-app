@@ -9,26 +9,26 @@ struct CheckBoxView: View {
 
     var body: some View {
         Button(action: {
-            // If task requires proof, show proof submission view
+
             if task.proofNeeded == true && !task.completion.isCompleted {
                 showProofSubmission = true
             } else {
-                // Toggle the visual state immediately for responsive UI
+
                 newCompletionStatus.toggle()
 
-                // Start animation
+
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                     isAnimating = true
                 }
 
-                // Reset animation state after a short delay
+
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         isAnimating = false
                     }
 
-                    // Update the actual task completion status after animation completes
-                    // This will trigger any onChange listeners in parent views
+
+
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                         if task.proofNeeded == true {
                             task.completion.requiresConfirmation = true
@@ -43,7 +43,7 @@ struct CheckBoxView: View {
             }
         }) {
             ZStack {
-                // Outer rectangle
+
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(
                         newCompletionStatus
@@ -59,7 +59,7 @@ struct CheckBoxView: View {
                                     : Color.clear)
                     )
 
-                // Checkmark
+
                 if newCompletionStatus {
                     Image(systemName: "checkmark")
                         .font(.system(size: 14, weight: .bold))
@@ -72,7 +72,7 @@ struct CheckBoxView: View {
             .scaleEffect(isAnimating ? 1.2 : 1.0)
         }
         .onChange(of: task.completion.isCompleted) { _, newValue in
-            // Keep newCompletionStatus in sync with external changes
+
             newCompletionStatus = newValue
         }
         .buttonStyle(PlainButtonStyle())
@@ -86,7 +86,7 @@ struct CheckBoxView: View {
         do {
             try modelContext.save()
 
-            // Update widget data
+
             let userId = task.user_id
 
             updateWidgetWithTasks(userId: userId, modelContext: modelContext)
@@ -103,7 +103,7 @@ struct CheckBoxView: View {
     }
 }
 
-// Updated TaskCardWithCheckbox for new proof functionality
+
 struct TaskCardWithCheckbox: View {
     @Bindable var task: taskapeTask
     @State var detailIsPresent: Bool = false
@@ -151,7 +151,7 @@ struct TaskCardWithCheckbox: View {
                             isAnimating = true
                         }
 
-                        // Reset animation state after a short delay
+
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             withAnimation {
                                 isAnimating = false
@@ -227,10 +227,10 @@ struct TaskCardWithCheckbox: View {
                         TaskNotifier.notifyTasksUpdated()
                     }
             }.onAppear {
-                // Initialize the visual state to match the actual state
+
                 newCompletionStatus = task.completion.isCompleted
             }.onChange(of: task.completion.isCompleted) { _, newValue in
-                // Keep newCompletionStatus in sync with external changes
+
                 newCompletionStatus = newValue
             }
             .buttonStyle(PlainButtonStyle())

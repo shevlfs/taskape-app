@@ -37,16 +37,16 @@ class FriendManager: ObservableObject {
         }
     }
 
-    // Add storage for friend tasks
-    private var friendTasks: [String: [taskapeTask]] = [:]  // userId -> tasks
 
-    // Function to load tasks for a friend
+    private var friendTasks: [String: [taskapeTask]] = [:] 
+
+
     func loadTasksForFriend(userId: String) async -> [taskapeTask]? {
-        // If not, fetch them
+
         if let tasks = await fetchTasks(
             userId: userId)
         {
-            // Store for future use
+
             friendTasks[userId] = tasks
             return tasks
         }
@@ -54,7 +54,7 @@ class FriendManager: ObservableObject {
         return nil
     }
 
-    // Get cached tasks for a friend, or fetch if needed
+
     func getTasksForFriend(userId: String) async -> [taskapeTask]? {
         if (friendTasks[userId] ?? []).isEmpty {
             return await loadTasksForFriend(userId: userId)
@@ -62,14 +62,14 @@ class FriendManager: ObservableObject {
         return friendTasks[userId]
     }
 
-    // Preload tasks for all friends
+
     func preloadAllFriendTasks() async {
         for friend in friends {
             _ = await loadTasksForFriend(userId: friend.id)
         }
     }
 
-    // Get specific tasks by ID for a friend
+
     func getTasksByIds(friendId: String, taskIds: [String]) async
         -> [taskapeTask]
     {
@@ -79,7 +79,7 @@ class FriendManager: ObservableObject {
         return []
     }
 
-    // Clear cached tasks
+
     func clearTaskCache() {
         friendTasks.removeAll()
     }

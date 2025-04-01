@@ -1,9 +1,9 @@
-//
-//  serverFriendRequests.swift
-//  taskape
-//
-//  Created by shevlfs on 3/24/25.
-//
+
+
+
+
+
+
 
 import Alamofire
 import Foundation
@@ -92,7 +92,7 @@ func respondToFriendRequest(requestId: String, response: String) async -> Bool {
         return false
     }
 
-    // Validate the response
+
     if response != "accept" && response != "reject" {
         print("Invalid response: must be 'accept' or 'reject'")
         return false
@@ -175,7 +175,7 @@ func getFriendRequests(type: String) async -> [FriendRequest]? {
         return nil
     }
 
-    // Validate request type
+
     if type != "incoming" && type != "outgoing" {
         print("Invalid request type: must be 'incoming' or 'outgoing'")
         return nil

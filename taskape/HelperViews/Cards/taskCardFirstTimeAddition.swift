@@ -121,7 +121,7 @@ struct taskCardFirstTimeAddition: View {
                         .frame(maxHeight: 150)
                         .padding(.horizontal)
 
-                    // DatePicker for the task deadline
+
                     DatePicker(
                         "due date",
                         selection: Binding(
@@ -201,7 +201,7 @@ struct taskCardFirstTimeAddition: View {
                                     privacy: "private"
                                 )
                             ),
-                            firstLaunch: true  // Hex color for orange
+                            firstLaunch: true 
                         )
 
                         let completedTask = taskapeTask(

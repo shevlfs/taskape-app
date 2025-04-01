@@ -1,9 +1,9 @@
-//
-//  RootView.swift
-//  taskape
-//
-//  Created by shevlfs on 1/7/25.
-//
+
+
+
+
+
+
 
 import SwiftDotenv
 import SwiftUI
@@ -30,7 +30,7 @@ struct RootView: View {
                 print("token validate success")
                 phoneExistsInDatabase = true
 
-                // Set the current user ID in UserManager
+
                 if let userId = UserDefaults.standard.string(forKey: "user_id") {
                     UserManager.shared.setCurrentUser(userId: userId)
                 }
@@ -49,7 +49,7 @@ struct RootView: View {
                     print("refresh success")
                     phoneExistsInDatabase = true
 
-                    // Set the current user ID in UserManager after refresh
+
                     if let userId = UserDefaults.standard.string(forKey: "user_id") {
                         UserManager.shared.setCurrentUser(userId: userId)
                     }
@@ -60,7 +60,7 @@ struct RootView: View {
             }
         }
 
-        // Clear the UserManager current user ID when token validation fails
+
         UserManager.shared.setCurrentUser(userId: "")
         return false
     }
@@ -81,7 +81,7 @@ struct RootView: View {
                     .statusBarHidden(true)
                     .onAppear {
                         loadEnvironment()
-                        // Reset these flags when auth view appears
+
                         phoneExistsInDatabase = false
                         userAlreadyExists = false
                     }

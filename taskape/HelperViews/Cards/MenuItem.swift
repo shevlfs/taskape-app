@@ -1,9 +1,9 @@
-//
-//  MenuItem.swift
-//  taskape
-//
-//  Created by shevlfs on 1/6/25.
-//
+
+
+
+
+
+
 
 import SwiftUI
 
@@ -24,7 +24,7 @@ struct MenuItem: View {
                     LinearGradient(
                         stops: colorScheme == .dark
                             ? [
-                                // Enhanced gradient stops for dark mode
+
                                 Gradient.Stop(
                                     color: mainColor.opacity(0.95),
                                     location: 0.05),
@@ -36,7 +36,7 @@ struct MenuItem: View {
                                 ),
                             ]
                             : [
-                                // Original gradient stops for light mode
+
                                 Gradient.Stop(color: mainColor, location: 0.06),
                                 Gradient.Stop(
                                     color: mainColor.opacity(0.6),
@@ -95,7 +95,7 @@ struct VisionProShadowStyle {
         let opacity: CGFloat
     }
 
-    // Preset for a floating card effect
+
     static let floatingCard = VisionProShadowStyle(
         primary: Shadow(
             color: .black,
@@ -121,7 +121,7 @@ struct VisionProShadowStyle {
         backgroundBlur: 0.3
     )
 
-    // Preset for buttons
+
     static let button = VisionProShadowStyle(
         primary: Shadow(
             color: .black,
@@ -141,7 +141,7 @@ struct VisionProShadowStyle {
         backgroundBlur: 0.15
     )
 
-    // Preset for text elements
+
     static let text = VisionProShadowStyle(
         primary: Shadow(
             color: .black,
@@ -162,7 +162,7 @@ struct VisionProShadowStyle {
     )
 }
 
-// MARK: - View Extension
+
 extension View {
     @ViewBuilder
     func visionProShadow(style: VisionProShadowStyle = .floatingCard)
@@ -200,7 +200,7 @@ extension View {
             )
     }
 
-    // A more immersive floating card with additional depth cues
+
     func visionProFloatingCard(
         cornerRadius: CGFloat = 16,
         backgroundOpacity: CGFloat = 0.5,

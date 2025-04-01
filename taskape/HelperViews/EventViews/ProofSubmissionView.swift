@@ -16,7 +16,7 @@ struct ProofSubmissionView: View {
     @Environment(\.modelContext) var modelContext
     @State var mediaAccessDenied: Bool = false
 
-    // Permission states
+
     @State private var photoPermissionStatus: PHAuthorizationStatus =
         .notDetermined
     @State private var cameraPermissionStatus: AVAuthorizationStatus =
@@ -27,7 +27,7 @@ struct ProofSubmissionView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                // Header section
+
                 Text("proof required")
                     .font(.pathwayBlack(22))
                     .padding(.top)
@@ -41,7 +41,7 @@ struct ProofSubmissionView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
-                // Image selection
+
                 VStack(spacing: 15) {
                     if let selectedImage = selectedImage {
                         Image(uiImage: selectedImage)
@@ -121,7 +121,7 @@ struct ProofSubmissionView: View {
                     }
                 }
 
-                // Description
+
                 VStack(alignment: .leading, spacing: 8) {
                     Text("description")
                         .font(.pathway(16))
@@ -139,7 +139,7 @@ struct ProofSubmissionView: View {
 
                 Spacer()
 
-                // Action buttons
+
                 HStack(spacing: 15) {
                     Button(action: {
                         isPresented = false
@@ -191,7 +191,7 @@ struct ProofSubmissionView: View {
                 }
             )
             .onAppear {
-                // Only check permissions once
+
                 if !permissionChecked {
                     checkPermissions()
                     permissionChecked = true
@@ -214,7 +214,7 @@ struct ProofSubmissionView: View {
         }
     }
 
-    // Check if we have all required permissions
+
     func hasRequiredPermissions() -> Bool {
         return
             (photoPermissionStatus == .authorized
@@ -222,17 +222,17 @@ struct ProofSubmissionView: View {
             && cameraPermissionStatus == .authorized
     }
 
-    // Check both camera and photo library permissions
+
     func checkPermissions() {
-        // Check photo library permission
+
         photoPermissionStatus = PHPhotoLibrary.authorizationStatus(
             for: .readWrite)
 
-        // Check camera permission
+
         cameraPermissionStatus = AVCaptureDevice.authorizationStatus(
             for: .video)
 
-        // If permissions are denied, set the flag
+
         if photoPermissionStatus == .denied
             || photoPermissionStatus == .restricted
             || cameraPermissionStatus == .denied
@@ -242,18 +242,18 @@ struct ProofSubmissionView: View {
         } else if photoPermissionStatus == .notDetermined
             || cameraPermissionStatus == .notDetermined
         {
-            // Show the permission alert if either permission is not determined
+
             showPermissionAlert = true
         }
     }
 
-    // Request all required permissions
+
     func requestRequiredPermissions() {
         requestCameraPermission()
         requestPhotoPermission()
     }
 
-    // Request camera permission
+
     func requestCameraPermission() {
         if cameraPermissionStatus == .notDetermined {
             AVCaptureDevice.requestAccess(for: .video) { granted in
@@ -266,7 +266,7 @@ struct ProofSubmissionView: View {
         }
     }
 
-    // Request photo library permission
+
     func requestPhotoPermission() {
         if photoPermissionStatus == .notDetermined {
             PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
@@ -278,11 +278,11 @@ struct ProofSubmissionView: View {
         }
     }
 
-    // Update the media access denied state and open picker if all permissions are granted
+
     func updateMediaAccessState() {
         if hasRequiredPermissions() {
             mediaAccessDenied = false
-            // Open picker if we have all permissions
+
             showImagePicker = true
         } else if photoPermissionStatus == .denied
             || photoPermissionStatus == .restricted
@@ -300,25 +300,25 @@ struct ProofSubmissionView: View {
 
         Task {
             do {
-                // Upload the image
+
                 let imageUrl = try await uploadimage(image: image)
 
                 await MainActor.run {
-                    // Update the task with proof
+
                     task.completion.proofURL = imageUrl
                     task.proofDescription = proofDescription
                     task.completion.requiresConfirmation = true
 
-                    // Save changes to model context
+
                     do {
                         try modelContext.save()
 
-                        // Sync with server
+
                         Task {
                             await syncTaskChanges(task: task)
                         }
 
-                        // Close the sheet
+
                         isPresented = false
                     } catch {
                         print("Error saving proof to task: \(error)")
@@ -382,7 +382,7 @@ struct ProofSubmissionView: View {
     }
 }
 
-// Preview
+
 #Preview {
     let task = taskapeTask(
         name: "Complete project",

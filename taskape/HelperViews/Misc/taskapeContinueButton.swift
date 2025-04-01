@@ -1,9 +1,9 @@
-//
-//  taskapeContinueButton.swift
-//  taskape
-//
-//  Created by shevlfs on 3/30/25.
-//
+
+
+
+
+
+
 
 import SwiftUI
 
@@ -19,6 +19,6 @@ struct taskapeContinueButton: View {
 #Preview {
     ZStack {
         taskapeContinueButton()
-        //LandingButton()
+
     }
 }

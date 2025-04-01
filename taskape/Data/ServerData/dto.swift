@@ -1,9 +1,9 @@
-//
-//  dto.swift
-//  taskape
-//
-//  Created by shevlfs on 2/14/25.
-//
+
+
+
+
+
+
 
 import Foundation
 
@@ -99,7 +99,7 @@ struct BatchTaskSubmissionRequest: Codable {
     let token: String
 }
 
-// Updates for TaskSubmission struct in dto.swift
+
 struct TaskSubmission: Codable {
     let id: String
     let user_id: String
@@ -175,7 +175,7 @@ struct TaskResponse: Codable {
     let flag_name: String?
     let display_order: Int
 
-    // Decoder implementation...
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
@@ -189,7 +189,7 @@ struct TaskResponse: Codable {
         group = try container.decodeIfPresent(String.self, forKey: .group)
         group_id = try container.decodeIfPresent(String.self, forKey: .group_id)
 
-        // Handle possibly null array
+
         if let assignedTo = try? container.decodeIfPresent(
             [String].self, forKey: .assigned_to)
         {
@@ -206,7 +206,7 @@ struct TaskResponse: Codable {
         proof_url = try container.decodeIfPresent(
             String.self, forKey: .proof_url)
 
-        // New fields
+
         requires_confirmation = try container.decodeIfPresent(
             Bool.self, forKey: .requires_confirmation) ?? false
         is_confirmed = try container.decodeIfPresent(
@@ -219,7 +219,7 @@ struct TaskResponse: Codable {
         privacy_level = try container.decode(
             String.self, forKey: .privacy_level)
 
-        // Handle possibly null array
+
         if let privacyExceptIds = try? container.decodeIfPresent(
             [String].self, forKey: .privacy_except_ids)
         {
@@ -228,7 +228,7 @@ struct TaskResponse: Codable {
             privacy_except_ids = []
         }
 
-        // Flags
+
         flag_status =
             try container.decodeIfPresent(Bool.self, forKey: .flag_status)
             ?? false
@@ -345,7 +345,7 @@ struct SendFriendRequestResponse: Codable {
 struct RespondToFriendRequestRequest: Codable {
     let request_id: String
     let user_id: String
-    let response: String  // "accept" or "reject"
+    let response: String 
     let token: String
 }
 
@@ -360,7 +360,7 @@ struct GetTaskResponse: Codable {
     let message: String?
 }
 
-// Define DTOs to match the Go server types
+
 
 struct EventResponse: Codable {
     let id: String

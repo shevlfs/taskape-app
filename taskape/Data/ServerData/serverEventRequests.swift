@@ -1,9 +1,9 @@
-//
-//  serverEventRequests.swift
-//  taskape
-//
-//  Created by shevlfs on 3/27/25.
-//
+
+
+
+
+
+
 
 import Alamofire
 import Foundation
@@ -11,7 +11,7 @@ import SwiftData
 import SwiftDotenv
 import SwiftUI
 
-// MARK: - Event Fetch Functions
+
 
 func fetchEvents(userId: String, includeExpired: Bool = false, limit: Int = 20) async -> [taskapeEvent]? {
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
@@ -24,7 +24,7 @@ func fetchEvents(userId: String, includeExpired: Bool = false, limit: Int = 20) 
             "Authorization": token
         ]
 
-        // Create URL with query parameters
+
         var urlComponents = URLComponents(string: "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)/events")
         urlComponents?.queryItems = [
             URLQueryItem(name: "include_expired", value: includeExpired ? "true" : "false"),
@@ -43,18 +43,18 @@ func fetchEvents(userId: String, includeExpired: Bool = false, limit: Int = 20) 
         )
         .validate()
         .responseData { response in
-            // Print the raw response data
-            if let data = response.data {
-                // print("Raw response: \(String(data: data, encoding: .utf8) ?? "Unable to convert data to string")")
 
-                // Try decoding manually to see detailed error
+            if let data = response.data {
+
+
+
                 do {
                     let decoded = try JSONDecoder().decode(GetEventsResponse.self, from: data)
                   
                 } catch {
                     print("Decode error: \(error)")
 
-                    // For CodingKeys mismatch errors, print more details
+
                     if let decodingError = error as? DecodingError {
                         switch decodingError {
                         case .keyNotFound(let key, let context):
@@ -89,7 +89,7 @@ func fetchEvents(userId: String, includeExpired: Bool = false, limit: Int = 20) 
     }
 }
 
-// MARK: - Event Like Functions
+
 
 func likeEvent(eventId: String, userId: String) async -> Bool {
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
@@ -132,7 +132,7 @@ func unlikeEvent(eventId: String, userId: String) async -> Bool {
         return false
     }
 
-    // For DELETE requests with query parameters
+
     var urlComponents = URLComponents(string: "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/events/\(eventId)/like")
     urlComponents?.queryItems = [
         URLQueryItem(name: "user_id", value: userId)
@@ -167,7 +167,7 @@ func unlikeEvent(eventId: String, userId: String) async -> Bool {
     }
 }
 
-// MARK: - Event Comments Functions
+
 
 func fetchEventComments(eventId: String, limit: Int = 20, offset: Int = 0) async -> [EventComment]? {
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
@@ -175,7 +175,7 @@ func fetchEventComments(eventId: String, limit: Int = 20, offset: Int = 0) async
         return nil
     }
 
-    // Create URL with query parameters
+
     var urlComponents = URLComponents(string: "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/events/\(eventId)/comments")
     urlComponents?.queryItems = [
         URLQueryItem(name: "limit", value: "\(limit)"),
@@ -217,7 +217,7 @@ func fetchEventComments(eventId: String, limit: Int = 20, offset: Int = 0) async
     }
 }
 
-// Define a proper response type for the add comment API
+
 struct AddEventCommentResponse: Codable {
     let success: Bool
     let comment: EventCommentResponse
@@ -275,7 +275,7 @@ func deleteEventComment(eventId: String, commentId: String, userId: String) asyn
         return false
     }
 
-    // For DELETE requests with query parameters
+
     var urlComponents = URLComponents(string: "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/events/\(eventId)/comments/\(commentId)")
     urlComponents?.queryItems = [
         URLQueryItem(name: "user_id", value: userId)
@@ -310,7 +310,7 @@ func deleteEventComment(eventId: String, commentId: String, userId: String) asyn
     }
 }
 
-// MARK: - Task Confirmation Function
+
 
 func confirmTaskCompletion(taskId: String, confirmerId: String, isConfirmed: Bool) async -> Bool {
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
@@ -346,9 +346,9 @@ func confirmTaskCompletion(taskId: String, confirmerId: String, isConfirmed: Boo
     }
 }
 
-// MARK: - Helper Conversion Functions
 
-// Helper function to convert an EventResponse to a local taskapeEvent
+
+
 func convertToLocalEvent(_ event: EventResponse) -> taskapeEvent {
     let dateFormatter = ISO8601DateFormatter()
 
@@ -378,7 +378,7 @@ func convertToLocalEvent(_ event: EventResponse) -> taskapeEvent {
     )
 }
 
-// Helper function to convert an EventCommentResponse to a local EventComment
+
 func convertToLocalComment(_ comment: EventCommentResponse) -> EventComment {
     let dateFormatter = ISO8601DateFormatter()
 
@@ -400,25 +400,25 @@ func convertToLocalComment(_ comment: EventCommentResponse) -> EventComment {
     )
 }
 
-// Function to load related tasks for events
+
 func loadRelatedTasksForEvents(events: [taskapeEvent], modelContext: ModelContext) async {
-    // Get all task IDs from all events
+
     var allTaskIds: Set<String> = Set<String>()
     for event in events {
         allTaskIds.formUnion(event.taskIds)
     }
 
-    // Skip if no task IDs found
+
     if allTaskIds.isEmpty {
         return
     }
 
-    // Get the current user ID for the requester_id
+
     let requesterId = UserManager.shared.currentUserId
 
-    // Fetch tasks for these IDs
+
     for taskId in allTaskIds {
-        // If we already have this task in memory, skip fetching
+
         let taskDescriptor = FetchDescriptor<taskapeTask>(
             predicate: #Predicate<taskapeTask> { task in
                 task.id == taskId
@@ -428,7 +428,7 @@ func loadRelatedTasksForEvents(events: [taskapeEvent], modelContext: ModelContex
         do {
             let existingTasks = try modelContext.fetch(taskDescriptor)
             if !existingTasks.isEmpty {
-                // Update the task relationship
+
                 let task = existingTasks[0]
                 for event in events where event.taskIds.contains(taskId) {
                     if !event.relatedTasks.contains(where: { $0.id == task.id }) {
@@ -441,15 +441,15 @@ func loadRelatedTasksForEvents(events: [taskapeEvent], modelContext: ModelContex
             print("error checking for existing task: \(error)")
         }
 
-        // Fetch the individual task
+
         guard let task = await fetchTask(taskId: taskId, requesterId: requesterId) else {
             continue
         }
 
-        // Insert the task into the context
+
         modelContext.insert(task)
 
-        // Associate task with related events
+
         for event in events where event.taskIds.contains(taskId) {
             if !event.relatedTasks.contains(where: { $0.id == task.id }) {
                 event.relatedTasks.append(task)
@@ -457,7 +457,7 @@ func loadRelatedTasksForEvents(events: [taskapeEvent], modelContext: ModelContex
         }
     }
 
-    // Save the context
+
     do {
         try modelContext.save()
     } catch {

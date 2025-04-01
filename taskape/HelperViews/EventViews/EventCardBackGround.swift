@@ -1,9 +1,9 @@
-//
-//  FriendView.swift
-//  taskape
-//
-//  Created by shevlfs on 1/6/25.
-//
+
+
+
+
+
+
 
 import SwiftUI
 

@@ -1,9 +1,9 @@
-//
-//  ContentView.swift
-//  taskape
-//
-//  Created by shevlfs on 1/6/25.
-//
+
+
+
+
+
+
 
 import CachedAsyncImage
 import SwiftData
@@ -25,7 +25,7 @@ struct MainNavigationView: View {
 
     @State private var mainNavigationPath = NavigationPath()
 
-    // Loading and animation states
+
     @State private var isLoading: Bool = true
     @State private var logoOpacity: Double = 1.0
     @State private var contentOpacity: Double = 0.0
@@ -34,7 +34,7 @@ struct MainNavigationView: View {
     @Binding var fullyLoaded: Bool
 
     var body: some View {
-        // Main Navigation content
+
         NavigationStack(path: $mainNavigationPath) {
             VStack {
                 userGreetingCard()

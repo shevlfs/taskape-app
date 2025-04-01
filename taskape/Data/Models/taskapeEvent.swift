@@ -1,15 +1,15 @@
-//
-//  taskapeEvent.swift
-//  taskape
-//
-//  Created by shevlfs on 3/27/25.
-//
+
+
+
+
+
+
 
 import Foundation
 import SwiftData
 import SwiftUI
 
-// MARK: - Event Models
+
 
 enum EventType: String, Codable {
     case newTasksAdded = "new_tasks_added"
@@ -41,7 +41,7 @@ final class taskapeEvent: Identifiable {
     var commentsCount: Int
     var likedByUserIds: [String]
 
-    // Computed properties for the enum values
+
     var eventType: EventType {
         get {
             return EventType(rawValue: eventTypeRaw) ?? .newTasksAdded
@@ -60,7 +60,7 @@ final class taskapeEvent: Identifiable {
         }
     }
 
-    // Relationships
+
     @Relationship var relatedTasks: [taskapeTask] = []
     @Relationship var user: taskapeUser?
 
@@ -92,14 +92,14 @@ final class taskapeEvent: Identifiable {
         self.likedByUserIds = likedByUserIds
     }
 
-    // Check if current user has liked this event
+
     func isLikedByCurrentUser() -> Bool {
         let currentUserId = UserManager.shared.currentUserId
         return likedByUserIds.contains(currentUserId)
     }
 }
 
-// MARK: - Event Comment Model
+
 
 @Model
 final class EventComment: Identifiable {

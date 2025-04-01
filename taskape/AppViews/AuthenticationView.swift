@@ -1,7 +1,7 @@
-//
-//  AuthenticationView.swift - Updated for AppStateManager
-//  taskape
-//
+
+
+
+
 
 import Lottie
 import SwiftData
@@ -54,7 +54,7 @@ struct AuthenticationView: View {
             print("Error clearing existing users: \(error)")
         }
 
-        // Get the user ID from UserDefaults
+
         let userId = UserDefaults.standard.string(forKey: "user_id") ?? user_id
         let newUser = taskapeUser(
             id: userId,
@@ -68,7 +68,7 @@ struct AuthenticationView: View {
 
         modelContext.insert(newUser)
 
-        // Set this as the current user in UserManager
+
         UserManager.shared.setCurrentUser(userId: userId)
 
         let userPhone: String = "\(phoneCode)\(phoneNumber)"
@@ -193,11 +193,11 @@ struct AuthenticationView: View {
                         case .success:
                             path.append(".profile_creation")
                         case .userexists:
-                            // For existing user accounts, make sure we properly set the profileExists flag
+
                             UserDefaults.standard.set(
                                 true, forKey: "profileExists")
 
-                            // Log for debugging
+
                             print(
                                 "Existing user detected with ID: \(UserManager.shared.currentUserId)"
                             )

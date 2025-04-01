@@ -7,7 +7,7 @@ class FlagManager: ObservableObject {
     @Published var flagChangeCounter: Int = 0
 
     func flagChanged() {
-        // Increment counter to trigger any views observing this publisher
+
         DispatchQueue.main.async {
             self.flagChangeCounter += 1
         }
@@ -58,7 +58,7 @@ struct UserJungleDetailedView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var currentUser: taskapeUser?
 
-    // Observe the flag manager to detect changes
+
     @ObservedObject private var flagManager = FlagManager.shared
 
     @State private var isRefreshing: Bool = false
@@ -68,10 +68,10 @@ struct UserJungleDetailedView: View {
     @State private var showNewTaskDetail: Bool = false
     @State private var draggingItem: taskapeTask?
 
-    // Animation states for task completion
+
     @State private var completingTasks: [String: Bool] = [:]
 
-    // Tab types - first the fixed tabs, then dynamic flag tabs
+
     private enum TabType: Equatable {
         case all
         case incomplete
@@ -110,7 +110,7 @@ struct UserJungleDetailedView: View {
             .padding(.top, 12)
             .padding(.bottom, 8)
 
-            // Tab bar with standard tabs and flag-based tabs
+
             TabBarView(
                 tabBarItems: $tabBarItems,
                 tabBarViewIndex: $tabBarViewIndex
@@ -187,7 +187,7 @@ struct UserJungleDetailedView: View {
                 updateTabBarItems()
             }
         }
-        // Observe the flag manager for changes
+
         .onChange(of: flagManager.flagChangeCounter) { _, _ in
             if currentUser != nil {
                 updateTabBarItems()
@@ -197,7 +197,7 @@ struct UserJungleDetailedView: View {
             isPresented: $showNewTaskDetail,
             onDismiss: {
                 if currentUser != nil {
-                    updateTabBarItems()  // Update tabs when sheet is dismissed
+                    updateTabBarItems() 
                 }
             }
         ) {
@@ -237,7 +237,7 @@ struct UserJungleDetailedView: View {
             })
     }
 
-    // Update the tab bar items with standard tabs and flag tabs
+
     private func updateTabBarItems() {
         var items = [
             tabBarItem(title: "to-do"),
@@ -256,7 +256,7 @@ struct UserJungleDetailedView: View {
         tabBarItems = items
     }
 
-    // Get the tab type for the current selected index
+
     private func getCurrentTabType() -> TabType {
         guard tabBarViewIndex < tabBarItems.count else { return .all }
 
@@ -269,7 +269,7 @@ struct UserJungleDetailedView: View {
         }
     }
 
-    // Filter tasks based on the selected tab
+
     private func filteredTasks(_ tasks: [taskapeTask]) -> [taskapeTask] {
         let tabType = getCurrentTabType()
 
@@ -277,7 +277,7 @@ struct UserJungleDetailedView: View {
         case .all:
             return tasks
         case .incomplete:
-            // Include incomplete tasks and tasks that are currently being animated out
+
             return tasks.filter {
                 !$0.completion.isCompleted || completingTasks[$0.id] == true
             }
@@ -290,20 +290,20 @@ struct UserJungleDetailedView: View {
         }
     }
 
-    // Handle task completion with animation
+
     private func handleTaskCompletion(task: taskapeTask) {
         if getCurrentTabType() == .incomplete && task.completion.isCompleted {
-            // Mark the task as being animated out
+
             withAnimation {
                 completingTasks[task.id] = true
             }
 
-            // After animation completes, remove task from the animating set
+
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                 withAnimation {
                     completingTasks[task.id] = nil
                 }
-                // Save the task changes to the server
+
                 Task {
                     await syncTaskChanges(task: task)
                 }
@@ -348,7 +348,7 @@ struct UserJungleDetailedView: View {
 
         let userId = UserManager.shared.currentUserId
 
-        // Calculate the next display order value - place new task at the top
+
         let maxOrder = user.tasks.map { $0.displayOrder }.max() ?? 0
         let nextOrder = maxOrder + 1
 
@@ -388,9 +388,9 @@ struct UserJungleDetailedView: View {
         do {
             try modelContext.save()
             if currentUser != nil {
-                updateTabBarItems()  // Update tabs in case flag changed
+                updateTabBarItems() 
 
-                // Update widget data
+
                 let userId = UserManager.shared.currentUserId 
                     updateWidgetWithTasks(userId: userId, modelContext: modelContext)
 
@@ -405,7 +405,7 @@ struct UserJungleDetailedView: View {
     }
 }
 
-// Animated task card component
+
 struct AnimatedTaskCard: View {
     @Bindable var task: taskapeTask
     var isDisappearing: Bool
@@ -420,7 +420,7 @@ struct AnimatedTaskCard: View {
     var body: some View {
         TaskCardWithCheckbox(task: task, labels: $labels)
             .background(
-                // Measure the height of the task card
+
                 GeometryReader { geo in
                     Color.clear.onAppear {
                         taskHeight = geo.size.height
@@ -432,7 +432,7 @@ struct AnimatedTaskCard: View {
                     onCompletion(task)
                 }
             }
-            // Apply animations when task is being removed
+
             .opacity(isDisappearing ? 0 : 1)
             .offset(x: isDisappearing ? 50 : 0)
             .frame(
@@ -445,7 +445,7 @@ struct AnimatedTaskCard: View {
     }
 }
 
-// Task drop delegate for drag-and-drop reordering
+
 struct TaskDropDelegate: DropDelegate {
     let item: taskapeTask
     let items: [taskapeTask]
@@ -457,48 +457,48 @@ struct TaskDropDelegate: DropDelegate {
             return false
         }
 
-        // Exit if it's the same item
+
         if draggedItem.id == item.id {
             return false
         }
 
-        // Get the source and destination indices
+
         let fromIndex = items.firstIndex { $0.id == draggedItem.id } ?? 0
         let toIndex = items.firstIndex { $0.id == item.id } ?? 0
 
-        // Calculate new display orders for all affected tasks
+
         var updatedOrders: [(taskID: String, order: Int)] = []
 
-        // If moving up in the list
+
         if fromIndex > toIndex {
-            // Increment display orders for items between the destination and source
+
             for i in toIndex..<fromIndex {
                 items[i].displayOrder += 1
                 updatedOrders.append((items[i].id, items[i].displayOrder))
             }
 
-            // Set the dragged item's display order
+
             draggedItem.displayOrder = items[toIndex].displayOrder - 1
             updatedOrders.append((draggedItem.id, draggedItem.displayOrder))
         }
-        // If moving down in the list
+
         else if fromIndex < toIndex {
-            // Decrement display orders for items between source and destination
+
             for i in (fromIndex + 1)...toIndex {
                 items[i].displayOrder -= 1
                 updatedOrders.append((items[i].id, items[i].displayOrder))
             }
 
-            // Set the dragged item's display order
+
             draggedItem.displayOrder = items[toIndex].displayOrder + 1
             updatedOrders.append((draggedItem.id, draggedItem.displayOrder))
         }
 
-        // Save changes locally
+
         do {
             try modelContext.save()
 
-            // Update the server with the new task orders
+
             Task {
                 if let userId = items.first?.user_id, !userId.isEmpty {
                     let success = await updateTaskOrder(
@@ -525,7 +525,7 @@ struct TaskDropDelegate: DropDelegate {
             return
         }
 
-        // Visual feedback handled by SwiftUI
+
         withAnimation(.default) {}
     }
 

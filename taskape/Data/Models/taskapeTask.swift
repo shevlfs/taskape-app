@@ -59,20 +59,20 @@ struct PrivacySettings: Codable {
         self.exceptIDs = exceptIDs
     }
 
-    // Make sure we handle empty strings by defaulting to a valid value
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        // Handle the level with a safe default
+
         do {
             let levelString = try container.decode(String.self, forKey: .level)
             if let level = PrivacyLevel(rawValue: levelString) {
                 self.level = level
             } else {
-                self.level = .everyone  // Default if the value can't be decoded properly
+                self.level = .everyone 
             }
         } catch {
-            self.level = .everyone  // Default if there's any decoding error
+            self.level = .everyone 
         }
 
         self.groupID = try container.decodeIfPresent(
@@ -82,7 +82,7 @@ struct PrivacySettings: Codable {
             self.exceptIDs = try container.decode(
                 [String].self, forKey: .exceptIDs)
         } catch {
-            self.exceptIDs = []  // Default empty array if there's an issue
+            self.exceptIDs = [] 
         }
     }
 }
@@ -107,13 +107,13 @@ final class taskapeTask: Identifiable {
     var privacyGroupID: String?
     var privacyExceptIDs: [String] = []
 
-    // Flags and order properties
+
     var flagStatus: Bool = false
     var flagColor: String? = nil
     var flagName: String? = nil
     var displayOrder: Int = 0
 
-    // Proof-related properties
+
     var proofNeeded: Bool? = false
     var proofDescription: String? = nil
     var privacy: PrivacySettings {
@@ -179,8 +179,8 @@ final class taskapeTask: Identifiable {
             self.flagColor = nil
             self.flagName = nil
         } else if self.flagColor == nil {
-            self.flagColor = "#FF6B6B"  // Default flag color
-            self.flagName = "High Priority"  // Default flag name
+            self.flagColor = "#FF6B6B" 
+            self.flagName = "High Priority" 
         }
     }
 
@@ -191,7 +191,7 @@ final class taskapeTask: Identifiable {
     }
 }
 
-// Update convenience initializer
+
 extension taskapeTask {
     convenience init(
         id: String = UUID().uuidString,

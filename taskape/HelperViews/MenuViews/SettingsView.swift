@@ -1,9 +1,9 @@
-//
-//  SettingsView.swift
-//  taskape
-//
-//  Created by shevlfs on 3/5/25.
-//
+
+
+
+
+
+
 
 import SwiftData
 import SwiftUI
@@ -21,7 +21,7 @@ struct SettingsView: View {
                 
                 
                 if let user = currentUser {
-                    // User profile section
+
                     VStack(alignment: .center, spacing: 12) {
                         Text("logged in as")
                             .font(.pathway(16))
@@ -72,12 +72,12 @@ struct SettingsView: View {
     }
 
     func performLogout() {
-        // Clear user data from SwiftData
+
         do {
-            // Clear the UserManager current user
+
             UserManager.shared.setCurrentUser(userId: "")
 
-            // Clear all data from SwiftData
+
             let userDescriptor = FetchDescriptor<taskapeUser>()
             let taskDescriptor = FetchDescriptor<taskapeTask>()
 
@@ -96,12 +96,12 @@ struct SettingsView: View {
 
             print("User data cleared for logout")
 
-            // Use the app state manager to logout
+
             appState.logout()
 
         } catch {
             print("Error clearing user data during logout: \(error)")
-            // Still attempt to logout even if there was an error clearing data
+
             appState.logout()
         }
     }
@@ -113,7 +113,7 @@ struct SettingsView: View {
         let container = try ModelContainer(
             for: taskapeUser.self, taskapeTask.self, configurations: config)
 
-        // Create user directly in the container
+
         let user = taskapeUser(
             id: UUID().uuidString,
             handle: "shevlfs",
@@ -122,7 +122,7 @@ struct SettingsView: View {
             profileColor: "blue"
         )
 
-        // Manually insert the user and set it as the current user
+
         container.mainContext.insert(user)
         try container.mainContext.save()
 

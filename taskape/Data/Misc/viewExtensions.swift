@@ -93,7 +93,7 @@ extension Color {
 
             return String(format: "#%02X%02X%02X", rInt, gInt, bInt)
         #else
-            return "#000000"  // Fallback for unsupported platforms
+            return "#000000" 
         #endif
     }
 }

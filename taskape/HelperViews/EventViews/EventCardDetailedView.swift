@@ -1,9 +1,9 @@
-//
-//  EventCardDetailedView.swift
-//  taskape
-//
-//  Created by shevlfs on 3/30/25.
-//
+
+
+
+
+
+
 
 import CachedAsyncImage
 import Combine
@@ -19,19 +19,19 @@ struct EventCardDetailedView: View {
     @ObservedObject private var kGuardian = KeyboardGuardian(textFieldCount: 1)
     @State private var name = Array<String>.init(repeating: "", count: 3)
 
-    // State variables
+
     @State private var isLoadingComments: Bool = false
     @State private var comments: [EventComment] = []
     @State private var newCommentText: String = ""
     @State private var isLiked: Bool = false
     @State private var likesCount: Int = 0
 
-    // User info
+
     @State private var userName: String = ""
     @State private var userColor: String = "000000"
     @State private var userImage: String = ""
 
-    // For task confirmation
+
     @State private var isConfirming: Bool = false
     @State private var confirmationSuccess: Bool = false
     @State private var showConfirmationAlert: Bool = false
@@ -103,14 +103,14 @@ struct EventCardDetailedView: View {
 
                         Spacer()
 
-                        // Time ago
+
                         Text(timeAgoSinceDate(event.createdAt))
                             .font(.pathway(12))
                             .foregroundColor(.secondary)
                     }
                     .padding(.horizontal)
 
-                    // Related tasks
+
                     if !event.relatedTasks.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("related tasks")
@@ -123,12 +123,12 @@ struct EventCardDetailedView: View {
                         }
                     }
 
-                    // Confirmation UI for requires_confirmation events
+
                     if event.eventType == .requiresConfirmation
                         && !confirmationSuccess
                     {
                         VStack(alignment: .center, spacing: 12) {
-                            // Proof section - Show the proof image and description
+
                             if let task = event.relatedTasks.first {
                                 ProofView(task: task)
                             }
@@ -147,7 +147,7 @@ struct EventCardDetailedView: View {
                         }
                     }
 
-                    // Likes section
+
                     LikesSection(
                         isLiked: $isLiked,
                         likesCount: $likesCount,
@@ -157,7 +157,7 @@ struct EventCardDetailedView: View {
                     )
                     .padding(.horizontal)
 
-                    // Comments section
+
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
                             Text("comments")
@@ -176,7 +176,7 @@ struct EventCardDetailedView: View {
                         }
                         .padding(.horizontal)
 
-                        // Comments list
+
                         if comments.isEmpty && !isLoadingComments {
                             VStack {
                                 Text("no comments yet")
@@ -257,7 +257,7 @@ struct EventCardDetailedView: View {
     }
 
     private func loadEventData() {
-        // Load user data if not available
+
         if event.user == nil {
             Task {
                 if let user = await fetchUser(userId: event.userId) {
@@ -274,7 +274,7 @@ struct EventCardDetailedView: View {
             userImage = event.user!.profileImageURL
         }
 
-        // Set likes count
+
         likesCount = event.likesCount
     }
 
@@ -320,7 +320,7 @@ struct EventCardDetailedView: View {
         Task {
             let commentText = newCommentText
 
-            // Clear the text field immediately for better UX
+
             await MainActor.run {
                 newCommentText = ""
             }
@@ -344,7 +344,7 @@ struct EventCardDetailedView: View {
     private func toggleLike() {
         let wasLiked = isLiked
 
-        // Optimistically update UI
+
         isLiked.toggle()
         likesCount += isLiked ? 1 : -1
 
@@ -360,7 +360,7 @@ struct EventCardDetailedView: View {
             }
 
             if !success {
-                // Revert on failure
+
                 await MainActor.run {
                     isLiked = wasLiked
                     likesCount = event.likesCount
@@ -372,7 +372,7 @@ struct EventCardDetailedView: View {
     private func confirmTask(isConfirmed: Bool) {
         isConfirming = true
 
-        // Assuming the first task in relatedTasks is the one to confirm
+
         guard let task = event.relatedTasks.first else {
             isConfirming = false
             confirmationAlertType = .failure
@@ -437,14 +437,14 @@ struct EventCardDetailedView: View {
     }
 }
 
-// MARK: - Proof View
+
 
 struct ProofView: View {
     var task: taskapeTask
 
     var body: some View {
         VStack(alignment: .leading) {
-            // Proof Description
+
             VStack(alignment: .leading, spacing: 12){
                 if let proofDescription = task.proofDescription,
                    !proofDescription.isEmpty
@@ -460,7 +460,7 @@ struct ProofView: View {
                 }
             }.padding(.top,10)
 
-            // Proof Image
+
             if let proofURL = task.completion.proofURL, !proofURL.isEmpty {
                 Text("submitted proof:")
                     .font(.pathwayBold(16))
@@ -507,7 +507,7 @@ struct ProofView: View {
     }
 }
 
-// MARK: - Confirmation Buttons
+
 
 struct ConfirmationButtons: View {
     @Binding var isConfirming: Bool
@@ -571,14 +571,14 @@ struct ConfirmationButtons: View {
     }
 }
 
-// MARK: - Supporting Views (Unchanged)
+
 
 struct RelatedTaskRow: View {
     var task: taskapeTask
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            // Task status indicator
+
             Circle()
                 .fill(task.completion.isCompleted ? Color.green : Color.gray)
                 .frame(width: 10, height: 10)
@@ -642,7 +642,7 @@ struct CommentRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            // User avatar
+
             CachedAsyncImage(url: URL(string: userImage)) { phase in
                 switch phase {
                 case .success(let image):
@@ -706,10 +706,10 @@ struct CommentRow: View {
 }
 
 #Preview {
-    // Create a sample event with a task requiring confirmation
+
     let event = createPreviewEvent()
 
-    // Create a SwiftData container for the preview
+
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: taskapeEvent.self, taskapeTask.self)
 
@@ -719,7 +719,7 @@ struct CommentRow: View {
 }
 
 func createPreviewEvent() -> taskapeEvent {
-    // Create the event for a task requiring confirmation
+
     let event = taskapeEvent(
         id: "event1",
         userId: "user1",
@@ -734,7 +734,7 @@ func createPreviewEvent() -> taskapeEvent {
         likedByUserIds: ["current_user_id"]
     )
 
-    // Create a sample task that requires confirmation
+
     let task = taskapeTask(
         id: "task1",
         user_id: "user1",
@@ -744,29 +744,29 @@ func createPreviewEvent() -> taskapeEvent {
         privacy: PrivacySettings(level: .everyone)
     )
 
-    // Set confirmation-related properties
+
     task.proofNeeded = true
     task.proofDescription = "please provide a screenshot of the completed documentation"
     task.completion.isCompleted = true
     task.completion.requiresConfirmation = true
     task.completion.proofURL = "https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg"
 
-    // Create a sample user
+
     let user = taskapeUser(
         id: "user1",
         handle: "demouser",
         bio: "this is a demo user",
         profileImage: "https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg",
-        profileColor: "FF9500" // Orange color matching the app style
+        profileColor: "FF9500"
     )
 
-    // Set the current user ID to match a liked user ID for testing like functionality
+
     UserManager.shared.currentUserId = "current_user_id"
 
-    // Associate the user with the event
+
     event.user = user
 
-    // Associate the task with the event
+
     event.relatedTasks = [task]
 
     return event
@@ -842,8 +842,8 @@ final class KeyboardGuardian: ObservableObject {
     public var rects: [CGRect]
     public var keyboardRect: CGRect = CGRect()
 
-    // keyboardWillShow notification may be posted repeatedly,
-    // this flag makes sure we only act once per keyboard appearance
+
+
     public var keyboardIsHidden = true
 
     @Published var slide: CGFloat = 0

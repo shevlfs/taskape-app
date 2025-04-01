@@ -1,10 +1,10 @@
 import SwiftData
-//
-//  UserJungleView.swift
-//  taskape
-//
-//  Created by shevlfs on 1/8/25.
-//
+
+
+
+
+
+
 import SwiftUI
 
 struct UserJungleCard: View {
@@ -90,5 +90,5 @@ struct TaskItem: View {
 }
 
 #Preview {
-    // UserJungleCard()
+
 }

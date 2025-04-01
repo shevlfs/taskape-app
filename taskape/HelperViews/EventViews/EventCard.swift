@@ -33,8 +33,8 @@ struct EventCard: View {
 
     var body: some View {
         ZStack {
-            // Background
-            // Content
+
+
             VStack(spacing: 0) {
                 switch eventSize {
                 case .small:
@@ -49,7 +49,7 @@ struct EventCard: View {
         .onAppear {
             isLiked = event.isLikedByCurrentUser()
 
-            // Load user data if not available
+
             if event.user == nil {
                 Task {
                     if let user = await fetchUser(userId: event.userId) {
@@ -72,7 +72,7 @@ struct EventCard: View {
                 friendColor: Color(hex: userColor), size: .small)
 
             VStack(alignment: .leading, spacing: 0) {
-                // Profile image area
+
                 HStack {
                     Spacer()
                     CachedAsyncImage(url: URL(string: userImage)) { phase in
@@ -101,7 +101,7 @@ struct EventCard: View {
                     .padding(.top, 8)
                 }
 
-                // Username text with fixed position at bottom
+
                 Text("\(userName)") .minimumScaleFactor(0.01)
                     .font(.pathwayBlack(20))
                     .foregroundColor(getTextColor())
@@ -235,17 +235,17 @@ struct EventCard: View {
         }
     }
 
-    //    else {
-    //        VStack{
-    //            Spacer()
-    //            Text(getEventTypeText())
-    //                .foregroundColor(getTextColor())
-    //                .font(.pathwaySemiBold(13))
-    //                .lineLimit(2)
-    //                .multilineTextAlignment(.trailing)
-    //            Spacer()
-    //        }.padding()
-    //    }
+
+
+
+
+
+
+
+
+
+
+
 
     private var largeEventView: some View {
         ZStack {
@@ -362,9 +362,9 @@ struct EventCard: View {
     }
 }
 
-// Preview for testing
+
 struct EventCardPreview: View {
-    // Sample users
+
     let dmitryUser = taskapeUser(
         id: "user1",
         handle: "dmitryddddd",
@@ -383,7 +383,7 @@ struct EventCardPreview: View {
             "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
         profileColor: "")
 
-    // Sample tasks
+
     let designTask = taskapeTask(
         id: "task1",
         name: "check out this design prototype!",
@@ -416,7 +416,7 @@ struct EventCardPreview: View {
         privacy: "everyone"
     )
 
-    // Sample events
+
     var dmitryEvent: taskapeEvent {
         let event = taskapeEvent(
             id: "event1",

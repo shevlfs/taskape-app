@@ -1,9 +1,9 @@
-//
-//  MainRootView.swift
-//  taskape
-//
-//  Created by shevlfs on 2/5/25.
-//
+
+
+
+
+
+
 
 import CachedAsyncImage
 import SwiftData
@@ -74,7 +74,7 @@ struct MainRootView: View {
                 if !userId.isEmpty {
                     print("Loading profile for user ID: \(userId)")
 
-                    // Try to fetch the user from the database first
+
                     let existingUser = UserManager.shared.getCurrentUser(
                         context: modelContext)
 
@@ -90,7 +90,7 @@ struct MainRootView: View {
 
                     let user = await fetchUser(userId: userId)
 
-                    // Fetch tasks for the user
+
                     let tasks = await fetchTasks(userId: userId)
 
                     await MainActor.run {
@@ -105,7 +105,7 @@ struct MainRootView: View {
                                     modelContext: modelContext
                                 )
 
-                                // Update widget data
+
                                 updateWidgetWithTasks(
                                     userId: userId, modelContext: modelContext)
                             }

@@ -1,9 +1,9 @@
-//
-//  ImagePickerModuleDemo.swift
-//  ImagePickerModule
-//
-//  Created by Cem Yilmaz on 20.08.21.
-//
+
+
+
+
+
+
 
 import SwiftUI
 
@@ -18,22 +18,22 @@ public struct ImagePickerDemo: View {
         List {
 
             Section(header: Text("Regular Image Picker")) {
-                // ImagePicker(sourceType: .camera, onImagePicked: { image in })
-                // ImagePicker(sourceType: .photoLibrary, onImagePicked: { image in })
-                // ImagePicker(sourceType: .savedPhotosAlbum, onImagePicked: { image in })
+
+
+
             }
 
-//            if let selectedImage = self.selectedImage {
-//
-//                Section {
-//
-//                    Image(uiImage: selectedImage)
-//                        .resizable()
-//                        .scaledToFit()
-//
-//                }
-//
-//            }
+
+
+
+
+
+
+
+
+
+
+
 
             Section(header: Text("Image Picker Button")) {
                 ImagePickerButton(selectedImage: self.$selectedImage) {
@@ -86,11 +86,11 @@ public struct ImagePickerDemo: View {
                     }
                 }.padding(.vertical)
 
-                // ImagesPickerButton(
-                //     selectedImages: <#T##Binding<[UIImage]>#>,
-                //     noCameraAccessStrategy: <#T##NoCameraAccessStrategy#>,
-                //     label: <#T##() -> _#>
-                // )
+
+
+
+
+
             }
 
         }.listStyle(GroupedListStyle())

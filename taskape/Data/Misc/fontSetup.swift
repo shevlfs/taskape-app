@@ -1,9 +1,9 @@
-//
-//  fontSetup.swift
-//  taskape
-//
-//  Created by shevlfs on 1/6/25.
-//
+
+
+
+
+
+
 
 import SwiftUI
 
@@ -28,7 +28,7 @@ extension Font {
    static let pathwaySemiBoldItalic = Font.custom("PathwayExtreme-SemiBoldItalic", size: UIFont.systemFontSize)
    static let pathwayThinItalic = Font.custom("PathwayExtreme-ThinItalic", size: UIFont.systemFontSize)
 
-   // Condensed styles
+
    static let pathwayBlackCondensed = Font.custom("PathwayExtreme-BlackCondensed", size: UIFont.systemFontSize)
    static let pathwayBoldCondensed = Font.custom("PathwayExtreme-BoldCondensed", size: UIFont.systemFontSize)
    static let pathwayExtraBoldCondensed = Font.custom("PathwayExtreme-ExtBdCond", size: UIFont.systemFontSize)

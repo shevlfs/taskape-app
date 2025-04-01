@@ -12,21 +12,21 @@ struct FriendSearchView: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    // Debounce timer for search
+
     @State private var searchTask: Task<Void, Never>? = nil
 
-    // ObservedObject to manage friend operations
+
     @StateObject private var friendManager = FriendManager.shared
 
-    // Current user ID for comparison
+
     private let currentUserId = UserManager.shared.currentUserId
 
-    // This will track which users have pending friend request operations
+
     @State private var pendingOperations: Set<String> = []
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
+
             HStack {
                 Button(action: {
                     dismiss()
@@ -46,20 +46,20 @@ struct FriendSearchView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 20)
 
-            // Search field
+
             SearchField(text: $searchQuery)
                 .padding(.horizontal)
                 .onChange(of: searchQuery) { oldValue, newValue in
-                    // Cancel any existing search
+
                     searchTask?.cancel()
 
-                    // Create a new search after a delay
+
                     searchTask = Task {
                         if newValue.isEmpty {
-                            // Fetch all users when query is empty
+
                             await fetchAllUsers()
                         } else if newValue.count >= 3 {
-                            // Only search if query is at least 3 characters
+
                             await performSearch()
                         }
                     }
@@ -67,7 +67,7 @@ struct FriendSearchView: View {
                 .padding(.bottom, 10)
 
             ScrollView {
-                // Incoming friend requests section
+
                 if !friendManager.incomingRequests.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("friend requests")
@@ -85,7 +85,7 @@ struct FriendSearchView: View {
                     }
                 }
 
-                // Status message (error or empty state)
+
                 if let error = errorMessage {
                     Text(error)
                         .font(.pathway(16))
@@ -98,13 +98,13 @@ struct FriendSearchView: View {
                         .padding()
                 }
 
-                // Loading indicator
+
                 if isSearching {
                     ProgressView()
                         .padding()
                 }
 
-                // All users section
+
                 if !searchResults.isEmpty {
                     VStack(alignment: .leading) {
                         Text(searchQuery.isEmpty ? "all users" : "search results")
@@ -136,7 +136,7 @@ struct FriendSearchView: View {
             .padding(.top, 10)
         }
         .onAppear {
-            // Load friend data and fetch all users when view appears
+
             Task {
                 await friendManager.refreshFriendData()
                 await fetchAllUsers()
@@ -144,7 +144,7 @@ struct FriendSearchView: View {
         }.background(Color.clear)
     }
 
-    // Function to fetch all users (empty search query)
+
     private func fetchAllUsers() async {
         await MainActor.run {
             isSearching = true
@@ -171,7 +171,7 @@ struct FriendSearchView: View {
         }
     }
 
-    // Function to search for users with a specific query
+
     private func performSearch() async {
         guard !searchQuery.isEmpty else {
             await fetchAllUsers()
@@ -203,7 +203,7 @@ struct FriendSearchView: View {
         }
     }
 
-    // Function to send a friend request
+
     private func sendFriendRequest(to user: UserSearchResult) {
         pendingOperations.insert(user.id)
 
@@ -222,7 +222,7 @@ struct FriendSearchView: View {
     }
 }
 
-// Friend Request Row Component
+
 struct FriendRequestRow: View {
     let request: FriendRequest
     @State private var isAccepting: Bool = false
@@ -231,7 +231,7 @@ struct FriendRequestRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            // We'll fetch the user details from the sender handle
+
             VStack(alignment: .leading, spacing: 4) {
                 Text("@\(request.sender_handle)")
                     .font(.pathwayBlack(16))
@@ -243,7 +243,7 @@ struct FriendRequestRow: View {
 
             Spacer()
 
-            // Accept button
+
             Button(action: {
                 acceptFriendRequest()
             }) {
@@ -262,7 +262,7 @@ struct FriendRequestRow: View {
             }
             .disabled(isAccepting || isRejecting)
 
-            // Reject button
+
             Button(action: {
                 rejectFriendRequest()
             }) {
@@ -288,7 +288,7 @@ struct FriendRequestRow: View {
         )
     }
 
-    // Function to accept friend request
+
     private func acceptFriendRequest() {
         isAccepting = true
 
@@ -299,7 +299,7 @@ struct FriendRequestRow: View {
                 isAccepting = false
 
                 if success {
-                    // Request is now accepted and will disappear from the list
+
                     Task {
                         await friendManager.refreshFriendData()
                     }
@@ -308,7 +308,7 @@ struct FriendRequestRow: View {
         }
     }
 
-    // Function to reject friend request
+
     private func rejectFriendRequest() {
         isRejecting = true
 
@@ -319,7 +319,7 @@ struct FriendRequestRow: View {
                 isRejecting = false
 
                 if success {
-                    // Request is now rejected and will disappear from the list
+
                     Task {
                         await friendManager.refreshFriendData()
                     }
@@ -329,14 +329,14 @@ struct FriendRequestRow: View {
     }
 }
 
-// Custom search field component
+
 struct SearchField: View {
     @Binding var text: String
     @FocusState private var isFocused: Bool
 
     var body: some View {
         ZStack {
-            // Background shape
+
             RoundedRectangle(cornerRadius: 30)
                 .fill(Color(UIColor.secondarySystemBackground))
                 .overlay(
@@ -344,18 +344,18 @@ struct SearchField: View {
                         .stroke(Color.gray.opacity(0.2), lineWidth: 1)
                 )
 
-            // Inner content with proper layout
+
             HStack {
-                // Left icon
+
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.gray)
                     .padding(.leading, 16)
                     .frame(width: 40, alignment: .leading)
 
-                // Spacer to push text to center
+
                 Spacer()
 
-                // Centered text field
+
                 TextField("", text: $text)
                     .placeholder(when: text.isEmpty && !isFocused) {
                         Text("friend's @")
@@ -371,10 +371,10 @@ struct SearchField: View {
                     .submitLabel(.search)
                     .frame(maxWidth: .infinity)
 
-                // Trailing spacer
+
                 Spacer()
 
-                // Clear button (only when text is not empty)
+
                 if !text.isEmpty {
                     Button(action: {
                         text = ""
@@ -385,7 +385,7 @@ struct SearchField: View {
                     .padding(.trailing, 16)
                     .frame(width: 40, alignment: .trailing)
                 } else {
-                    // Empty space to maintain balance when no clear button
+
                     Color.clear
                         .frame(width: 40)
                 }
@@ -410,7 +410,7 @@ extension View {
     }
 }
 
-// User search result row component
+
 struct UserSearchResultRow: View {
     @Environment(\.modelContext) private var modelContext
 
@@ -427,24 +427,24 @@ struct UserSearchResultRow: View {
     @State private var userProfile: taskapeUser? = nil
     @State private var loadingError: String? = nil
 
-    // Add state for tracking accept operations
+
     @State private var isAccepting: Bool = false
 
-    // Add friend manager to handle accept operations
+
     @ObservedObject private var friendManager = FriendManager.shared
 
     var body: some View {
         HStack(spacing: 12) {
-            // Profile image
+
             ProfileImageView(imageUrl: user.profile_picture, color: user.color)
                 .frame(width: 50, height: 50)
 
-            // User info
+
             VStack(alignment: .leading, spacing: 4) {
                 Text("@\(user.handle)")
                     .font(.pathwayBlack(16))
 
-                // Status text
+
                 if isCurrentUser {
                     Text("that's you!")
                         .font(.pathwayItalic(14))
@@ -532,7 +532,7 @@ struct UserSearchResultRow: View {
         }
     }
 
-    // Function to load the user profile
+
     private func loadUserProfile() {
         guard !isLoadingUserProfile else { return }
 
@@ -542,12 +542,12 @@ struct UserSearchResultRow: View {
         print("Loading profile for user: \(user.handle) (ID: \(user.id))")
 
         Task {
-            // First fetch the user profile
+
             if let loadedUser = await fetchUser(userId: user.id) {
                 print("Successfully loaded profile for \(loadedUser.handle)")
 
-                // Then fetch tasks with the requester_id parameter
-                // This will filter tasks based on privacy settings
+
+
                 let userTasks = await fetchTasks(userId: user.id)
 
                 if let tasks = userTasks {
@@ -556,17 +556,17 @@ struct UserSearchResultRow: View {
                     )
 
                     await MainActor.run {
-                        // Create a temporary context to avoid affecting the main one
+
                         let tempContext = ModelContext(
                             ModelContainer.shared.mainContext.container)
 
-                        // Assign the tasks to the user
+
                         loadedUser.tasks = tasks
 
-                        // Insert the user into the temp context
+
                         tempContext.insert(loadedUser)
 
-                        // Set the user profile for the sheet
+
                         userProfile = loadedUser
                         isLoadingUserProfile = false
                         showDetail = true
@@ -577,11 +577,11 @@ struct UserSearchResultRow: View {
                     )
 
                     await MainActor.run {
-                        // Still show the profile even if no tasks are available
+
                         let tempContext = ModelContext(
                             ModelContainer.shared.mainContext.container)
 
-                        // Initialize with empty tasks array
+
                         loadedUser.tasks = []
                         tempContext.insert(loadedUser)
 
@@ -601,21 +601,21 @@ struct UserSearchResultRow: View {
         }
     }
 
-    // Function to accept a friend request
+
     private func acceptFriendRequest() {
-        // Set accepting state to show loader
+
         isAccepting = true
 
         Task {
-            // Find the request ID from incoming requests
+
             if let requestId = findFriendRequestId() {
-                // Use the friend manager to accept the request
+
                 let success = await friendManager.acceptFriendRequest(requestId)
 
                 await MainActor.run {
                     isAccepting = false
 
-                    // Refresh friend data after acceptance
+
                     if success {
                         Task {
                             await friendManager.refreshFriendData()
@@ -623,7 +623,7 @@ struct UserSearchResultRow: View {
                     }
                 }
             } else {
-                // If request ID not found, end accepting state
+
                 await MainActor.run {
                     isAccepting = false
                 }
@@ -631,7 +631,7 @@ struct UserSearchResultRow: View {
         }
     }
 
-    // Helper function to find the request ID for this user
+
     private func findFriendRequestId() -> String? {
         return friendManager.incomingRequests.first(where: {
             $0.sender_id == user.id
@@ -639,7 +639,7 @@ struct UserSearchResultRow: View {
     }
 }
 
-// Profile image component
+
 struct ProfileImageView: View {
     let imageUrl: String
     let color: String

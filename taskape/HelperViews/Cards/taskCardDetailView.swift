@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-// COMPONENT 1: Header with close button
+
 struct DetailViewHeader: View {
     @Binding var detailIsPresent: Bool
 
@@ -15,7 +15,7 @@ struct DetailViewHeader: View {
     }
 }
 
-// COMPONENT 2: Task name input field
+
 struct TaskNameField: View {
     @Binding var name: String
     @Environment(\.colorScheme) var colorScheme
@@ -71,7 +71,7 @@ struct TaskNameField: View {
     }
 }
 
-// COMPONENT 3: Task description field
+
 struct TaskDescriptionField: View {
     @Binding var description: String
     @FocusState var isFocused: Bool
@@ -95,7 +95,7 @@ struct TaskDescriptionField: View {
     }
 }
 
-// COMPONENT 4: Deadline date picker
+
 struct TaskDeadlinePicker: View {
     @Binding var deadline: Date?
     @Binding var accentcolor: Color
@@ -120,7 +120,7 @@ struct TaskDeadlinePicker: View {
     }
 }
 
-// COMPONENT 5: Priority selector
+
 struct TaskPrioritySelector: View {
     @Binding var flagStatus: Bool
     @Binding var flagColor: String?
@@ -129,7 +129,7 @@ struct TaskPrioritySelector: View {
     @State private var showPriorityPicker: Bool = false
     @Binding var accentcolor: Color
 
-    // Predefined flag options
+
     @State var priorityOptions: [TaskFlag] = [
         TaskFlag(flagname: "important", flagcolor: "#FF6B6B"),
         TaskFlag(flagname: "work", flagcolor: "#FFD166"),
@@ -201,7 +201,7 @@ extension Sequence where Element: Hashable {
     }
 }
 
-// COMPONENT 5.1: Priority picker content
+
 struct PriorityPickerContent: View {
     @Binding var flagStatus: Bool
     @Binding var flagColor: String?
@@ -244,7 +244,7 @@ struct PriorityPickerContent: View {
 
                 Spacer()
 
-                // Label name field
+
                 Text("label name")
                     .font(.pathway(17))
                     .padding(.horizontal)
@@ -317,9 +317,9 @@ struct PriorityPickerContent: View {
                     .padding(.horizontal)
             }
         } else {
-            // LABEL SELECTION VIEW
+
             VStack(spacing: 0) {
-                // Header
+
                 Text("select label")
                     .font(.pathway(17))
                     .fontWeight(.medium)
@@ -329,7 +329,7 @@ struct PriorityPickerContent: View {
                 Divider()
                     .padding(.bottom, 8)
 
-                // Standard label options
+
                 ScrollView {
                     VStack(spacing: 0) {
                         ForEach(priorityOptions, id: \.flagName) { option in
@@ -404,7 +404,7 @@ struct PriorityPickerContent: View {
                         Divider()
                             .padding(.vertical, 8)
 
-                        // Add custom label button
+
                         Button(action: {
                             withAnimation {
                                 isAddingCustomLabel = true
@@ -436,7 +436,7 @@ struct PriorityPickerContent: View {
     }
 }
 
-// COMPONENT 6: Privacy selector
+
 struct TaskPrivacySelector: View {
     @Binding var privacyLevel: PrivacySettings.PrivacyLevel
     @Binding var accentcolor: Color
@@ -466,7 +466,7 @@ struct TaskPrivacySelector: View {
     }
 }
 
-// COMPONENT 7: Except People Selector
+
 struct ExceptPeopleSelector: View {
     @Bindable var task: taskapeTask
     @ObservedObject private var friendManager = FriendManager.shared
@@ -477,7 +477,7 @@ struct ExceptPeopleSelector: View {
     var body: some View {
         VStack(spacing: 8) {
             Button(action: {
-                // Load friends data if needed and show selection list
+
                 if friendManager.friends.isEmpty {
                     isLoading = true
                     Task {
@@ -523,7 +523,7 @@ struct ExceptPeopleSelector: View {
             .buttonStyle(PlainButtonStyle())
             .disabled(isLoading)
 
-            // Friend tags display when friends are excluded
+
             if !task.privacy.exceptIDs.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -549,7 +549,7 @@ struct ExceptPeopleSelector: View {
     }
 }
 
-// Excluded friend tag component
+
 struct ExcludedFriendTag: View {
     let friendId: String
     @Bindable var task: taskapeTask
@@ -568,7 +568,7 @@ struct ExcludedFriendTag: View {
 
             Button(action: {
                 withAnimation {
-                    // Remove this friend from the excluded list
+
                     task.privacy.exceptIDs.removeAll(where: { $0 == friendId })
                 }
             }) {
@@ -587,7 +587,7 @@ struct ExcludedFriendTag: View {
     }
 }
 
-// Friend selection sheet
+
 struct FriendSelectionSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable var task: taskapeTask
@@ -608,7 +608,7 @@ struct FriendSelectionSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
+
             HStack {
                 Text("exclude friends")
                     .font(.pathwayBold(18))
@@ -623,7 +623,7 @@ struct FriendSelectionSheet: View {
             }
             .padding()
 
-            // Search field
+
             HStack {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.gray)
@@ -677,7 +677,7 @@ struct FriendSelectionSheet: View {
                     Spacer()
                 }
             } else {
-                // Friends list
+
                 List {
                     ForEach(filteredFriends, id: \.id) { friend in
                         FriendSelectRow(
@@ -686,14 +686,14 @@ struct FriendSelectionSheet: View {
                                 friend.id),
                             onToggle: { selected in
                                 if selected {
-                                    // Add to excluded IDs
+
                                     if !task.privacy.exceptIDs.contains(
                                         friend.id)
                                     {
                                         task.privacy.exceptIDs.append(friend.id)
                                     }
                                 } else {
-                                    // Remove from excluded IDs
+
                                     task.privacy.exceptIDs.removeAll(where: {
                                         $0 == friend.id
                                     })
@@ -706,7 +706,7 @@ struct FriendSelectionSheet: View {
             }
         }
         .onAppear {
-            // Refresh friend data when the sheet appears
+
             if friendManager.friends.isEmpty {
                 Task {
                     await friendManager.refreshFriendData()
@@ -716,7 +716,7 @@ struct FriendSelectionSheet: View {
     }
 }
 
-// Friend selection row component
+
 struct FriendSelectRow: View {
     let friend: Friend
     let isSelected: Bool
@@ -727,7 +727,7 @@ struct FriendSelectRow: View {
             onToggle(!isSelected)
         }) {
             HStack {
-                // Profile image or placeholder
+
                 if !friend.profile_picture.isEmpty {
                     AsyncImage(url: URL(string: friend.profile_picture)) {
                         phase in
@@ -773,7 +773,7 @@ struct FriendSelectRow: View {
 
                 Spacer()
 
-                // Checkmark or empty circle
+
                 ZStack {
                     Circle()
                         .stroke(
@@ -833,7 +833,7 @@ struct ProofSelectRow: View {
     }
 }
 
-// MAIN VIEW: Refactored into components
+
 struct taskCardDetailView: View {
     @Binding var detailIsPresent: Bool
     @Bindable var task: taskapeTask
@@ -845,35 +845,35 @@ struct taskCardDetailView: View {
     var body: some View {
         Group {
             VStack {
-                // Component 1: Header
-                //DetailViewHeader(detailIsPresent: $detailIsPresent)
 
-                // Component 2: Task name field
+
+
+
                 TaskNameField(
                     name: $task.name, flagColor: $task.flagColor,
                     flagName: $task.flagName)
 
-                // Component 3: Task description field
+
                 TaskDescriptionField(
                     description: $task.taskDescription, isFocused: _isFocused, accentcolor: $taskColor)
 
-                // Component 4: Deadline picker
+
                 TaskDeadlinePicker(deadline: $task.deadline, accentcolor: $taskColor)
 
-                // Component 5: Priority selector
+
                 TaskPrioritySelector(
                     flagStatus: $task.flagStatus,
                     flagColor: $task.flagColor,
                     flagName: $task.flagName, labels: $labels, accentcolor: $taskColor
                 )
 
-                // Component 6: Privacy selector
+
                 TaskPrivacySelector(
                     privacyLevel: $task.privacy.level,
                     accentcolor: $taskColor
                 )
 
-                // Conditional content based on privacy level
+
                 switch task.privacy.level {
                 case .everyone, .noone, .friendsOnly:
                     EmptyView()
@@ -916,19 +916,19 @@ struct taskCardDetailView: View {
     }
 }
 
-// Preview
 
 
-//#Preview {
-//    @State var task = taskapeTask(
-//        name: "Complete project",
-//        taskDescription: "Finish all the views and connect them",
-//        author: "shevlfs",
-//        privacy: "private",
-//        flagStatus: true,
-//        flagColor: "#FF6B6B",
-//        flagName: "High"
-//    )
-//
-//    return taskCardDetailView(detailIsPresent: .constant(true), task: task, taskColor: .constant("#FF6B6B"))
-//}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

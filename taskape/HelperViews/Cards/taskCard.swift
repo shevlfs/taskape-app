@@ -13,11 +13,11 @@ struct taskCard: View {
     @State private var shouldShow: Bool = true
     @State var labels: [TaskFlag] = []
 
-    // Environment values
+
     @Environment(\.modelContext) var modelContext
     @FocusState var isFocused: Bool
 
-    // Callback to notify parent after animation completes
+
     var onCompletionAnimationFinished: ((taskapeTask) -> Void)?
 
     @State var newCompletionStatus: Bool = false
@@ -48,19 +48,19 @@ struct taskCard: View {
                             isAnimating = true
                         }
 
-                        // Reset animation state after a short delay
+
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             withAnimation {
                                 isAnimating = false
                             }
 
-                            // If the task was completed, start disappear animation
+
                             if newValue == true && oldValue == false {
                                 withAnimation(.easeInOut(duration: 0.4)) {
                                     disappearAnimation = true
                                 }
 
-                                // After animation completes, notify parent and save
+
                                 DispatchQueue.main.asyncAfter(
                                     deadline: .now() + 0.5
                                 ) {
@@ -68,7 +68,7 @@ struct taskCard: View {
                                         shouldShow = false
                                     }
 
-                                    // Notify parent view if callback exists
+
                                     onCompletionAnimationFinished?(task)
                                 }
                             }
@@ -153,12 +153,12 @@ struct taskCard: View {
                 }
                 .onAppear {
                     selectedPrivacyLevel = task.privacy.level
-                    // Trigger animation if task is already completed
+
                     if newCompletionStatus && !isAnimating {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             isAnimating = true
                         }
-                        // Reset after a delay
+
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             withAnimation {
                                 isAnimating = false
@@ -198,9 +198,9 @@ struct taskCard: View {
     }
 }
 
-// Use this in UserJungleDetailedView
+
 extension taskCard {
-    // Convenience initializer for the UserJungleDetailedView
+
     init(
         task: taskapeTask,
         onCompletionAnimationFinished: ((taskapeTask) -> Void)? = nil
@@ -212,7 +212,7 @@ extension taskCard {
     }
 }
 
-// Fixed CompletedTaskModifier to properly apply greying out
+
 struct CompletedTaskModifier: ViewModifier {
     let isCompleted: Bool
     let isAnimating: Bool
@@ -262,13 +262,13 @@ extension View {
 }
 
 #Preview {
-    // Create a proper model container for preview
+
     do {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(
             for: taskapeTask.self, configurations: config)
 
-        // Create sample tasks in the container
+
         let designTask = taskapeTask(
             name: "Design new UI",
             taskDescription: "Create mockups in Figma",
@@ -300,13 +300,13 @@ extension View {
             privacy: PrivacySettings(level: .noone)
         )
 
-        // Insert the tasks into the container
+
         container.mainContext.insert(designTask)
         container.mainContext.insert(completedTask)
         container.mainContext.insert(flaggedTask)
         container.mainContext.insert(emptyTask)
 
-        // Return the preview with the sample tasks
+
         return VStack(spacing: 20) {
             ScrollView {
                 VStack(spacing: 10) {

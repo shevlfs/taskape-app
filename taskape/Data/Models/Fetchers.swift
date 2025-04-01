@@ -36,11 +36,11 @@ func fetchUser(userId: String) async -> taskapeUser? {
                 )
                 print("user handle:", user.handle)
 
-                // Store friend data
+
                 if let friends = response.friends, !friends.isEmpty {
-                    // You might want to create a method to store friends in your data model
-                    // For now, we'll leave this commented as we need to update the taskapeUser model
-                    // storeFriends(user: user, friends: friends)
+
+
+
                 }
 
                 return user
@@ -57,18 +57,18 @@ func fetchUser(userId: String) async -> taskapeUser? {
     }
 }
 
-// Insert function - handles the SwiftData operations only
+
 func insertUser(user: taskapeUser, context: ModelContext) {
-    let userID = user.id  // Capture the user id in a local constant
+    let userID = user.id 
     print("Inserting user with ID: \(userID), handle: \(user.handle)")
 
-    // First, check if there's already a user with this ID
+
     let descriptor = FetchDescriptor<taskapeUser>(
         predicate: #Predicate<taskapeUser> { $0.id == userID }
     )
 
     do {
-        // We'll make sure this user is the only one
+
         let allUsersDescriptor = FetchDescriptor<taskapeUser>()
         let allUsers = try context.fetch(allUsersDescriptor)
 
@@ -77,7 +77,7 @@ func insertUser(user: taskapeUser, context: ModelContext) {
                 "Found \(allUsers.count) existing users - will ensure only the current user exists"
             )
 
-            // Delete all users except the one we're adding (if it exists)
+
             for existingUser in allUsers {
                 if existingUser.id != userID {
                     context.delete(existingUser)
@@ -85,7 +85,7 @@ func insertUser(user: taskapeUser, context: ModelContext) {
             }
         }
 
-        // Now look specifically for our user
+
         let existingUsers = try context.fetch(descriptor)
 
         if existingUsers.isEmpty {
@@ -94,12 +94,12 @@ func insertUser(user: taskapeUser, context: ModelContext) {
         } else {
             print("User with ID: \(userID) already exists, updating properties")
             let existingUser = existingUsers.first!
-            // Update the existing user's properties
+
             existingUser.handle = user.handle
             existingUser.bio = user.bio
             existingUser.profileImageURL = user.profileImageURL
             existingUser.profileColor = user.profileColor
-            // Don't modify the tasks array to preserve existing relationships
+
         }
 
         try context.save()
@@ -109,20 +109,20 @@ func insertUser(user: taskapeUser, context: ModelContext) {
     }
 }
 
-// Fetch function - performs the network request for tasks
+
 func fetchTasks(userId: String) async -> [taskapeTask]? {
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
         print("No auth token found")
         return nil
     }
 
-    // Get the current user ID for the requester_id
+
     let requesterId = UserManager.shared.currentUserId
 
     print("Fetching tasks for user ID: \(userId), requester ID: \(requesterId)")
 
     do {
-        // Include the requester_id as a query parameter
+
         let url =
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)/tasks?requester_id=\(requesterId)"
 

@@ -1,9 +1,9 @@
-//
-//  serverPostRequests.swift
-//  taskape
-//
-//  Created by shevlfs on 2/23/25.
-//
+
+
+
+
+
+
 
 import Alamofire
 import Foundation
@@ -28,7 +28,7 @@ func submitTasksBatch(tasks: [taskapeTask]) async
             deadlineString = nil
         }
 
-        // Convert the privacy level enum to string
+
         let privacyLevelString: String
         switch task.privacy.level {
         case .everyone:
@@ -150,7 +150,7 @@ func updateTask(task: taskapeTask) async -> Bool {
         deadlineString = nil
     }
 
-    // Convert the privacy level enum to string
+
     let privacyLevelString: String
 
     switch task.privacy.level {
@@ -219,11 +219,11 @@ func syncTaskChanges(task: taskapeTask) async {
     if success {
         print("Task synced successfully with server")
 
-        // Sync with widget after server update
+
         task.syncWithWidget()
         TaskNotifier.notifyTasksUpdated()
 
-        // Post notification for widget update
+
         DispatchQueue.main.async {
             TaskNotifier.notifyTasksUpdated()
         }
@@ -233,39 +233,39 @@ func syncTaskChanges(task: taskapeTask) async {
 }
 
 func updateWidgetWithTasks(userId: String, modelContext: ModelContext) {
-    //    // Get the current user's tasks
-    //    let taskDescriptor = FetchDescriptor<taskapeTask>(
-    //        predicate: #Predicate<taskapeTask> { task in
-    //            task.user_id == userId && !task.completion.isCompleted
-    //        }
-    //    )
-    //
-    //    do {
-    //        // Fetch incomplete tasks for the widget
-    //        let tasks = try modelContext.fetch(taskDescriptor)
-    //        print("Updating widget with \(tasks.count) tasks")
-    //
-    //        // Sort by display order
-    //        let sortedTasks = tasks.sorted { $0.displayOrder > $1.displayOrder }
-    //
-    //        // Update widget data
-    //        WidgetDataManager.shared.saveTasks(sortedTasks)
-    //    } catch {
-    //        print("Error fetching tasks for widget: \(error)")
-    //    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 func syncUserTasks(
     userId: String, remoteTasks: [taskapeTask], modelContext: ModelContext
 ) {
-    // First, fetch the user to properly associate tasks
+
     let userDescriptor = FetchDescriptor<taskapeUser>(
         predicate: #Predicate<taskapeUser> { user in
             user.id == userId
         }
     )
 
-    // Fetch all existing tasks for the user
+
     let taskDescriptor = FetchDescriptor<taskapeTask>(
         predicate: #Predicate<taskapeTask> { task in
             task.user_id == userId
@@ -273,7 +273,7 @@ func syncUserTasks(
     )
 
     do {
-        // Get the user and existing tasks
+
         let users = try modelContext.fetch(userDescriptor)
         guard let user = users.first else {
             print("Error: No user found with ID \(userId) to sync tasks with")
@@ -285,14 +285,14 @@ func syncUserTasks(
             "Syncing tasks: Found \(existingTasks.count) local tasks and \(remoteTasks.count) remote tasks"
         )
 
-        // Create efficient maps for lookup - handling potential duplicates
+
         var remoteTaskMap = [String: taskapeTask]()
         for task in remoteTasks {
-            // If duplicate exists, keep the most recent version (assuming last one is most recent)
+
             remoteTaskMap[task.id] = task
         }
 
-        // Create map of existing tasks
+
         var existingTaskMap = [String: taskapeTask]()
         for task in existingTasks {
             existingTaskMap[task.id] = task
@@ -300,10 +300,10 @@ func syncUserTasks(
 
         print("After deduplication: \(remoteTaskMap.count) unique remote tasks")
 
-        // 1. Update existing tasks that are also in remote
+
         for existingTask in existingTasks {
             if let remoteTask = remoteTaskMap[existingTask.id] {
-                // Update with remote values
+
                 existingTask.name = remoteTask.name
                 existingTask.taskDescription = remoteTask.taskDescription
                 existingTask.deadline = remoteTask.deadline
@@ -320,15 +320,15 @@ func syncUserTasks(
                     "Updated existing task: \(existingTask.id) - \(existingTask.name)"
                 )
             } else {
-                // Only delete if the task has a valid server ID and wasn't just created locally
-                // (assuming newly created tasks awaiting sync have a specific ID pattern or flag)
+
+
                 if !existingTask.id.isEmpty && !existingTask.id.contains("temp")
                 {
                     print(
                         "Deleting task not present on server: \(existingTask.id) - \(existingTask.name)"
                     )
 
-                    // Also remove from user's tasks array
+
                     if let index = user.tasks.firstIndex(where: {
                         $0.id == existingTask.id
                     }) {
@@ -340,36 +340,36 @@ func syncUserTasks(
             }
         }
 
-        // 2. Insert new remote tasks that don't exist locally
+
         for (id, remoteTask) in remoteTaskMap {
             if existingTaskMap[id] == nil {
-                // This is a new task from the server
+
                 print(
                     "Inserting new remote task: \(remoteTask.id) - \(remoteTask.name)"
                 )
                 modelContext.insert(remoteTask)
 
-                // Associate with user
+
                 if !user.tasks.contains(where: { $0.id == remoteTask.id }) {
                     user.tasks.append(remoteTask)
                 }
             }
         }
 
-        // Save all changes at once
-        // try modelContext.save()
-        //  print("Successfully synced tasks for user \(userId)")
 
-        //        UserManager.shared.syncCurrentUserTasksWithWidget(tasks: remoteTasks)
-        //
-        //        DispatchQueue.main.async {
-        //            TaskNotifier.notifyTasksUpdated()
-        //        }
+
+
+
+
+
+
+
+
 
         try modelContext.save()
         print("Successfully synced tasks for user \(userId)")
 
-        // Update widget data
+
         updateWidgetWithTasks(userId: userId, modelContext: modelContext)
 
     } catch {

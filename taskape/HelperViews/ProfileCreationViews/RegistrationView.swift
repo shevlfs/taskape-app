@@ -15,14 +15,14 @@ struct TaskapeNumberField: View {
     @Binding var isCorrect: Bool
 
     func formatPhoneNumber(_ phoneNumber: String) -> String {
-        // Remove all non-digit characters
+
         let cleanNumber = phoneNumber.components(
             separatedBy: CharacterSet.decimalDigits.inverted
         ).joined()
 
-        // Check if the number exceeds the country's limit
+
         guard cleanNumber.count <= country.limit else {
-            // Truncate to the maximum allowed digits
+
             return String(cleanNumber.prefix(country.limit))
         }
 
@@ -39,11 +39,11 @@ struct TaskapeNumberField: View {
             && patternIndex < pattern.endIndex
         {
             if pattern[patternIndex] == "#" {
-                // Add the next digit from the clean number
+
                 formattedNumber.append(cleanNumber[numberIndex])
                 numberIndex = cleanNumber.index(after: numberIndex)
             } else {
-                // Add the formatting character from the pattern
+
                 formattedNumber.append(pattern[patternIndex])
             }
             patternIndex = pattern.index(after: patternIndex)

@@ -1,9 +1,9 @@
-//
-//  LoadingView.swift
-//  taskape
-//
-//  Created by shevlfs on 2/20/25.
-//
+
+
+
+
+
+
 
 import Lottie
 import SwiftUI
@@ -33,7 +33,7 @@ struct LoadingView: View {
     }
 
     func load() {
-        // sleep for 2 seconds
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             self.isLoading = false
             self.path.append("task_addition")

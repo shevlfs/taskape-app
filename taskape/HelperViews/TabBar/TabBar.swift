@@ -1,9 +1,9 @@
-//
-//  RollBar.swift
-//  taskape
-//
-//  Created by shevlfs on 1/7/25.
-//
+
+
+
+
+
+
 import SwiftUI
 
 struct tabBarItem {
@@ -98,15 +98,15 @@ struct TabBarView: View {
 }
 
 #Preview {
-    //    TabBarView(
-    //        tabBarItems: .constant([
-    //            tabBarItem(title: "settings"),
-    //            tabBarItem(title: "main"),
-    //            tabBarItem(title: "group1"),
-    //            tabBarItem(title: "group2", badgeCount: 2),
-    //            tabBarItem(title: "group3", badgeCount: 100),
-    //        ])
-    //    )
+
+
+
+
+
+
+
+
+
 }
 
 extension View {
@@ -114,17 +114,17 @@ extension View {
         return mask(
             HStack(spacing: 0) {
 
-                // Left gradient
+
                 LinearGradient(gradient: Gradient(
                     colors: [Color.black.opacity(0), Color.black]),
                     startPoint: .leading, endPoint: .trailing
                 )
                 .frame(height: fadeLength)
 
-                // Middle
+
                 Rectangle().fill(Color.black)
 
-                // Right gradient
+
                 LinearGradient(gradient: Gradient(
                     colors: [Color.black, Color.black.opacity(0)]),
                     startPoint: .leading, endPoint: .trailing
