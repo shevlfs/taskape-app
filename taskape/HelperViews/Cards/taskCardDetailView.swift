@@ -481,7 +481,7 @@ struct ExceptPeopleSelector: View {
                 if friendManager.friends.isEmpty {
                     isLoading = true
                     Task {
-                        await friendManager.refreshFriendData()
+                        await friendManager.refreshFriendDataBatched()
                         await MainActor.run {
                             isLoading = false
                             showingFriendsList = true
@@ -709,7 +709,7 @@ struct FriendSelectionSheet: View {
 
             if friendManager.friends.isEmpty {
                 Task {
-                    await friendManager.refreshFriendData()
+                    await friendManager.refreshFriendDataBatched()
                 }
             }
         }

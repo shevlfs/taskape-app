@@ -24,7 +24,7 @@ extension ModelContainer {
     static let shared: ModelContainer = {
         do {
             return try ModelContainer(for: taskapeUser.self, taskapeTask.self, taskapeEvent.self)
-        } catch {
+        } catch {   
             fatalError("Failed to create ModelContainer: \(error)")
         }
     }()

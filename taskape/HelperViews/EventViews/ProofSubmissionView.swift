@@ -13,9 +13,9 @@ struct ProofSubmissionView: View {
     @State private var isUploading: Bool = false
     @State private var showImagePicker: Bool = false
     @State private var photoPickerItem: PhotosPickerItem?
+    @Binding var proofSubmitted: Bool
     @Environment(\.modelContext) var modelContext
     @State var mediaAccessDenied: Bool = false
-
 
     @State private var photoPermissionStatus: PHAuthorizationStatus =
         .notDetermined
@@ -40,7 +40,6 @@ struct ProofSubmissionView: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-
 
                 VStack(spacing: 15) {
                     if let selectedImage = selectedImage {
@@ -121,7 +120,6 @@ struct ProofSubmissionView: View {
                     }
                 }
 
-
                 VStack(alignment: .leading, spacing: 8) {
                     Text("description")
                         .font(.pathway(16))
@@ -138,7 +136,6 @@ struct ProofSubmissionView: View {
                 }
 
                 Spacer()
-
 
                 HStack(spacing: 15) {
                     Button(action: {
@@ -214,7 +211,6 @@ struct ProofSubmissionView: View {
         }
     }
 
-
     func hasRequiredPermissions() -> Bool {
         return
             (photoPermissionStatus == .authorized
@@ -222,16 +218,13 @@ struct ProofSubmissionView: View {
             && cameraPermissionStatus == .authorized
     }
 
-
     func checkPermissions() {
 
         photoPermissionStatus = PHPhotoLibrary.authorizationStatus(
             for: .readWrite)
 
-
         cameraPermissionStatus = AVCaptureDevice.authorizationStatus(
             for: .video)
-
 
         if photoPermissionStatus == .denied
             || photoPermissionStatus == .restricted
@@ -247,12 +240,10 @@ struct ProofSubmissionView: View {
         }
     }
 
-
     func requestRequiredPermissions() {
         requestCameraPermission()
         requestPhotoPermission()
     }
-
 
     func requestCameraPermission() {
         if cameraPermissionStatus == .notDetermined {
@@ -266,7 +257,6 @@ struct ProofSubmissionView: View {
         }
     }
 
-
     func requestPhotoPermission() {
         if photoPermissionStatus == .notDetermined {
             PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
@@ -277,7 +267,6 @@ struct ProofSubmissionView: View {
             }
         }
     }
-
 
     func updateMediaAccessState() {
         if hasRequiredPermissions() {
@@ -309,17 +298,15 @@ struct ProofSubmissionView: View {
                     task.proofDescription = proofDescription
                     task.completion.requiresConfirmation = true
 
-
                     do {
                         try modelContext.save()
-
 
                         Task {
                             await syncTaskChanges(task: task)
                         }
 
-
                         isPresented = false
+                        proofSubmitted = true
                     } catch {
                         print("Error saving proof to task: \(error)")
                     }
@@ -382,7 +369,6 @@ struct ProofSubmissionView: View {
     }
 }
 
-
 #Preview {
     let task = taskapeTask(
         name: "Complete project",
@@ -393,5 +379,7 @@ struct ProofSubmissionView: View {
     task.proofNeeded = true
     task.proofDescription = "please take a photo of the completed project"
 
-    return ProofSubmissionView(task: task, isPresented: .constant(true))
+    return ProofSubmissionView(
+        task: task, isPresented: .constant(true),
+        proofSubmitted: .constant(false))
 }

@@ -5,12 +5,13 @@ struct CheckBoxView: View {
     @State private var isAnimating: Bool = false
     @Binding var newCompletionStatus: Bool
     @State private var showProofSubmission: Bool = false
+    @State private var proofSubmitted: Bool = false
     @Environment(\.modelContext) var modelContext
 
     var body: some View {
         Button(action: {
 
-            if task.proofNeeded == true && !task.completion.isCompleted {
+            if task.proofNeeded == true && !proofSubmitted {
                 showProofSubmission = true
             } else {
 
@@ -30,14 +31,10 @@ struct CheckBoxView: View {
 
 
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        if task.proofNeeded == true {
-                            task.completion.requiresConfirmation = true
-                        } else {
-                            task.completion.isCompleted = newCompletionStatus
-                        }
+
+                        task.completion.isCompleted = newCompletionStatus
+
                         saveTask()
-                        task.syncWithWidget()
-                        TaskNotifier.notifyTasksUpdated()
                     }
                 }
             }
@@ -77,7 +74,11 @@ struct CheckBoxView: View {
         }
         .buttonStyle(PlainButtonStyle())
         .sheet(isPresented: $showProofSubmission) {
-            ProofSubmissionView(task: task, isPresented: $showProofSubmission)
+            ProofSubmissionView(
+                task: task,
+                isPresented: $showProofSubmission,
+                proofSubmitted: $proofSubmitted
+            )
                 .modelContext(modelContext)
         }
     }

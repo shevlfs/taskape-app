@@ -38,7 +38,7 @@ class FriendManager: ObservableObject {
     }
 
 
-    private var friendTasks: [String: [taskapeTask]] = [:] 
+    var friendTasks: [String: [taskapeTask]] = [:] 
 
 
     func loadTasksForFriend(userId: String) async -> [taskapeTask]? {
@@ -91,7 +91,7 @@ class FriendManager: ObservableObject {
     func sendFriendRequest(to userId: String) async -> Bool {
         let success = await taskape.sendFriendRequest(receiverId: userId)
         if success {
-            await refreshFriendData()
+            await refreshFriendDataBatched()
         }
         return success
     }
@@ -100,7 +100,7 @@ class FriendManager: ObservableObject {
         let success = await respondToFriendRequest(
             requestId: requestId, response: "accept")
         if success {
-            await refreshFriendData()
+            await refreshFriendDataBatched()
         }
         return success
     }

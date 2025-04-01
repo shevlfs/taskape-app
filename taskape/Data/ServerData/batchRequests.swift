@@ -1,18 +1,3 @@
-//
-//  GetUsersBatchRequest.swift
-//  taskape
-//
-//  Created by shevlfs on 4/2/25.
-//
-
-
-//
-//  batchRequests.swift
-//  taskape
-//
-//  Created on 4/1/25.
-//
-
 import Alamofire
 import Foundation
 import SwiftData

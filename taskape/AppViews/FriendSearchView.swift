@@ -138,7 +138,7 @@ struct FriendSearchView: View {
         .onAppear {
 
             Task {
-                await friendManager.refreshFriendData()
+                await friendManager.refreshFriendDataBatched()
                 await fetchAllUsers()
             }
         }.background(Color.clear)
@@ -301,7 +301,7 @@ struct FriendRequestRow: View {
                 if success {
 
                     Task {
-                        await friendManager.refreshFriendData()
+                        await friendManager.refreshFriendDataBatched()
                     }
                 }
             }
@@ -321,7 +321,7 @@ struct FriendRequestRow: View {
                 if success {
 
                     Task {
-                        await friendManager.refreshFriendData()
+                        await friendManager.refreshFriendDataBatched()
                     }
                 }
             }
@@ -618,7 +618,7 @@ struct UserSearchResultRow: View {
 
                     if success {
                         Task {
-                            await friendManager.refreshFriendData()
+                            await friendManager.refreshFriendDataBatched()
                         }
                     }
                 }

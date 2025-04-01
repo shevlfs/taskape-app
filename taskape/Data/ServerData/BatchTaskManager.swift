@@ -1,10 +1,3 @@
-//
-//  batchManagers.swift
-//  taskape
-//
-//  Created on 4/1/25.
-//
-
 import Foundation
 import SwiftData
 import SwiftUI
@@ -22,8 +15,9 @@ extension UserManager {
     func saveUsersBatch(users: [taskapeUser], context: ModelContext) {
         for user in users {
             // Check if user already exists in the context
+            let userid = user.id
             let descriptor = FetchDescriptor<taskapeUser>(
-                predicate: #Predicate<taskapeUser> { $0.id == user.id }
+                predicate: #Predicate<taskapeUser> { $0.id == userid }
             )
             
             do {
@@ -122,8 +116,9 @@ class BatchTaskManager {
                 // Process each task
                 for task in tasks {
                     // Check if the task already exists
+                    let taskid = task.id
                     let taskDescriptor = FetchDescriptor<taskapeTask>(
-                        predicate: #Predicate<taskapeTask> { $0.id == task.id }
+                        predicate: #Predicate<taskapeTask> { $0.id == taskid }
                     )
                     
                     let existingTasks = try context.fetch(taskDescriptor)
@@ -170,5 +165,73 @@ class BatchTaskManager {
         target.flagColor = source.flagColor
         target.flagName = source.flagName
         target.displayOrder = source.displayOrder
+    }
+}
+
+// Updated refresh method for FriendManager
+extension FriendManager {
+    func refreshFriendDataBatched() async {
+        isLoading = true
+
+        if let userId = UserDefaults.standard.string(forKey: "user_id") {
+            // First, fetch the user's friends list
+            if let userFriends = await getUserFriends(userId: userId) {
+                await MainActor.run {
+                    self.friends = userFriends
+                }
+
+                // Get all friend IDs for batch loading
+                let friendIds = userFriends.map { $0.id }
+
+                if !friendIds.isEmpty {
+                    // Load all friends' tasks at once
+                    if let batchedTasks = await BatchTaskManager.shared.fetchTasksForUsers(userIds: friendIds) {
+                        await MainActor.run {
+                            // Store fetched tasks in the cache
+                            for (userId, tasks) in batchedTasks {
+                                self.friendTasks[userId] = tasks
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Fetch friend requests
+            await loadFriendRequests()
+        }
+
+        await MainActor.run {
+            self.isLoading = false
+        }
+    }
+
+    private func loadFriendRequests() async {
+        if let incoming = await getFriendRequests(type: "incoming") {
+            await MainActor.run {
+                self.incomingRequests = incoming
+            }
+        }
+
+        if let outgoing = await getFriendRequests(type: "outgoing") {
+            await MainActor.run {
+                self.outgoingRequests = outgoing
+            }
+        }
+    }
+
+    // Replace the existing preloadAllFriendTasks method with this optimized version
+    func preloadAllFriendTasksBatched() async {
+        let friendIds = friends.map { $0.id }
+
+        if !friendIds.isEmpty {
+            if let batchedTasks = await BatchTaskManager.shared.fetchTasksForUsers(userIds: friendIds) {
+                await MainActor.run {
+                    // Store fetched tasks in the cache
+                    for (userId, tasks) in batchedTasks {
+                        self.friendTasks[userId] = tasks
+                    }
+                }
+            }
+        }
     }
 }
