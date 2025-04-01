@@ -60,9 +60,15 @@ struct MainRootView: View {
         .onAppear {
             Task {
                 if !appState.isLoggedIn {
-                    isLoading = false
-                    loadingError =
-                        "couldn't load your profile\nplease login again"
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        withAnimation(
+                            .spring(response: 1, dampingFraction: 0.6)
+                        ) {
+                            isLoading = false
+                            loadingError =
+                                "couldn't load your profile\nplease login again"
+                        }
+                    }
                 }
                 let userId = UserManager.shared.currentUserId
                 if !userId.isEmpty {
@@ -81,9 +87,7 @@ struct MainRootView: View {
                             isLoading = false
                         }
                     }
-                    return
 
-                    // Fetch the user from the server
                     let user = await fetchUser(userId: userId)
 
                     // Fetch tasks for the user
@@ -108,11 +112,23 @@ struct MainRootView: View {
 
                             loadData()
 
-                            isLoading = false
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                withAnimation(
+                                    .spring(response: 1, dampingFraction: 0.6)
+                                ) {
+                                    isLoading = false
+                                }
+                            }
                         } else {
                             loadingError =
                                 "could not load your profile.\nplease try again."
-                            isLoading = false
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                withAnimation(
+                                    .spring(response: 1, dampingFraction: 0.6)
+                                ) {
+                                    isLoading = false
+                                }
+                            }
                         }
                     }
                 }

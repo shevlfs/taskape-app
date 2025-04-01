@@ -40,8 +40,7 @@ func sendVerificationCode(phoneNumber: String, country_code: String) async {
         let parameters: [String: Any] = [
             "phone": user_phone
         ]
-
-        let result = await AF.request(
+        _ = await AF.request(
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/sendVerificationCode",
             method: .post, parameters: parameters,
             encoding: JSONEncoding.default
@@ -86,18 +85,14 @@ func phoneNumberIsVerified(
                 UserDefaults.standard.set(user_phone, forKey: "phone")
 
                 if response.profileExists {
-                    // For existing accounts, ensure we properly store and set the user ID
                     let userId = String(response.userId)
                     UserDefaults.standard.set(userId, forKey: "user_id")
-                    // Set the current user ID in UserManager
                     UserManager.shared.setCurrentUser(userId: userId)
-                    print("Existing account detected, user ID: \(userId)")
                     return .userexists
                 }
                 return .success
             }
             return .failed
-
         case .failure(let error):
             print(
                 "Failed to verify phone number: \(error.localizedDescription)")
