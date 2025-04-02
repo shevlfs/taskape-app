@@ -270,16 +270,19 @@ struct PriorityPickerContent: View {
                             .labelsHidden()
                             .frame(width: 30, height: 30)
                         ForEach(defaultColors, id: \.self) { color in
+
+
+
                             Circle()
                                 .fill(color)
-                                .frame(width: 35, height: 35)
+                                .frame(width: 30, height: 30)
                                 .overlay(
                                     Circle()
                                         .stroke(
-                                            customColor == color
-                                                ? Color.gray : Color.clear,
-                                            lineWidth: 2)
+                                            Color.white,
+                                            lineWidth: customColor == color ? 3 : 0)
                                 )
+                                .shadow(radius: 2)
                                 .onTapGesture {
                                     customColor = color
                                 }

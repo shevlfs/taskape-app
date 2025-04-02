@@ -436,7 +436,11 @@ struct UserSearchResultRow: View {
     var body: some View {
         HStack(spacing: 12) {
 
-            ProfileImageView(imageUrl: user.profile_picture, color: user.color)
+            ProfileImageView(
+                imageUrl: user.profile_picture,
+                color: user.color,
+                size: 50
+            )
                 .frame(width: 50, height: 50)
 
 
@@ -636,42 +640,6 @@ struct UserSearchResultRow: View {
         return friendManager.incomingRequests.first(where: {
             $0.sender_id == user.id
         })?.id
-    }
-}
-
-
-struct ProfileImageView: View {
-    let imageUrl: String
-    let color: String
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(Color(hex: color))
-
-            if !imageUrl.isEmpty {
-                CachedAsyncImage(url: URL(string: imageUrl)) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .failure:
-                        Image(systemName: "person.fill")
-                            .foregroundColor(.white)
-                    @unknown default:
-                        EmptyView()
-                    }
-                }
-                .clipShape(Circle())
-            } else {
-                Image(systemName: "person.fill")
-                    .foregroundColor(.white)
-                    .font(.system(size: 24))
-            }
-        }
     }
 }
 

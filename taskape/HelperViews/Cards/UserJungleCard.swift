@@ -1,10 +1,4 @@
 import SwiftData
-
-
-
-
-
-
 import SwiftUI
 
 struct UserJungleCard: View {

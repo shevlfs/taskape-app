@@ -84,7 +84,6 @@ struct TabBarView: View {
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 12)
             }.onChange(
                 of: tabBarViewIndex
             ) { oldValue, newValue in

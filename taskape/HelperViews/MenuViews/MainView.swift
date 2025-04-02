@@ -170,7 +170,7 @@ struct MainView: View {
                                     maxWidth: .infinity,
                                     alignment: .center
                                 )
-                                .padding(.vertical, 20)
+                                .padding(.vertical, 10)
                             } else {
                                 Text("no events yet")
                                     .font(.pathway(16))
@@ -182,62 +182,59 @@ struct MainView: View {
                                     .padding(.vertical, 20)
                             }
                         }
-                        HStack(spacing: 20) {
-
-
-                            Button(action: {
-                                navigationPath.append("friendSearch")
-                            }) {
-                                ZStack {
-                                    // Background using MenuItem component
-                                    MenuItem(
-                                        mainColor: Color(hex: "#E97451"),
-                                        widthProportion: 0.32,
-                                        heightProportion: 0.16
-                                    )
-
-                                    VStack(alignment: .center, spacing: 6) {
-                                        // Add notification badge to image if we have friend requests
-                                        ZStack {
-                                            Image(systemName: "plus.circle")
-                                                .font(
-                                                    .system(
-                                                        size: 45,
-                                                        weight: .medium)
-                                                )
-                                                .foregroundColor(.primary)
-                                        }
-
-                                        Text("new\nfriend?")
-                                            .font(.pathwaySemiBold(19))
-                                            .foregroundColor(.primary)
-                                            .multilineTextAlignment(.center)
-                                    }
-
-                                    if friendManager.incomingRequests.count > 0
-                                    {
-                                        Text(
-                                            "\(friendManager.incomingRequests.count)"
-                                        )
-                                        .font(.pathwayBoldCondensed(12))
-                                        .foregroundColor(.white)
-                                        .padding(10)
-                                        .background(Color.red)
-                                        .clipShape(Circle())
-                                        .offset(x: 30, y: -50)
-                                    }
-                                }
-                            }.matchedTransitionSource(
-                                id: "friendSearch", in: mainNamespace
-                            )
-                            .buttonStyle(PlainButtonStyle())
-                        }
+//                        HStack(spacing: 20) {
+//                            Button(action: {
+//                                navigationPath.append("friendSearch")
+//                            }) {
+//                                ZStack {
+//                                    // Background using MenuItem component
+//                                    MenuItem(
+//                                        mainColor: Color(hex: "#E97451"),
+//                                        widthProportion: 0.32,
+//                                        heightProportion: 0.16
+//                                    )
+//
+//                                    VStack(alignment: .center, spacing: 6) {
+//                                        // Add notification badge to image if we have friend requests
+//                                        ZStack {
+//                                            Image(systemName: "plus.circle")
+//                                                .font(
+//                                                    .system(
+//                                                        size: 45,
+//                                                        weight: .medium)
+//                                                )
+//                                                .foregroundColor(.primary)
+//                                        }
+//
+//                                        Text("new\nfriend?")
+//                                            .font(.pathwaySemiBold(19))
+//                                            .foregroundColor(.primary)
+//                                            .multilineTextAlignment(.center)
+//                                    }
+//
+//                                    if friendManager.incomingRequests.count > 0
+//                                    {
+//                                        Text(
+//                                            "\(friendManager.incomingRequests.count)"
+//                                        )
+//                                        .font(.pathwayBoldCondensed(12))
+//                                        .foregroundColor(.white)
+//                                        .padding(10)
+//                                        .background(Color.red)
+//                                        .clipShape(Circle())
+//                                        .offset(x: 30, y: -50)
+//                                    }
+//                                }
+//                            }.matchedTransitionSource(
+//                                id: "friendSearch", in: mainNamespace
+//                            )
+//                            .buttonStyle(PlainButtonStyle())
+//                        }
                     }
                 }
                 .refreshable {
                     await refreshEventsManually()
                 }
-                .fadeOutTop(fadeLength: 10)
             } else {
                 VStack(alignment: .center) {
                     Spacer()
@@ -262,14 +259,6 @@ struct MainView: View {
                         .modelContext(self.modelContext)
                         .navigationTransition(
                             .zoom(sourceID: "jungleCard", in: mainNamespace)
-                        )
-                case "friendSearch":
-                    ZStack {
-                        FriendSearchView()
-                            .modelContext(self.modelContext)
-                    }.toolbar(.hidden)
-                        .navigationTransition(
-                            .zoom(sourceID: "friendSearch", in: mainNamespace)
                         )
                 default:
                     EmptyView()
@@ -576,46 +565,46 @@ enum EventPosition {
     case right
 }
 
-#Preview {
-    do {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(
-            for: taskapeUser.self, taskapeTask.self, configurations: config)
-
-        let user = taskapeUser(
-            id: UUID().uuidString,
-            handle: "shevlfs",
-            bio: "i am shevlfs",
-            profileImage:
-                "https://static.wikia.nocookie.net/character-stats-and-profiles/images/c/c7/DZuvg1d.png/revision/latest?cb=20181120135131",
-            profileColor: "blue"
-        )
-
-        container.mainContext.insert(user)
-        let task = taskapeTask(
-            id: UUID().uuidString,
-            user_id: user.id,
-            name: "Sample Task",
-            taskDescription: "This is a sample task description",
-            author: "shevlfs",
-            privacy: "private"
-        )
-
-        container.mainContext.insert(task)
-
-        user.tasks.append(task)
-
-        try container.mainContext.save()
-
-        return MainView(
-            eventsUpdated: .constant(false),
-            navigationPath: .constant(NavigationPath())
-        )
-        .modelContainer(container)
-    } catch {
-        return Text("Failed to create preview: \(error.localizedDescription)")
-    }
-}
+//#Preview {
+//    do {
+//        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+//        let container = try ModelContainer(
+//            for: taskapeUser.self, taskapeTask.self, configurations: config)
+//
+//        let user = taskapeUser(
+//            id: UUID().uuidString,
+//            handle: "shevlfs",
+//            bio: "i am shevlfs",
+//            profileImage:
+//                "https://static.wikia.nocookie.net/character-stats-and-profiles/images/c/c7/DZuvg1d.png/revision/latest?cb=20181120135131",
+//            profileColor: "blue"
+//        )
+//
+//        container.mainContext.insert(user)
+//        let task = taskapeTask(
+//            id: UUID().uuidString,
+//            user_id: user.id,
+//            name: "Sample Task",
+//            taskDescription: "This is a sample task description",
+//            author: "shevlfs",
+//            privacy: "private"
+//        )
+//
+//        container.mainContext.insert(task)
+//
+//        user.tasks.append(task)
+//
+//        try container.mainContext.save()
+//
+//        return MainView(
+//            eventsUpdated: .constant(false),
+//            navigationPath: .constant(NavigationPath())
+//        )
+//        .modelContainer(container)
+//    } catch {
+//        return Text("Failed to create preview: \(error.localizedDescription)")
+//    }
+//}
 
 extension View {
     func fadeOutTop(fadeLength: CGFloat = 50) -> some View {

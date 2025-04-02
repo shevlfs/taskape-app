@@ -1,13 +1,7 @@
-
-
-
-
-
-
-
 import CachedAsyncImage
 import SwiftData
 import SwiftUI
+
 
 struct MainNavigationView: View {
     @State private var selectedTabIndex: Int = 1
@@ -31,13 +25,16 @@ struct MainNavigationView: View {
     @State private var contentOpacity: Double = 0.0
     @State private var contentScale: CGFloat = 0.8
 
+    @Namespace private var main
+
     @Binding var fullyLoaded: Bool
 
     var body: some View {
 
         NavigationStack(path: $mainNavigationPath) {
             VStack {
-                userGreetingCard()
+                UserGreetingCard(
+                    user: $currentUser).modelContext(modelContext).padding(.horizontal).padding(.top, 10).padding(.bottom, 10)
                 TabBarView(
                     tabBarItems: $mainTabBarItems,
                     tabBarViewIndex: $selectedTabIndex
@@ -73,8 +70,7 @@ struct MainNavigationView: View {
                             }
                         })
                 case 1:
-                    MainView(
-                        eventsUpdated: $eventsUpdated,
+                    MainView(eventsUpdated: $eventsUpdated,
                         navigationPath: $mainNavigationPath
                     )
                     .modelContext(modelContext)
