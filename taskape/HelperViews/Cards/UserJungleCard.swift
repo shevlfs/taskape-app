@@ -3,7 +3,6 @@ import SwiftUI
 
 struct UserJungleCard: View {
     @Bindable var user: taskapeUser
-
     var body: some View {
         ZStack {
             MenuItem(
@@ -25,13 +24,31 @@ struct UserJungleCard: View {
                 .padding(.bottom, 8)
 
                 ScrollView(.vertical, showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 5) {
-                        ForEach(
-                            Array(
-                                user.tasks.filter { !$0.completion.isCompleted }
+                    if Array(
+                        user.tasks.filter { !$0.completion.isCompleted }
+                    ).count != 0 {
+                        VStack(alignment: .leading, spacing: 5) {
+                            ForEach(
+                                Array(
+                                    user.tasks.filter {
+                                        !$0.completion.isCompleted
+                                    }
                                     .prefix(3))
-                        ) { task in
-                            TaskItem(task: task)
+                            ) { task in
+                                TaskItem(task: task)
+                            }
+                        }
+                    } else {
+
+                        VStack(alignment: .center) {
+                            Spacer()
+                            HStack{
+                                Spacer()
+                                Text("woo-hoo everything is done!")
+                                    .font(.pathway(16))
+                                Spacer()
+                            }
+                            Spacer()
                         }
                     }
                 }.scrollDisabled(true)

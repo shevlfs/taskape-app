@@ -64,7 +64,7 @@ struct MainView: View {
                                     HStack(spacing: 20) {
                                         ForEach(group) { event in
                                             NavigationLink(
-                                                destination: {EventCardDetailedView(event: event).modelContext(modelContext)}) {
+                                                destination: {EventCardDetailedView(event: event).modelContext(modelContext).navigationTransition(.zoom(sourceID: event.id, in: mainNamespace))}) {
                                                     EventCard(
                                                         event: event,
                                                         eventSize: event
@@ -88,7 +88,7 @@ struct MainView: View {
                                     if singleEvent.eventSize == .large {
                                         // Large events get full width
                                         NavigationLink(
-                                            destination: {EventCardDetailedView(event: singleEvent).modelContext(modelContext).navigationBarBackButtonHidden(true).toolbar(.hidden)}) {
+                                            destination: {EventCardDetailedView(event: singleEvent).modelContext(modelContext).navigationTransition(.zoom(sourceID: singleEvent.id, in: mainNamespace)).navigationBarBackButtonHidden(true).toolbar(.hidden)}) {
                                                 EventCard(
                                                     event: singleEvent,
                                                     eventSize: singleEvent
@@ -111,7 +111,7 @@ struct MainView: View {
                                                     .frame(maxWidth: .infinity)
 
                                                 NavigationLink(
-                                                    destination: {EventCardDetailedView(event: singleEvent).modelContext(modelContext)}) {
+                                                    destination: {EventCardDetailedView(event: singleEvent).modelContext(modelContext).navigationTransition(.zoom(sourceID: singleEvent.id, in: mainNamespace))}) {
                                                         EventCard(
                                                             event: singleEvent,
                                                             eventSize: singleEvent
@@ -128,7 +128,7 @@ struct MainView: View {
                                             } else {
                                                 // Event on the left
                                                 NavigationLink(
-                                                    destination: {EventCardDetailedView(event: singleEvent).modelContext(modelContext)}) {
+                                                    destination: {EventCardDetailedView(event: singleEvent).modelContext(modelContext).navigationTransition(.zoom(sourceID: singleEvent.id, in: mainNamespace))}) {
                                                         EventCard(
                                                             event: singleEvent,
                                                             eventSize: singleEvent

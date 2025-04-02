@@ -59,9 +59,11 @@ struct UserSelfProfileView: View {
                                             Button(action: {
                                                 dismiss()
                                             }) {
-                                                Image(systemName: "chevron.left")
-                                                    .font(.pathwayBold(20))
-                                                    .foregroundColor(.primary)
+                                                Image(
+                                                    systemName: "chevron.left"
+                                                )
+                                                .font(.pathwayBold(20))
+                                                .foregroundColor(.primary)
                                             }
                                             Spacer()
                                             Button(action: {
@@ -72,18 +74,23 @@ struct UserSelfProfileView: View {
                                                     .foregroundColor(.primary)
                                             }
 
-                                        }.padding().padding(.top,10)
+                                        }.padding().padding(.top, 10)
                                     }
                                     if !user.profileImageURL.isEmpty {
                                         CachedAsyncImage(
-                                            url: URL(string: user.profileImageURL)
+                                            url: URL(
+                                                string: user.profileImageURL)
                                         ) { phase in
                                             switch phase {
                                             case .success(let image):
                                                 image
                                                     .resizable()
-                                                    .aspectRatio(contentMode: .fill)
-                                                    .frame(width: 125, height: 125)
+                                                    .aspectRatio(
+                                                        contentMode: .fill
+                                                    )
+                                                    .frame(
+                                                        width: 125, height: 125
+                                                    )
                                                     .clipShape(Circle())
                                                     .overlay(
                                                         Circle()
@@ -93,14 +100,17 @@ struct UserSelfProfileView: View {
                                                                         .profileColor
                                                                 )
                                                                 .contrastingTextColor(
-                                                                    in: colorScheme),
+                                                                    in:
+                                                                        colorScheme
+                                                                ),
                                                                 lineWidth: 1
                                                             )
                                                             .shadow(radius: 3)
                                                     )
                                             case .failure:
                                                 Image(
-                                                    systemName: "person.circle.fill"
+                                                    systemName:
+                                                        "person.circle.fill"
                                                 )
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fill)
@@ -109,7 +119,8 @@ struct UserSelfProfileView: View {
                                                     .white.opacity(0.8))
                                             default:
                                                 ProgressView()
-                                                    .frame(width: 100, height: 100)
+                                                    .frame(
+                                                        width: 100, height: 100)
                                             }
                                         }
                                     } else {
@@ -117,7 +128,8 @@ struct UserSelfProfileView: View {
                                             .resizable()
                                             .aspectRatio(contentMode: .fill)
                                             .frame(width: 100, height: 100)
-                                            .foregroundColor(.white.opacity(0.8))
+                                            .foregroundColor(
+                                                .white.opacity(0.8))
                                     }
                                 }.padding(.top)
 
@@ -129,9 +141,11 @@ struct UserSelfProfileView: View {
                                                 in: colorScheme))
                             }
                             .padding(.vertical, 30)
-                        }.background(RoundedRectangle(cornerRadius: 9)
-                            .foregroundColor(Color(hex: user.profileColor))
-                            .frame(maxWidth: .infinity, maxHeight: 400).ignoresSafeArea(edges: .top))
+                        }.background(
+                            RoundedRectangle(cornerRadius: 9)
+                                .foregroundColor(Color(hex: user.profileColor))
+                                .frame(maxWidth: .infinity, maxHeight: 400)
+                                .ignoresSafeArea(edges: .top))
 
                         if user.bio != "" {
                             ZStack {

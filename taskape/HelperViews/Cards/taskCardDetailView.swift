@@ -801,6 +801,7 @@ struct FriendSelectRow: View {
 }
 
 struct ProofSelectRow: View {
+    @Bindable var task: taskapeTask
     @Binding var proofNeeded: Bool?
     @Binding var accentcolor: Color
     @Binding var confirmationRequired: Bool
@@ -826,12 +827,24 @@ struct ProofSelectRow: View {
                 .padding(.horizontal)
             if confirmationRequired {
                 Text(
-                    "this task is completed and\nrequires a confirmation from your friends..."
+                    "this task is completed and\nrequires a confirmation from your friends"
                 )
                 .multilineTextAlignment(.center)
                 .font(.pathway(15))
                 .padding(.top)
             }
+        }.disabled(task.privacy.level == .noone)
+
+        if (task.privacy.level == .noone){
+            if confirmationRequired {
+                Text(
+                    "you can't select proof needed for this task\nbecause it is private"
+                )
+                .multilineTextAlignment(.center)
+                .font(.pathway(15))
+                .padding(.top)
+            }
+
         }
     }
 }
@@ -848,10 +861,6 @@ struct taskCardDetailView: View {
     var body: some View {
         Group {
             VStack {
-
-
-
-
                 TaskNameField(
                     name: $task.name, flagColor: $task.flagColor,
                     flagName: $task.flagName)
@@ -891,7 +900,7 @@ struct taskCardDetailView: View {
                         .transition(
                             .move(edge: .bottom).combined(with: .opacity))
                 }
-                ProofSelectRow(
+                ProofSelectRow(task: task,
                     proofNeeded: $task.proofNeeded,
                     accentcolor: $taskColor, confirmationRequired: $task.completion.requiresConfirmation
                 )
@@ -908,6 +917,10 @@ struct taskCardDetailView: View {
         }
         .onChange(of: task.flagColor) { _, _ in
             self.taskColor = self.getTaskColor()
+        }.onChange(of: task.privacy.level){
+            if (task.privacy.level == .noone) {
+                task.proofNeeded = false
+            }
         }
     }
 

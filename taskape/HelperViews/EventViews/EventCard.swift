@@ -34,7 +34,6 @@ struct EventCard: View {
     var body: some View {
         ZStack {
 
-
             VStack(spacing: 0) {
                 switch eventSize {
                 case .small:
@@ -48,7 +47,6 @@ struct EventCard: View {
         }
         .onAppear {
             isLiked = event.isLikedByCurrentUser()
-
 
             if event.user == nil {
                 Task {
@@ -101,12 +99,12 @@ struct EventCard: View {
                     .padding(.top, 8)
                 }
 
-
-                Text("\(userName)") .minimumScaleFactor(0.01)
+                Text("\(userName)").minimumScaleFactor(0.01)
                     .font(.pathwayBlack(20))
                     .foregroundColor(getTextColor())
-                    .lineLimit(1)
-                    .padding(.leading, 9).padding(.top, 15).padding(.trailing, 5)
+                    .lineLimit(1).minimumScaleFactor(0.01)
+                    .padding(.leading, 9).padding(.top, 15).padding(
+                        .trailing, 5)
             }
         }.frame(
             width: UIScreen.main.bounds.width * proportions.0,
@@ -126,7 +124,7 @@ struct EventCard: View {
                         case .success(let image):
                             image
                                 .resizable()
-                                .aspectRatio(contentMode:   .fill)
+                                .aspectRatio(contentMode: .fill)
                         case .failure, .empty, _:
                             Circle()
                                 .fill(Color(hex: userColor))
@@ -150,7 +148,9 @@ struct EventCard: View {
                         .font(.pathwayBlack(22))
                         .foregroundColor(getTextColor())
                         .padding(.bottom, 15)
-                        .padding(.leading, 5).scaledToFit().frame(maxWidth: .infinity) .minimumScaleFactor(0.01)
+                        .padding(.leading, 5).scaledToFit().frame(
+                            maxWidth: .infinity
+                        ).minimumScaleFactor(0.01)
 
                 }.padding(.trailing, 8)
                 Spacer()
@@ -164,7 +164,7 @@ struct EventCard: View {
                             .padding(.bottom, 5)
                             .multilineTextAlignment(.trailing)
                             .allowsTightening(true)
-                            .padding(.trailing, 10)
+                            .padding(.trailing, 18)
                             .fixedSize(horizontal: false, vertical: true)
                             .padding(.leading).padding(.top, 8)
 
@@ -173,7 +173,7 @@ struct EventCard: View {
                                 HStack(alignment: .top, spacing: 6) {
                                     Text("•")
                                         .font(.pathway(11)).foregroundColor(
-                                            getTextColor())
+                                            getTextColor()).minimumScaleFactor(0.01)
 
                                     Text(event.relatedTasks[0].name)
                                         .foregroundColor(getTextColor())
@@ -183,7 +183,7 @@ struct EventCard: View {
                                         .lineLimit(2)
                                         .multilineTextAlignment(.leading)
                                         .padding(
-                                            .trailing, 5)
+                                            .trailing, 10).minimumScaleFactor(0.01)
                                 }
 
                                 if event.relatedTasks.count > 1 {
@@ -191,29 +191,38 @@ struct EventCard: View {
                                     HStack(alignment: .top, spacing: 6) {
                                         Text("•")
                                             .font(.pathway(11)).foregroundColor(
-                                                getTextColor())
+                                                getTextColor()).minimumScaleFactor(0.01)
 
                                         Text(event.relatedTasks[1].name)
                                             .foregroundColor(getTextColor())
                                             .font(.pathway(10))
                                             .allowsTightening(
                                                 true
-                                            ).lineLimit(4)
+                                            ).lineLimit(4).minimumScaleFactor(0.01)
                                             .multilineTextAlignment(.leading)
-                                            .padding(.trailing, 5)
+                                            .padding(.trailing, 10)
                                     }
                                 }
+
+                                if event.relatedTasks.count > 2 {
+
+                                    Text("& \(event.relatedTasks.count-2) more")
+                                        .font(.pathwaySemiBold(10))
+                                        .foregroundColor(
+                                            getTextColor()).minimumScaleFactor(0.01)
+                                }
+
                             }
                         }
                         Spacer()
                     }
                 } else {
-                        Text(getEventTypeText())
-                            .foregroundColor(getTextColor())
-                            .font(.pathwaySemiBold(13))
-                            .lineLimit(2)
-                            .multilineTextAlignment(.trailing)
-                    .padding([.trailing])
+                    Text(getEventTypeText())
+                        .foregroundColor(getTextColor())
+                        .font(.pathwaySemiBold(13))
+                        .lineLimit(2)
+                        .multilineTextAlignment(.trailing)
+                        .padding([.trailing])
                 }
 
             }
@@ -235,18 +244,6 @@ struct EventCard: View {
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
     private var largeEventView: some View {
         ZStack {
             EventCardBackGround(
@@ -260,7 +257,7 @@ struct EventCard: View {
                         Text(getEventTypeText())
                             .font(.pathwaySemiBold(16))
                             .foregroundColor(getTextColor())
-                            .padding(.top, 8)
+                            .padding(.top, 12).padding(.leading,5)
                             .lineLimit(2)
                             .multilineTextAlignment(.leading)
                         Spacer()
@@ -270,7 +267,7 @@ struct EventCard: View {
                                 HStack(alignment: .top, spacing: 6) {
                                     Text("•")
                                         .font(.pathway(11)).foregroundColor(
-                                            getTextColor())
+                                            getTextColor()).minimumScaleFactor(0.01)
 
                                     Text(event.relatedTasks[0].name)
                                         .foregroundColor(getTextColor())
@@ -278,7 +275,7 @@ struct EventCard: View {
                                             true
                                         )
                                         .lineLimit(2)
-                                        .multilineTextAlignment(.trailing)
+                                        .multilineTextAlignment(.trailing).minimumScaleFactor(0.01)
                                 }
 
                                 if event.relatedTasks.count > 1 {
@@ -286,7 +283,7 @@ struct EventCard: View {
                                     HStack(alignment: .top, spacing: 6) {
                                         Text("•")
                                             .font(.pathway(11)).foregroundColor(
-                                                getTextColor())
+                                                getTextColor()).minimumScaleFactor(0.01)
 
                                         Text(event.relatedTasks[1].name)
                                             .foregroundColor(getTextColor())
@@ -295,8 +292,16 @@ struct EventCard: View {
                                                 true
                                             ).lineLimit(4)
                                             .multilineTextAlignment(.leading)
-                                            .padding(.trailing, 5)
+                                            .padding(.trailing, 5).minimumScaleFactor(0.01)
                                     }
+                                }
+
+                                if event.relatedTasks.count > 2 {
+
+                                    Text("& \(event.relatedTasks.count-2) more")
+                                        .font(.pathwaySemiBold(10))
+                                        .foregroundColor(
+                                            getTextColor()).minimumScaleFactor(0.01)
                                 }
                             }
                         }.padding(.bottom, 10)
@@ -343,10 +348,10 @@ struct EventCard: View {
 
                     Spacer()
 
-                    Text("\(userName)") .minimumScaleFactor(0.01)
+                    Text("\(userName)").minimumScaleFactor(0.01)
                         .font(.pathwayBlack(25))
                         .foregroundColor(getTextColor())
-                        .padding(.leading, 17).padding(.bottom, 8)
+                        .padding(.leading, 17).padding(.bottom, 8).minimumScaleFactor(0.01)
 
                 }.padding(.trailing, 12)
             }
@@ -361,7 +366,6 @@ struct EventCard: View {
         return Color(hex: userColor).contrastingTextColor(in: colorScheme)
     }
 }
-
 
 struct EventCardPreview: View {
 
@@ -382,7 +386,6 @@ struct EventCardPreview: View {
         profileImage:
             "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
         profileColor: "")
-
 
     let designTask = taskapeTask(
         id: "task1",
@@ -416,7 +419,6 @@ struct EventCardPreview: View {
         privacy: "everyone"
     )
 
-
     var dmitryEvent: taskapeEvent {
         let event = taskapeEvent(
             id: "event1",
@@ -442,7 +444,7 @@ struct EventCardPreview: View {
             taskIds: [designTask.id, uiTask.id]
         )
         event.user = gogaUser
-        event.relatedTasks = []
+        event.relatedTasks = [figmaTask,designTask,uiTask]
         return event
     }
 
@@ -457,7 +459,7 @@ struct EventCardPreview: View {
             taskIds: [figmaTask.id]
         )
         event.user = shevlfsUser
-        event.relatedTasks = [figmaTask]
+        event.relatedTasks = [figmaTask,designTask,uiTask]
         return event
     }
 

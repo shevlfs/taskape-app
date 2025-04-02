@@ -8,6 +8,19 @@ struct CheckBoxView: View {
     @State private var proofSubmitted: Bool = false
     @Environment(\.modelContext) var modelContext
 
+    private func getTaskColor(flagColor: String?)
+        -> Color
+    {
+        let baseColor: Color = {
+            if flagColor != nil && task.flagName != "" {
+                return Color(hex: flagColor!)
+            }
+            return Color.taskapeOrange
+        }()
+        let opacity: Double = newCompletionStatus ? 0.5 : 0.8
+        return baseColor.opacity(opacity)
+    }
+
     var body: some View {
         Button(action: {
 
@@ -44,7 +57,7 @@ struct CheckBoxView: View {
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(
                         newCompletionStatus
-                            ? Color.taskapeOrange : Color.gray.opacity(0.7),
+                            ? getTaskColor(flagColor: task.flagColor) : Color.gray.opacity(0.7),
                         lineWidth: 2
                     )
                     .frame(width: 28, height: 28)
@@ -52,7 +65,8 @@ struct CheckBoxView: View {
                         RoundedRectangle(cornerRadius: 10)
                             .fill(
                                 newCompletionStatus
-                                    ? Color.taskapeOrange.opacity(0.3)
+                                ? getTaskColor(flagColor: task.flagColor)
+                                    .opacity(0.3)
                                     : Color.clear)
                     )
 
@@ -60,7 +74,7 @@ struct CheckBoxView: View {
                 if newCompletionStatus {
                     Image(systemName: "checkmark")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(Color.taskapeOrange)
+                        .foregroundColor(getTaskColor(flagColor: task.flagColor))
                         .scaleEffect(isAnimating ? 1.3 : 1.0)
                 }
             }

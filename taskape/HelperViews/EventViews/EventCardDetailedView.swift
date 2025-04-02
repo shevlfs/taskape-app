@@ -125,7 +125,8 @@ struct EventCardDetailedView: View {
 
 
                     if event.eventType == .requiresConfirmation
-                        && !confirmationSuccess
+                        && !confirmationSuccess && !UserManager.shared
+                        .isCurrentUser(userId: event.userId)
                     {
                         VStack(alignment: .center, spacing: 12) {
 

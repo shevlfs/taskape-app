@@ -465,3 +465,56 @@ func loadRelatedTasksForEvents(events: [taskapeEvent], modelContext: ModelContex
     }
 }
 
+func fetchUserRelatedEvents(userId: String, includeExpired: Bool = true, limit: Int = 50) async -> [taskapeEvent]? {
+    guard let token = UserDefaults.standard.string(forKey: "authToken") else {
+        print("no auth token found")
+        return nil
+    }
+
+    // Get the current user ID to use as requester_id
+    let currentUserId = UserManager.shared.currentUserId
+
+    do {
+        let headers: HTTPHeaders = [
+            "Authorization": token
+        ]
+
+        // Create URL with query parameters
+        var urlComponents = URLComponents(string: "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)/relatedEvents")
+        urlComponents?.queryItems = [
+            URLQueryItem(name: "include_expired", value: includeExpired ? "true" : "false"),
+            URLQueryItem(name: "limit", value: "\(limit)"),
+            URLQueryItem(name: "requester_id", value: currentUserId)
+        ]
+
+        guard let url = urlComponents?.url else {
+            print("invalid url components")
+            return nil
+        }
+
+        let result = await AF.request(
+            url,
+            method: .get,
+            headers: headers
+        )
+        .validate()
+        .serializingDecodable(GetEventsResponse.self)
+        .response
+
+        switch result.result {
+        case .success(let response):
+            if response.success {
+                let events = response.events.map { convertToLocalEvent($0) }
+                return events
+            } else {
+                print("failed to fetch events: \(response.message ?? "unknown error")")
+                return nil
+            }
+        case .failure(let error):
+            print("failed to fetch events: \(error.localizedDescription)")
+            return nil
+        }
+    }
+}
+
+

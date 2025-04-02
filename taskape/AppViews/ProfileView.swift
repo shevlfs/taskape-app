@@ -1,158 +1,6 @@
-
-
-
-
-
-
-
 import CachedAsyncImage
 import SwiftData
 import SwiftUI
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 struct UserProfileView: View {
     @Environment(\.modelContext) var modelContext
@@ -164,7 +12,7 @@ struct UserProfileView: View {
     @State private var isLoading = true
     @State private var errorMessage: String? = nil
     @State private var isRefreshingTasks = false
-
+    @State private var userEvents: [taskapeEvent] = []
 
     private var isCurrentUserProfile: Bool {
         return userId == UserManager.shared.currentUserId
@@ -200,7 +48,6 @@ struct UserProfileView: View {
                             RoundedRectangle(cornerRadius: 9)
                                 .foregroundColor(Color(hex: user.profileColor))
                                 .frame(maxWidth: .infinity, maxHeight: 250)
-
 
                             VStack(alignment: .center, spacing: 16) {
 
@@ -249,7 +96,6 @@ struct UserProfileView: View {
                                         .frame(width: 100, height: 100)
                                         .foregroundColor(.white.opacity(0.8))
                                 }
-
 
                                 Text("@\(user.handle)")
                                     .font(.pathwayBlack(25))
@@ -312,14 +158,12 @@ struct UserProfileView: View {
                                     userColor: Color(hex: user.profileColor)
                                 )
 
-
                                 StatItem(
                                     title: "completed",
                                     value:
                                         "\(user.tasks.filter { $0.completion.isCompleted }.count)",
                                     userColor: Color(hex: user.profileColor)
                                 )
-
 
                                 StatItem(
                                     title: "pending",
@@ -328,7 +172,6 @@ struct UserProfileView: View {
                                     userColor: Color(hex: user.profileColor)
                                 )
                             }
-
 
                             if !isCurrentUserProfile && user.tasks.isEmpty {
                                 Text("no publicly visible tasks...")
@@ -340,27 +183,19 @@ struct UserProfileView: View {
                                     .padding(.top, 20)
                             }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                         }.padding(.vertical, user.bio == "" ? 25 : 10)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
+
+
+
+                            ScrollView(.horizontal){
+                                LazyHStack(spacing: 12){
+                                    ForEach(userEvents) {event in
+                                        EventCardCompact(event: event, user: user).modelContext(modelContext)
+                                    }
+                                }
+                            }
 
 
                         if !user.tasks.isEmpty {
@@ -395,7 +230,6 @@ struct UserProfileView: View {
     }
 
     private func loadUser() {
-
         if isCurrentUserProfile {
 
             let currentUser = UserManager.shared.getCurrentUser(
@@ -407,15 +241,27 @@ struct UserProfileView: View {
             Task {
                 if let fetchedUser = await fetchUser(userId: userId) {
                     if let tasks = await fetchTasks(userId: userId) {
-                        await MainActor.run {
-                            fetchedUser.tasks = tasks
+                        if let events = await fetchUserRelatedEvents(
+                            userId: userId
+                        ) {
+                            await MainActor.run {
+                                userEvents = events
+                                fetchedUser.tasks = tasks
+                                self.user = fetchedUser
+                                self.isLoading = false
+                            }
+                        } else {
+                            await MainActor.run {
+                                userEvents = []
+                                fetchedUser.tasks = tasks
+                                self.user = fetchedUser
+                                self.isLoading = false
+                            }
 
-                            self.user = fetchedUser
-                            self.isLoading = false
                         }
                     } else {
                         await MainActor.run {
-                            fetchedUser.tasks = [] 
+                            fetchedUser.tasks = []
                             self.user = fetchedUser
                             self.isLoading = false
                         }
@@ -466,11 +312,11 @@ struct TaskListItem: View {
                             Circle().stroke(style: StrokeStyle(lineWidth: 0.5))
                                 .foregroundColor(.gray)
                                 .frame(width: 20, height: 20))
-                } else if task.completion.requiresConfirmation{
+                } else if task.completion.requiresConfirmation {
                     Circle().stroke(style: StrokeStyle(lineWidth: 0.5))
                         .foregroundColor(.yellow)
                         .frame(width: 20, height: 20)
-                }else {
+                } else {
                     Circle().stroke(style: StrokeStyle(lineWidth: 0.5))
                         .foregroundColor(.gray)
                         .frame(width: 20, height: 20)
@@ -491,7 +337,6 @@ struct TaskListItem: View {
                 }
 
                 Spacer()
-
 
                 if let deadline = task.deadline {
                     Text(formatDate(deadline))
@@ -552,21 +397,6 @@ struct StatItem: View {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 struct CustomRoundedRectangle: Shape {
     var topLeadingRadius: CGFloat
     var topTrailingRadius: CGFloat
@@ -614,7 +444,6 @@ struct CustomRoundedRectangle: Shape {
             path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
         }
 
-
         if bottomTrailingRadius > 0 {
             path.addLine(
                 to: CGPoint(x: rect.maxX, y: rect.maxY - bottomTrailingRadius))
@@ -629,7 +458,6 @@ struct CustomRoundedRectangle: Shape {
         } else {
             path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
         }
-
 
         if bottomLeadingRadius > 0 {
             path.addLine(
@@ -697,8 +525,7 @@ extension Color {
 
             if colorScheme == .light && isBlueish {
                 threshold = 0.65
-            }
-            else if colorScheme == .dark {
+            } else if colorScheme == .dark {
                 threshold = 0.75
             }
 
