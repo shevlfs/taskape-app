@@ -1,15 +1,8 @@
 
 
-
-
-
-
-
 import Foundation
 import SwiftData
 import SwiftUI
-
-
 
 enum EventType: String, Codable {
     case newTasksAdded = "new_tasks_added"
@@ -41,10 +34,9 @@ final class taskapeEvent: Identifiable {
     var commentsCount: Int
     var likedByUserIds: [String]
 
-
     var eventType: EventType {
         get {
-            return EventType(rawValue: eventTypeRaw) ?? .newTasksAdded
+            EventType(rawValue: eventTypeRaw) ?? .newTasksAdded
         }
         set {
             eventTypeRaw = newValue.rawValue
@@ -53,13 +45,12 @@ final class taskapeEvent: Identifiable {
 
     var eventSize: EventSize {
         get {
-            return EventSize(rawValue: eventSizeRaw) ?? .medium
+            EventSize(rawValue: eventSizeRaw) ?? .medium
         }
         set {
             eventSizeRaw = newValue.rawValue
         }
     }
-
 
     @Relationship var relatedTasks: [taskapeTask] = []
     @Relationship var user: taskapeUser?
@@ -81,8 +72,8 @@ final class taskapeEvent: Identifiable {
         self.id = id
         self.userId = userId
         self.targetUserId = targetUserId
-        self.eventTypeRaw = eventType.rawValue
-        self.eventSizeRaw = eventSize.rawValue
+        eventTypeRaw = eventType.rawValue
+        eventSizeRaw = eventSize.rawValue
         self.createdAt = createdAt
         self.expiresAt = expiresAt
         self.taskIds = taskIds
@@ -92,14 +83,11 @@ final class taskapeEvent: Identifiable {
         self.likedByUserIds = likedByUserIds
     }
 
-
     func isLikedByCurrentUser() -> Bool {
         let currentUserId = UserManager.shared.currentUserId
         return likedByUserIds.contains(currentUserId)
     }
 }
-
-
 
 @Model
 final class EventComment: Identifiable {

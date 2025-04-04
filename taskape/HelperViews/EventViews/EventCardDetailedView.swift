@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 import CachedAsyncImage
 import Combine
 import SwiftData
@@ -17,8 +10,7 @@ struct EventCardDetailedView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.modelContext) var modelContext
     @ObservedObject private var kGuardian = KeyboardGuardian(textFieldCount: 1)
-    @State private var name = Array<String>.init(repeating: "", count: 3)
-
+    @State private var name = [String](repeating: "", count: 3)
 
     @State private var isLoadingComments: Bool = false
     @State private var comments: [EventComment] = []
@@ -26,17 +18,16 @@ struct EventCardDetailedView: View {
     @State private var isLiked: Bool = false
     @State private var likesCount: Int = 0
 
-
     @State private var userName: String = ""
     @State private var userColor: String = "000000"
     @State private var userImage: String = ""
-
 
     @State private var isConfirming: Bool = false
     @State private var confirmationSuccess: Bool = false
     @State private var showConfirmationAlert: Bool = false
     @State private var confirmationAlertType: ConfirmationAlertType =
         .confirming
+    @Namespace var namespace
 
     enum ConfirmationAlertType {
         case confirming
@@ -64,52 +55,64 @@ struct EventCardDetailedView: View {
         .padding(.horizontal)
         .padding(.top, 16)
         VStack(spacing: 15) {
-            ScrollView( showsIndicators: false) {
+            ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     HStack(spacing: 12) {
-                        CachedAsyncImage(url: URL(string: userImage)) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                            case .failure, .empty, _:
-                                Circle()
-                                    .fill(Color(hex: userColor))
-                                    .overlay(
-                                        Text(
-                                            String(userName.prefix(1))
-                                                .uppercased()
-                                        )
-                                        .font(
-                                            .system(
-                                                size: 20 * 0.4, weight: .bold)
-                                        )
-                                        .foregroundColor(.white)
-                                    )
-                            }
-                        }
-                        .frame(width: 50, height: 50)
-                        .clipShape(Circle())
+                        NavigationLink(destination: {
+                            UserProfileView(userId: event.userId).modelContext(
+                                modelContext
+                            ).navigationTransition(
+                                .zoom(sourceID: "eventOwner", in: namespace))
+                        }) {
+                            Group {
+                                CachedAsyncImage(url: URL(string: userImage)) {
+                                    phase in
+                                    switch phase {
+                                    case let .success(image):
+                                        image
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                    case .failure, .empty, _:
+                                        Circle()
+                                            .fill(Color(hex: userColor))
+                                            .overlay(
+                                                Text(
+                                                    String(userName.prefix(1))
+                                                        .uppercased()
+                                                )
+                                                .font(
+                                                    .system(
+                                                        size: 20 * 0.4,
+                                                        weight: .bold
+                                                    )
+                                                )
+                                                .foregroundColor(.white)
+                                            )
+                                    }
+                                }
+                                .frame(width: 50, height: 50)
+                                .clipShape(Circle())
 
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(userName)
-                                .font(.pathwayBlack(18))
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(userName)
+                                        .font(.pathwayBlack(18))
 
-                            Text(getEventTypeText())
-                                .font(.pathwaySemiBold(14))
-                                .foregroundColor(.secondary)
-                        }
+                                    Text(getEventTypeText())
+                                        .font(.pathwaySemiBold(14))
+                                        .foregroundColor(.secondary)
+                                }
+                            }.matchedTransitionSource(
+                                id: "eventOwner", in: namespace
+                            )
+                        }.buttonStyle(PlainButtonStyle())
 
                         Spacer()
-
 
                         Text(timeAgoSinceDate(event.createdAt))
                             .font(.pathway(12))
                             .foregroundColor(.secondary)
                     }
                     .padding(.horizontal)
-
 
                     if !event.relatedTasks.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
@@ -123,13 +126,8 @@ struct EventCardDetailedView: View {
                         }
                     }
 
-
-                    if event.eventType == .requiresConfirmation
-                        && !confirmationSuccess && !UserManager.shared
-                        .isCurrentUser(userId: event.userId)
-                    {
+                    if event.eventType == .requiresConfirmation {
                         VStack(alignment: .center, spacing: 12) {
-
                             if let task = event.relatedTasks.first {
                                 ProofView(task: task)
                             }
@@ -144,10 +142,14 @@ struct EventCardDetailedView: View {
                                 onReject: {
                                     confirmTask(isConfirmed: false)
                                 }
-                            ).frame(maxWidth: .infinity)
+                            ).frame(maxWidth: .infinity).disabled(
+                                UserManager.shared
+                                    .isCurrentUser(
+                                        userId: event.userId
+                                    ) || confirmationSuccess
+                            )
                         }
                     }
-
 
                     LikesSection(
                         isLiked: $isLiked,
@@ -157,7 +159,6 @@ struct EventCardDetailedView: View {
                         }
                     )
                     .padding(.horizontal)
-
 
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
@@ -177,8 +178,7 @@ struct EventCardDetailedView: View {
                         }
                         .padding(.horizontal)
 
-
-                        if comments.isEmpty && !isLoadingComments {
+                        if comments.isEmpty, !isLoadingComments {
                             VStack {
                                 Text("no comments yet")
                                     .font(.pathway(14))
@@ -193,8 +193,7 @@ struct EventCardDetailedView: View {
                             }
                         }
                     }
-                }.frame(maxHeight:.infinity)
-                
+                }.frame(maxHeight: .infinity)
             }
             HStack {
                 TextField("add a comment...", text: $newCommentText)
@@ -218,14 +217,13 @@ struct EventCardDetailedView: View {
             }
             .padding(.horizontal)
             .padding(.top, 4).padding(.bottom)
-
         }
 
         .navigationBarBackButtonHidden(true).toolbar(.hidden)
         .alert(isPresented: $showConfirmationAlert) {
             switch confirmationAlertType {
             case .confirming:
-                return Alert(
+                Alert(
                     title: Text("confirm completion"),
                     message: Text(
                         "are you sure you want to confirm this task as completed?"
@@ -236,13 +234,13 @@ struct EventCardDetailedView: View {
                     secondaryButton: .cancel(Text("cancel"))
                 )
             case .success:
-                return Alert(
+                Alert(
                     title: Text("success"),
                     message: Text("task completion confirmed successfully."),
                     dismissButton: .default(Text("ok"))
                 )
             case .failure:
-                return Alert(
+                Alert(
                     title: Text("error"),
                     message: Text(
                         "failed to confirm task completion. please try again."),
@@ -258,7 +256,6 @@ struct EventCardDetailedView: View {
     }
 
     private func loadEventData() {
-
         if event.user == nil {
             Task {
                 if let user = await fetchUser(userId: event.userId) {
@@ -274,7 +271,6 @@ struct EventCardDetailedView: View {
             userColor = event.user!.profileColor
             userImage = event.user!.profileImageURL
         }
-
 
         likesCount = event.likesCount
     }
@@ -301,8 +297,7 @@ struct EventCardDetailedView: View {
         isLoadingComments = true
 
         Task {
-            if let fetchedComments = await fetchEventComments(eventId: event.id)
-            {
+            if let fetchedComments = await fetchEventComments(eventId: event.id) {
                 await MainActor.run {
                     comments = fetchedComments
                     isLoadingComments = false
@@ -320,7 +315,6 @@ struct EventCardDetailedView: View {
 
         Task {
             let commentText = newCommentText
-
 
             await MainActor.run {
                 newCommentText = ""
@@ -345,23 +339,21 @@ struct EventCardDetailedView: View {
     private func toggleLike() {
         let wasLiked = isLiked
 
-
         isLiked.toggle()
         likesCount += isLiked ? 1 : -1
 
         Task {
-            let success: Bool
-
-            if isLiked {
-                success = await likeEvent(
-                    eventId: event.id, userId: UserManager.shared.currentUserId)
+            let success: Bool = if isLiked {
+                await likeEvent(
+                    eventId: event.id, userId: UserManager.shared.currentUserId
+                )
             } else {
-                success = await unlikeEvent(
-                    eventId: event.id, userId: UserManager.shared.currentUserId)
+                await unlikeEvent(
+                    eventId: event.id, userId: UserManager.shared.currentUserId
+                )
             }
 
             if !success {
-
                 await MainActor.run {
                     isLiked = wasLiked
                     likesCount = event.likesCount
@@ -372,7 +364,6 @@ struct EventCardDetailedView: View {
 
     private func confirmTask(isConfirmed: Bool) {
         isConfirming = true
-
 
         guard let task = event.relatedTasks.first else {
             isConfirming = false
@@ -408,7 +399,8 @@ struct EventCardDetailedView: View {
         let now = Date()
         let components = calendar.dateComponents(
             [.minute, .hour, .day, .weekOfYear, .month, .year], from: date,
-            to: now)
+            to: now
+        )
 
         if let year = components.year, year >= 1 {
             return year == 1 ? "1 year ago" : "\(year) years ago"
@@ -438,15 +430,12 @@ struct EventCardDetailedView: View {
     }
 }
 
-
-
 struct ProofView: View {
     var task: taskapeTask
 
     var body: some View {
         VStack(alignment: .leading) {
-
-            VStack(alignment: .leading, spacing: 12){
+            VStack(alignment: .leading, spacing: 12) {
                 if let proofDescription = task.proofDescription,
                    !proofDescription.isEmpty
                 {
@@ -459,8 +448,7 @@ struct ProofView: View {
                         .padding(.horizontal)
                         .padding(.bottom, 8)
                 }
-            }.padding(.top,10)
-
+            }.padding(.top, 10)
 
             if let proofURL = task.completion.proofURL, !proofURL.isEmpty {
                 Text("submitted proof:")
@@ -469,7 +457,7 @@ struct ProofView: View {
 
                 CachedAsyncImage(url: URL(string: proofURL)) { phase in
                     switch phase {
-                    case .success(let image):
+                    case let .success(image):
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fit)
@@ -495,20 +483,19 @@ struct ProofView: View {
                         EmptyView()
                     }
                 }.clipShape(RoundedRectangle(cornerRadius: 12))
-                .padding(.horizontal)
-                .padding(.bottom, 12)
+                    .padding(.horizontal)
+                    .padding(.bottom, 12)
             }
         }
         .background(
-            RoundedRectangle(cornerRadius: 20
-                            )
-                .fill(Color(UIColor.secondarySystemBackground))
+            RoundedRectangle(
+                cornerRadius: 20
+            )
+            .fill(Color(UIColor.secondarySystemBackground))
         )
         .padding(.horizontal)
     }
 }
-
-
 
 struct ConfirmationButtons: View {
     @Binding var isConfirming: Bool
@@ -572,14 +559,11 @@ struct ConfirmationButtons: View {
     }
 }
 
-
-
 struct RelatedTaskRow: View {
     var task: taskapeTask
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-
             Circle()
                 .fill(task.completion.isCompleted ? Color.green : Color.gray)
                 .frame(width: 10, height: 10)
@@ -637,32 +621,44 @@ struct LikesSection: View {
 
 struct CommentRow: View {
     var comment: EventComment
+    @Environment(\.modelContext) var modelContext
     @State private var userName: String = ""
     @State private var userColor: String = "000000"
     @State private var userImage: String = ""
+    @Namespace var namespace
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-
-            CachedAsyncImage(url: URL(string: userImage)) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                case .failure, .empty, _:
-                    Circle()
-                        .fill(Color(hex: userColor))
-                        .overlay(
-                            Text(String(userName.prefix(1)).uppercased())
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(.white)
-                        )
-                }
-            }
-            .frame(width: 36, height: 36)
-            .clipShape(Circle())
-
+            NavigationLink(destination: {
+                UserProfileView(userId: comment.userId)
+                    .modelContext(modelContext).navigationTransition(
+                        .zoom(sourceID: "comment_\(comment.id)", in: namespace))
+            }) {
+                Group {
+                    CachedAsyncImage(url: URL(string: userImage)) { phase in
+                        switch phase {
+                        case let .success(image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        case .failure, .empty, _:
+                            Circle()
+                                .fill(Color(hex: userColor))
+                                .overlay(
+                                    Text(
+                                        String(userName.prefix(1)).uppercased()
+                                    )
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(.white)
+                                )
+                        }
+                    }
+                    .frame(width: 36, height: 36)
+                    .clipShape(Circle())
+                }.matchedTransitionSource(
+                    id: "comment_\(comment.id)", in: namespace
+                )
+            }.buttonStyle(PlainButtonStyle())
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(userName.isEmpty ? "user" : userName)
@@ -707,12 +703,12 @@ struct CommentRow: View {
 }
 
 #Preview {
-
     let event = createPreviewEvent()
 
-
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: taskapeEvent.self, taskapeTask.self)
+    let container = try! ModelContainer(
+        for: taskapeEvent.self, taskapeTask.self
+    )
 
     return EventCardDetailedView(event: event)
         .modelContainer(container)
@@ -720,7 +716,6 @@ struct CommentRow: View {
 }
 
 func createPreviewEvent() -> taskapeEvent {
-
     let event = taskapeEvent(
         id: "event1",
         userId: "user1",
@@ -735,7 +730,6 @@ func createPreviewEvent() -> taskapeEvent {
         likedByUserIds: ["current_user_id"]
     )
 
-
     let task = taskapeTask(
         id: "task1",
         user_id: "user1",
@@ -745,28 +739,26 @@ func createPreviewEvent() -> taskapeEvent {
         privacy: PrivacySettings(level: .everyone)
     )
 
-
     task.proofNeeded = true
-    task.proofDescription = "please provide a screenshot of the completed documentation"
+    task.proofDescription =
+        "please provide a screenshot of the completed documentation"
     task.completion.isCompleted = true
     task.completion.requiresConfirmation = true
-    task.completion.proofURL = "https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg"
-
+    task.completion.proofURL =
+        "https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg"
 
     let user = taskapeUser(
         id: "user1",
         handle: "demouser",
         bio: "this is a demo user",
-        profileImage: "https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg",
+        profileImage:
+        "https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg",
         profileColor: "FF9500"
     )
 
-
     UserManager.shared.currentUserId = "current_user_id"
 
-
     event.user = user
-
 
     event.relatedTasks = [task]
 
@@ -780,9 +772,9 @@ extension UINavigationController: @retroactive UIGestureRecognizerDelegate {
     }
 
     public func gestureRecognizerShouldBegin(
-        _ gestureRecognizer: UIGestureRecognizer
+        _: UIGestureRecognizer
     ) -> Bool {
-        return viewControllers.count > 1
+        viewControllers.count > 1
     }
 }
 
@@ -792,7 +784,7 @@ struct AdaptsToKeyboard: ViewModifier {
     func body(content: Content) -> some View {
         GeometryReader { geometry in
             content
-                .padding(.bottom, self.currentHeight)
+                .padding(.bottom, currentHeight)
                 .onAppear(perform: {
                     NotificationCenter.Publisher(
                         center: NotificationCenter.default,
@@ -802,12 +794,14 @@ struct AdaptsToKeyboard: ViewModifier {
                         with: NotificationCenter.Publisher(
                             center: NotificationCenter.default,
                             name: UIResponder
-                                .keyboardWillChangeFrameNotification)
+                                .keyboardWillChangeFrameNotification
+                        )
                     )
                     .compactMap { notification in
                         withAnimation(.easeOut(duration: 0.16)) {
                             notification.userInfo?[
-                                UIResponder.keyboardFrameEndUserInfoKey]
+                                UIResponder.keyboardFrameEndUserInfoKey
+                            ]
                                 as? CGRect
                         }
                     }
@@ -816,18 +810,20 @@ struct AdaptsToKeyboard: ViewModifier {
                     }
                     .subscribe(
                         Subscribers.Assign(
-                            object: self, keyPath: \.currentHeight))
+                            object: self, keyPath: \.currentHeight
+                        ))
 
                     NotificationCenter.Publisher(
                         center: NotificationCenter.default,
                         name: UIResponder.keyboardWillHideNotification
                     )
-                    .compactMap { notification in
+                    .compactMap { _ in
                         CGFloat.zero
                     }
                     .subscribe(
                         Subscribers.Assign(
-                            object: self, keyPath: \.currentHeight))
+                            object: self, keyPath: \.currentHeight
+                        ))
                 })
         }
     }
@@ -835,15 +831,13 @@ struct AdaptsToKeyboard: ViewModifier {
 
 extension View {
     func adaptsToKeyboard() -> some View {
-        return modifier(AdaptsToKeyboard())
+        modifier(AdaptsToKeyboard())
     }
 }
 
 final class KeyboardGuardian: ObservableObject {
     public var rects: [CGRect]
-    public var keyboardRect: CGRect = CGRect()
-
-
+    public var keyboardRect: CGRect = .init()
 
     public var keyboardIsHidden = true
 
@@ -856,17 +850,18 @@ final class KeyboardGuardian: ObservableObject {
     }
 
     init(textFieldCount: Int) {
-        self.rects = [CGRect](repeating: CGRect(), count: textFieldCount)
-
+        rects = [CGRect](repeating: CGRect(), count: textFieldCount)
     }
 
     func addObserver() {
         NotificationCenter.default.addObserver(
             self, selector: #selector(keyBoardWillShow(notification:)),
-            name: UIResponder.keyboardWillShowNotification, object: nil)
+            name: UIResponder.keyboardWillShowNotification, object: nil
+        )
         NotificationCenter.default.addObserver(
             self, selector: #selector(keyBoardDidHide(notification:)),
-            name: UIResponder.keyboardDidHideNotification, object: nil)
+            name: UIResponder.keyboardDidHideNotification, object: nil
+        )
     }
 
     func removeObserver() {
@@ -881,15 +876,15 @@ final class KeyboardGuardian: ObservableObject {
         if keyboardIsHidden {
             keyboardIsHidden = false
             if let rect = notification.userInfo?[
-                "UIKeyboardFrameEndUserInfoKey"] as? CGRect
-            {
+                "UIKeyboardFrameEndUserInfoKey"
+            ] as? CGRect {
                 keyboardRect = rect
                 updateSlide()
             }
         }
     }
 
-    @objc func keyBoardDidHide(notification: Notification) {
+    @objc func keyBoardDidHide(notification _: Notification) {
         keyboardIsHidden = true
         updateSlide()
     }
@@ -898,7 +893,7 @@ final class KeyboardGuardian: ObservableObject {
         if keyboardIsHidden {
             slide = 0
         } else {
-            let tfRect = self.rects[self.showField]
+            let tfRect = rects[showField]
             let diff = keyboardRect.minY - tfRect.maxY
 
             if diff > 0 {
@@ -906,7 +901,6 @@ final class KeyboardGuardian: ObservableObject {
             } else {
                 slide += min(diff, 0)
             }
-
         }
     }
 }

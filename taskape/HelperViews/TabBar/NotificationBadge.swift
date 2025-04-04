@@ -1,10 +1,5 @@
 
 
-
-
-
-
-
 import SwiftUI
 
 struct NotificationBadge: View {
@@ -41,16 +36,16 @@ struct NotificationBadge: View {
     }
 
     func hasTwoOrLessDigits() -> Bool {
-        return badgeCount < 100
+        badgeCount < 100
     }
 
     func widthMultplier() -> Double {
         if badgeCount < 10 {
-            return 1.0
+            1.0
         } else if badgeCount < 100 {
-            return 1.5
+            1.5
         } else {
-            return 2.0
+            2.0
         }
     }
 }

@@ -1,19 +1,24 @@
-import WidgetKit
 import AppIntents
 import SwiftUI
+import WidgetKit
 
 struct Provider: TimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
         SimpleEntry(date: Date(), tasks: sampleTasks)
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
+    func getSnapshot(
+        in context: Context, completion: @escaping (SimpleEntry) -> Void
+    ) {
         let tasks = WidgetDataManager.shared.loadTasks()
-        let entry = SimpleEntry(date: Date(), tasks: tasks.isEmpty ? sampleTasks : tasks)
+        let entry = SimpleEntry(
+            date: Date(), tasks: tasks.isEmpty ? sampleTasks : tasks)
         completion(entry)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
+    func getTimeline(
+        in context: Context, completion: @escaping (Timeline<Entry>) -> Void
+    ) {
         let currentDate = Date()
         let tasks = WidgetDataManager.shared.loadTasks()
 
@@ -23,23 +28,10 @@ struct Provider: TimelineProvider {
             value: 5,
             to: currentDate
         )!
-        let timeline = Timeline(entries: [entry], policy: .after(nextUpdateDate))
+        let timeline = Timeline(
+            entries: [entry], policy: .after(nextUpdateDate))
         completion(timeline)
     }
-
-//    func loadTasks() -> [WidgetTaskModel] {
-//        let userDefaults = UserDefaults(suiteName: appGroupIdentifier)
-//        guard let data = userDefaults?.data(forKey: "taskape_widget_tasks"),
-//            let widgetTasks = try? JSONDecoder().decode(
-//                [WidgetTaskModel].self, from: data)
-//        else {
-//            print("Widget: No tasks found in shared UserDefaults")
-//            return []
-//        }
-//
-//        print("Widget: Loaded \(widgetTasks.count) tasks from shared UserDefaults")
-//        return widgetTasks
-//    }
 
 }
 
@@ -48,27 +40,14 @@ struct SimpleEntry: TimelineEntry {
     let tasks: [WidgetTaskModel]
 }
 
-struct TaskapeWidgetEntryView : View {
+struct TaskapeWidgetEntryView: View {
     var entry: Provider.Entry
     @Environment(\.widgetFamily) var family
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         ZStack {
-            // Simplified gradient background inspired by MenuItem but simpler
-//            LinearGradient(
-//                stops: colorScheme == .dark ? [
-//                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.9), location: 0.1),
-//                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.7), location: 0.5),
-//                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.5), location: 0.9),
-//                ] : [
-//                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.8), location: 0.1),
-//                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.6), location: 0.5),
-//                    Gradient.Stop(color: Color.taskapeOrange.opacity(0.4), location: 0.9),
-//                ],
-//                startPoint: UnitPoint(x: 0.5, y: 1),
-//                endPoint: UnitPoint(x: 0.5, y: 0)
-//            )
+
             RoundedRectangle(cornerRadius: 30).fill(.background)
 
             VStack(alignment: .leading, spacing: 0) {
@@ -91,19 +70,21 @@ struct TaskapeWidgetEntryView : View {
                     VStack(alignment: .leading, spacing: 5) {
                         ForEach(Array(entry.tasks.prefix(3))) { task in
                             HStack {
-                                if let flagColor = task.flagColor, !flagColor.isEmpty {
+                                if let flagColor = task.flagColor,
+                                    !flagColor.isEmpty
+                                {
                                     Circle()
                                         .fill(Color(hex: flagColor))
                                         .frame(width: 8, height: 8)
                                         .padding(.horizontal)
                                 } else {
 
-                                Circle()
+                                    Circle()
                                         .fill(.primary)
-                                            .frame(width: 4, height: 4)
-                                            .padding(.leading).offset(x: 2).padding(.trailing, 20)
+                                        .frame(width: 4, height: 4)
+                                        .padding(.leading).offset(x: 2).padding(
+                                            .trailing, 20)
                                 }
-
 
                                 if task.name.isEmpty {
                                     Text(" new to-do")
@@ -118,7 +99,7 @@ struct TaskapeWidgetEntryView : View {
                                 }
 
                                 Spacer()
-                                
+
                                 if task.isCompleted {
                                     Image(systemName: "checkmark")
                                         .font(.system(size: 12))
@@ -154,29 +135,35 @@ struct TaskapeWidget: Widget {
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
-            TaskapeWidgetEntryView(entry: entry).containerBackground(.windowBackground, for: .widget)
+            TaskapeWidgetEntryView(entry: entry).containerBackground(
+                .windowBackground, for: .widget)
         }.contentMarginsDisabled()
-        .configurationDisplayName("taskape")
-        .description("view your tasks at a glance")
-        .supportedFamilies([.systemMedium])
+            .configurationDisplayName("taskape")
+            .description("view your tasks at a glance")
+            .supportedFamilies([.systemMedium])
     }
 }
 
 // Sample tasks for preview and placeholder
 let sampleTasks: [WidgetTaskModel] = [
-    WidgetTaskModel(id: "1", name: "finish the project", isCompleted: false, flagColor: nil, flagName: nil),
-    WidgetTaskModel(id: "2", name: "buy groceries", isCompleted: false, flagColor: "#FF6B6B", flagName: "important"),
-    WidgetTaskModel(id: "3", name: "call mom", isCompleted: true, flagColor: nil, flagName: nil)
+    WidgetTaskModel(
+        id: "1", name: "finish the project", isCompleted: false, flagColor: nil,
+        flagName: nil),
+    WidgetTaskModel(
+        id: "2", name: "buy groceries", isCompleted: false,
+        flagColor: "#FF6B6B", flagName: "important"),
+    WidgetTaskModel(
+        id: "3", name: "call mom", isCompleted: true, flagColor: nil,
+        flagName: nil),
 ]
-
-// Color extension for widget (matching the app's implementation)
 extension Color {
     static var taskapeOrange: Color {
         Color(red: 0.914, green: 0.427, blue: 0.078)
     }
 
     init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        let hex = hex.trimmingCharacters(
+            in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
         Scanner(string: hex).scanHexInt64(&int)
         let a: UInt64
@@ -185,11 +172,15 @@ extension Color {
         let b: UInt64
         switch hex.count {
         case 3:
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+            (a, r, g, b) = (
+                255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17
+            )
         case 6:
             (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
         case 8:
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+            (a, r, g, b) = (
+                int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF
+            )
         default:
             (a, r, g, b) = (255, 0, 0, 0)
         }
@@ -205,10 +196,12 @@ extension Color {
 
 struct TaskapeWidget_Previews: PreviewProvider {
     static var previews: some View {
-        TaskapeWidgetEntryView(entry: SimpleEntry(date: Date(), tasks: sampleTasks))
-            .previewContext(WidgetPreviewContext(family: .systemMedium))
-            .containerBackground(.windowBackground, for: .widget)
-            .ignoresSafeArea(.all)
+        TaskapeWidgetEntryView(
+            entry: SimpleEntry(date: Date(), tasks: sampleTasks)
+        )
+        .previewContext(WidgetPreviewContext(family: .systemMedium))
+        .containerBackground(.windowBackground, for: .widget)
+        .ignoresSafeArea(.all)
     }
 }
 
@@ -237,4 +230,3 @@ extension Font {
         .custom("PathwayExtreme-SemBdCond", size: size)
     }
 }
-

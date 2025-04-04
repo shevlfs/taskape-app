@@ -33,7 +33,6 @@ struct EventCard: View {
 
     var body: some View {
         ZStack {
-
             VStack(spacing: 0) {
                 switch eventSize {
                 case .small:
@@ -67,15 +66,15 @@ struct EventCard: View {
     private var smallEventView: some View {
         ZStack(alignment: .topLeading) {
             EventCardBackGround(
-                friendColor: Color(hex: userColor), size: .small)
+                friendColor: Color(hex: userColor), size: .small
+            )
 
             VStack(alignment: .leading, spacing: 0) {
-
                 HStack {
                     Spacer()
                     CachedAsyncImage(url: URL(string: userImage)) { phase in
                         switch phase {
-                        case .success(let image):
+                        case let .success(image):
                             image
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
@@ -104,7 +103,8 @@ struct EventCard: View {
                     .foregroundColor(getTextColor())
                     .lineLimit(1).minimumScaleFactor(0.01)
                     .padding(.leading, 9).padding(.top, 15).padding(
-                        .trailing, 5)
+                        .trailing, 5
+                    )
             }
         }.frame(
             width: UIScreen.main.bounds.width * proportions.0,
@@ -115,13 +115,14 @@ struct EventCard: View {
     private var mediumEventView: some View {
         ZStack(alignment: .topLeading) {
             EventCardBackGround(
-                friendColor: Color(hex: userColor), size: .medium)
+                friendColor: Color(hex: userColor), size: .medium
+            )
 
             HStack {
                 VStack {
                     CachedAsyncImage(url: URL(string: userImage)) { phase in
                         switch phase {
-                        case .success(let image):
+                        case let .success(image):
                             image
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
@@ -156,7 +157,6 @@ struct EventCard: View {
                 Spacer()
                 if !event.relatedTasks.isEmpty {
                     VStack(alignment: .trailing, spacing: 5) {
-
                         Text("\(getEventTypeText())")
                             .font(.pathwaySemiBold(11))
                             .lineLimit(2)
@@ -183,11 +183,11 @@ struct EventCard: View {
                                         .lineLimit(2)
                                         .multilineTextAlignment(.leading)
                                         .padding(
-                                            .trailing, 10).minimumScaleFactor(0.01)
+                                            .trailing, 10
+                                        ).minimumScaleFactor(0.01)
                                 }
 
                                 if event.relatedTasks.count > 1 {
-
                                     HStack(alignment: .top, spacing: 6) {
                                         Text("•")
                                             .font(.pathway(11)).foregroundColor(
@@ -205,13 +205,11 @@ struct EventCard: View {
                                 }
 
                                 if event.relatedTasks.count > 2 {
-
-                                    Text("& \(event.relatedTasks.count-2) more")
+                                    Text("& \(event.relatedTasks.count - 2) more")
                                         .font(.pathwaySemiBold(10))
                                         .foregroundColor(
                                             getTextColor()).minimumScaleFactor(0.01)
                                 }
-
                             }
                         }
                         Spacer()
@@ -224,7 +222,6 @@ struct EventCard: View {
                         .multilineTextAlignment(.trailing)
                         .padding([.trailing])
                 }
-
             }
         }.frame(
             width: UIScreen.main.bounds.width * proportions.0,
@@ -232,15 +229,14 @@ struct EventCard: View {
         )
     }
 
-    private var proportions: (widthProportion: Double, heightProportion: Double)
-    {
+    private var proportions: (widthProportion: Double, heightProportion: Double) {
         switch eventSize {
         case .small:
-            return (0.32, 0.16)
+            (0.32, 0.16)
         case .medium:
-            return (0.56, 0.16)
+            (0.56, 0.16)
         case .large:
-            return (0.93, 0.16)
+            (0.93, 0.16)
         }
     }
 
@@ -257,7 +253,7 @@ struct EventCard: View {
                         Text(getEventTypeText())
                             .font(.pathwaySemiBold(16))
                             .foregroundColor(getTextColor())
-                            .padding(.top, 12).padding(.leading,5)
+                            .padding(.top, 12).padding(.leading, 5)
                             .lineLimit(2)
                             .multilineTextAlignment(.leading)
                         Spacer()
@@ -279,7 +275,6 @@ struct EventCard: View {
                                 }
 
                                 if event.relatedTasks.count > 1 {
-
                                     HStack(alignment: .top, spacing: 6) {
                                         Text("•")
                                             .font(.pathway(11)).foregroundColor(
@@ -297,8 +292,7 @@ struct EventCard: View {
                                 }
 
                                 if event.relatedTasks.count > 2 {
-
-                                    Text("& \(event.relatedTasks.count-2) more")
+                                    Text("& \(event.relatedTasks.count - 2) more")
                                         .font(.pathwaySemiBold(10))
                                         .foregroundColor(
                                             getTextColor()).minimumScaleFactor(0.01)
@@ -325,7 +319,7 @@ struct EventCard: View {
                 VStack(alignment: .trailing) {
                     CachedAsyncImage(url: URL(string: userImage)) { phase in
                         switch phase {
-                        case .success(let image):
+                        case let .success(image):
                             image
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
@@ -363,29 +357,31 @@ struct EventCard: View {
     }
 
     func getTextColor() -> Color {
-        return Color(hex: userColor).contrastingTextColor(in: colorScheme)
+        Color(hex: userColor).contrastingTextColor(in: colorScheme)
     }
 }
 
 struct EventCardPreview: View {
-
     let dmitryUser = taskapeUser(
         id: "user1",
         handle: "dmitryddddd",
         bio: "87CEFA",
         profileImage:
-            "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
-        profileColor: "")
+        "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
+        profileColor: ""
+    )
     let gogaUser = taskapeUser(
         id: "user2", handle: "seconduser", bio: "F5F5DC",
         profileImage:
-            "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
-        profileColor: "")
+        "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
+        profileColor: ""
+    )
     let shevlfsUser = taskapeUser(
         id: "user3", handle: "seconduser", bio: "FFC0CB",
         profileImage:
-            "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
-        profileColor: "")
+        "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
+        profileColor: ""
+    )
 
     let designTask = taskapeTask(
         id: "task1",
@@ -444,7 +440,7 @@ struct EventCardPreview: View {
             taskIds: [designTask.id, uiTask.id]
         )
         event.user = gogaUser
-        event.relatedTasks = [figmaTask,designTask,uiTask]
+        event.relatedTasks = [figmaTask, designTask, uiTask]
         return event
     }
 
@@ -455,11 +451,11 @@ struct EventCardPreview: View {
             targetUserId: shevlfsUser.id,
             eventType: .newlyReceived,
             eventSize: .large,
-            createdAt: Date().addingTimeInterval(-172800),
+            createdAt: Date().addingTimeInterval(-172_800),
             taskIds: [figmaTask.id]
         )
         event.user = shevlfsUser
-        event.relatedTasks = [figmaTask,designTask,uiTask]
+        event.relatedTasks = [figmaTask, designTask, uiTask]
         return event
     }
 

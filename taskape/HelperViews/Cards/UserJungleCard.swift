@@ -39,10 +39,9 @@ struct UserJungleCard: View {
                             }
                         }
                     } else {
-
                         VStack(alignment: .center) {
                             Spacer()
-                            HStack{
+                            HStack {
                                 Spacer()
                                 Text("woo-hoo everything is done!")
                                     .font(.pathway(16))
@@ -100,6 +99,4 @@ struct TaskItem: View {
     }
 }
 
-#Preview {
-
-}
+#Preview {}

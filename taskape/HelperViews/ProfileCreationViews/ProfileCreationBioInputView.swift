@@ -4,15 +4,15 @@ struct taskapeBioField: View {
     @Binding var bio: String
     @FocusState var isFocused: Bool
     @State var viewBio = "tell us a bit about yourself..."
-    @State var foregroundColor: Color = Color(UIColor.systemGray2)
+    @State var foregroundColor: Color = .init(UIColor.systemGray2)
 
     func bioFormatter(input: String) -> String {
-        return String(input.prefix(60))
+        String(input.prefix(60))
     }
 
     var body: some View {
         TextEditor(text: $viewBio).focused($isFocused).onChange(of: isFocused) {
-            if !isFocused && viewBio.isEmpty {
+            if !isFocused, viewBio.isEmpty {
                 viewBio = "tell us a bit about yourself..."
                 foregroundColor = Color(UIColor.systemGray2)
             } else {
@@ -23,7 +23,7 @@ struct taskapeBioField: View {
         .onChange(
             of: viewBio
         ) {
-            viewBio = self.bioFormatter(input: viewBio)
+            viewBio = bioFormatter(input: viewBio)
             if viewBio != "tell us a bit about yourself..." {
                 bio = viewBio
             }
@@ -62,7 +62,7 @@ struct ProfileCreationBioInputView: View {
 
             Button(
                 action: {
-                    UserDefaults.standard.set(self.bio, forKey: "bio")
+                    UserDefaults.standard.set(bio, forKey: "bio")
                     path.append("color_selection")
                     progress += 1 / 5
 
@@ -76,13 +76,12 @@ struct ProfileCreationBioInputView: View {
                 )
                 .font(.pathwayItalic(16))
                 .padding()
-
         }
     }
 }
 
 #Preview {
-    @Previewable @State var bio: String = ""
+    @Previewable @State var bio = ""
     @Previewable @State var path = NavigationPath()
     ProfileCreationBioInputView(
         bio: $bio,

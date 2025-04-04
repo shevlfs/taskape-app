@@ -27,7 +27,6 @@ struct ProofSubmissionView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-
                 Text("proof required")
                     .font(.pathwayBlack(22))
                     .padding(.top)
@@ -42,7 +41,7 @@ struct ProofSubmissionView: View {
                 .padding(.horizontal)
 
                 VStack(spacing: 15) {
-                    if let selectedImage = selectedImage {
+                    if let selectedImage {
                         Image(uiImage: selectedImage)
                             .resizable()
                             .scaledToFit()
@@ -188,7 +187,6 @@ struct ProofSubmissionView: View {
                 }
             )
             .onAppear {
-
                 if !permissionChecked {
                     checkPermissions()
                     permissionChecked = true
@@ -212,14 +210,12 @@ struct ProofSubmissionView: View {
     }
 
     func hasRequiredPermissions() -> Bool {
-        return
-            (photoPermissionStatus == .authorized
+        (photoPermissionStatus == .authorized
             || photoPermissionStatus == .limited)
             && cameraPermissionStatus == .authorized
     }
 
     func checkPermissions() {
-
         photoPermissionStatus = PHPhotoLibrary.authorizationStatus(
             for: .readWrite)
 
@@ -235,7 +231,6 @@ struct ProofSubmissionView: View {
         } else if photoPermissionStatus == .notDetermined
             || cameraPermissionStatus == .notDetermined
         {
-
             showPermissionAlert = true
         }
     }
@@ -249,9 +244,9 @@ struct ProofSubmissionView: View {
         if cameraPermissionStatus == .notDetermined {
             AVCaptureDevice.requestAccess(for: .video) { granted in
                 DispatchQueue.main.async {
-                    self.cameraPermissionStatus =
+                    cameraPermissionStatus =
                         granted ? .authorized : .denied
-                    self.updateMediaAccessState()
+                    updateMediaAccessState()
                 }
             }
         }
@@ -261,8 +256,8 @@ struct ProofSubmissionView: View {
         if photoPermissionStatus == .notDetermined {
             PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
                 DispatchQueue.main.async {
-                    self.photoPermissionStatus = status
-                    self.updateMediaAccessState()
+                    photoPermissionStatus = status
+                    updateMediaAccessState()
                 }
             }
         }
@@ -289,11 +284,9 @@ struct ProofSubmissionView: View {
 
         Task {
             do {
-
                 let imageUrl = try await uploadimage(image: image)
 
                 await MainActor.run {
-
                     task.completion.proofURL = imageUrl
                     task.proofDescription = proofDescription
                     task.completion.requiresConfirmation = true
@@ -319,6 +312,7 @@ struct ProofSubmissionView: View {
             }
         }
     }
+
     func uploadimage(image: UIImage) async throws -> String {
         let apiKey: String = Dotenv["IAPIKEY"]!.stringValue
         let endpoint: String = Dotenv["IAPIENDPOINT"]!.stringValue
@@ -350,7 +344,7 @@ struct ProofSubmissionView: View {
             )
             .responseJSON { response in
                 switch response.result {
-                case .success(let value):
+                case let .success(value):
                     if let json = value as? [String: Any],
                         let data = json["data"] as? [String: Any],
                         let url = data["url"] as? String
@@ -360,7 +354,7 @@ struct ProofSubmissionView: View {
                         continuation.resume(
                             throwing: URLError(.badServerResponse))
                     }
-                case .failure(let error):
+                case let .failure(error):
                     print("error: \(error)")
                     continuation.resume(throwing: error)
                 }
@@ -381,5 +375,6 @@ struct ProofSubmissionView: View {
 
     return ProofSubmissionView(
         task: task, isPresented: .constant(true),
-        proofSubmitted: .constant(false))
+        proofSubmitted: .constant(false)
+    )
 }

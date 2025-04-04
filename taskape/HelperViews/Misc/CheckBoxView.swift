@@ -12,7 +12,7 @@ struct CheckBoxView: View {
         -> Color
     {
         let baseColor: Color = {
-            if flagColor != nil && task.flagName != "" {
+            if flagColor != nil, task.flagName != "" {
                 return Color(hex: flagColor!)
             }
             return Color.taskapeOrange
@@ -23,28 +23,21 @@ struct CheckBoxView: View {
 
     var body: some View {
         Button(action: {
-
-            if task.proofNeeded == true && !proofSubmitted {
+            if task.proofNeeded == true, !proofSubmitted {
                 showProofSubmission = true
             } else {
-
                 newCompletionStatus.toggle()
-
 
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                     isAnimating = true
                 }
-
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         isAnimating = false
                     }
 
-
-
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-
                         task.completion.isCompleted = newCompletionStatus
 
                         saveTask()
@@ -53,11 +46,11 @@ struct CheckBoxView: View {
             }
         }) {
             ZStack {
-
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(
                         newCompletionStatus
-                            ? getTaskColor(flagColor: task.flagColor) : Color.gray.opacity(0.7),
+                            ? getTaskColor(flagColor: task.flagColor)
+                            : Color.gray.opacity(0.7),
                         lineWidth: 2
                     )
                     .frame(width: 28, height: 28)
@@ -65,16 +58,17 @@ struct CheckBoxView: View {
                         RoundedRectangle(cornerRadius: 10)
                             .fill(
                                 newCompletionStatus
-                                ? getTaskColor(flagColor: task.flagColor)
+                                    ? getTaskColor(flagColor: task.flagColor)
                                     .opacity(0.3)
                                     : Color.clear)
                     )
 
-
                 if newCompletionStatus {
                     Image(systemName: "checkmark")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(getTaskColor(flagColor: task.flagColor))
+                        .foregroundColor(
+                            getTaskColor(flagColor: task.flagColor)
+                        )
                         .scaleEffect(isAnimating ? 1.3 : 1.0)
                 }
             }
@@ -93,14 +87,15 @@ struct CheckBoxView: View {
                 isPresented: $showProofSubmission,
                 proofSubmitted: $proofSubmitted
             )
-                .modelContext(modelContext)
-        }
+            .modelContext(modelContext)
+        }.disabled(
+            task.completion.requiresConfirmation
+        )
     }
 
     func saveTask() {
         do {
             try modelContext.save()
-
 
             let userId = task.user_id
 
@@ -118,7 +113,6 @@ struct CheckBoxView: View {
     }
 }
 
-
 struct TaskCardWithCheckbox: View {
     @Bindable var task: taskapeTask
     @State var detailIsPresent: Bool = false
@@ -134,10 +128,10 @@ struct TaskCardWithCheckbox: View {
     func getTaskTextColor(flagColor: String?, newCompletionStatus: Bool)
         -> Color
     {
-        if flagColor != nil && task.flagName != "" {
-            return Color(hex: flagColor!).contrastingTextColor(in: colorScheme)
+        if flagColor != nil, task.flagName != "" {
+            Color(hex: flagColor!).contrastingTextColor(in: colorScheme)
         } else {
-            return newCompletionStatus ? Color.white.opacity(0.7) : Color.white
+            newCompletionStatus ? Color.white.opacity(0.7) : Color.white
         }
     }
 
@@ -145,7 +139,7 @@ struct TaskCardWithCheckbox: View {
         -> Color
     {
         let baseColor: Color = {
-            if flagColor != nil && task.flagName != "" {
+            if flagColor != nil, task.flagName != "" {
                 return Color(hex: flagColor!)
             }
             return Color.taskapeOrange
@@ -165,7 +159,6 @@ struct TaskCardWithCheckbox: View {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             isAnimating = true
                         }
-
 
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             withAnimation {
@@ -187,7 +180,7 @@ struct TaskCardWithCheckbox: View {
                                         getTaskTextColor(
                                             flagColor: task.flagColor,
                                             newCompletionStatus:
-                                                newCompletionStatus
+                                            newCompletionStatus
                                         )
                                     )
                                     .strikethrough(newCompletionStatus)
@@ -215,14 +208,17 @@ struct TaskCardWithCheckbox: View {
                             .fill(
                                 getTaskColor(
                                     flagColor: task.flagColor,
-                                    newCompletionStatus: newCompletionStatus)
+                                    newCompletionStatus: newCompletionStatus
+                                )
                             )
                             .stroke(.regularMaterial, lineWidth: 1)
                             .blur(radius: 0.25)
                     )
                     .completedTaskStyle(
                         isCompleted: newCompletionStatus,
-                        isAnimating: isAnimating, requiresConfirmation: task.completion.requiresConfirmation
+                        isAnimating: isAnimating,
+                        requiresConfirmation: task.completion
+                            .requiresConfirmation
                     )
                     .padding(.leading, 5)
                     .padding(.trailing, 5)
@@ -242,7 +238,6 @@ struct TaskCardWithCheckbox: View {
                         TaskNotifier.notifyTasksUpdated()
                     }
             }.onAppear {
-
                 newCompletionStatus = task.completion.isCompleted
             }.onChange(of: task.completion.isCompleted) { _, newValue in
 

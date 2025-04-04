@@ -6,7 +6,8 @@ struct ProfileCreationProgressBar: View {
         ProgressView(value: progress)
             .accentColor(Color.taskapeOrange)
             .padding().shadow(radius: 1.5).animation(
-                .bouncy(duration: 0.35), value: progress)
+                .bouncy(duration: 0.35), value: progress
+            )
     }
 }
 
@@ -28,7 +29,7 @@ struct taskapeHandleField: View {
     var body: some View {
         TextField("handle goes here", text: $handle)
             .onChange(of: handle) {
-                handle = self.handleFormatter(input: handle)
+                handle = handleFormatter(input: handle)
                 isAvailable = nil
                 wasChecked = false
                 onHandleChanged()
@@ -56,12 +57,12 @@ struct taskapeHandleField: View {
                             .scaleEffect(0.7)
                             .frame(maxWidth: .infinity, alignment: .trailing)
                             .padding(.trailing, 16)
-                    } else if wasChecked && isAvailable == true {
+                    } else if wasChecked, isAvailable == true {
                         Image(systemName: "checkmark.circle.fill")
                             .foregroundColor(.green)
                             .frame(maxWidth: .infinity, alignment: .trailing)
                             .padding(.trailing, 16)
-                    } else if wasChecked && isAvailable == false {
+                    } else if wasChecked, isAvailable == false {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.red)
                             .frame(maxWidth: .infinity, alignment: .trailing)
@@ -100,7 +101,7 @@ struct ProfileCreationHandleInputView: View {
                 onHandleChanged: handleTypingDebounce
             ).overlay(
                 VStack {
-                    if wasHandleChecked && isHandleAvailable == false {
+                    if wasHandleChecked, isHandleAvailable == false {
                         Text("this username is already taken")
                             .font(.pathway(15))
                             .foregroundColor(Color.red)
@@ -112,7 +113,7 @@ struct ProfileCreationHandleInputView: View {
             Spacer()
 
             Button(action: {
-                if wasHandleChecked && isHandleAvailable == true {
+                if wasHandleChecked, isHandleAvailable == true {
                     proceedToNextStep()
                 }
             }) {
@@ -136,7 +137,7 @@ struct ProfileCreationHandleInputView: View {
             return
         }
 
-        if wasHandleChecked && isHandleAvailable == true {
+        if wasHandleChecked, isHandleAvailable == true {
             proceedToNextStep()
             return
         }
@@ -167,9 +168,9 @@ struct ProfileCreationHandleInputView: View {
     }
 
     private func proceedToNextStep() {
-        self.handle =
+        handle =
             handle.hasPrefix("@") ? String(handle.dropFirst()) : handle
-        UserDefaults.standard.set(self.handle, forKey: "handle")
+        UserDefaults.standard.set(handle, forKey: "handle")
         path.append("bio_input")
         progress += 1 / 5
     }
@@ -180,7 +181,7 @@ struct ProfileCreationHandleInputView: View {
             debounceTimer = Timer.scheduledTimer(
                 withTimeInterval: 0.7, repeats: false
             ) { _ in
-                if !isChecking && !wasHandleChecked {
+                if !isChecking, !wasHandleChecked {
                     checkHandleAndProceed()
                 }
             }
@@ -189,11 +190,11 @@ struct ProfileCreationHandleInputView: View {
 }
 
 #Preview {
-    @Previewable @State var handle: String = ""
+    @Previewable @State var handle = ""
     @Previewable @State var path = NavigationPath()
     @Previewable @State var progress: Float = 0
     ProfileCreationHandleInputView(
         handle: .constant(handle), path: .constant(path),
-        progress: .constant(progress))
+        progress: .constant(progress)
+    )
 }
-

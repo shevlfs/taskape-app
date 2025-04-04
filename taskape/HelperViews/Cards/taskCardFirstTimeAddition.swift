@@ -5,7 +5,7 @@ struct taskCardFirstTimeAddition: View {
     @Binding var task: taskapeTask
     @State var detailIsPresent: Bool = false
     @State private var appearAnimation = false
-    @State private var foregroundColor: Color = Color.primary
+    @State private var foregroundColor: Color = .primary
     @State private var selectedPrivacyLevel: PrivacySettings.PrivacyLevel =
         .everyone
 
@@ -60,7 +60,6 @@ struct taskCardFirstTimeAddition: View {
                                     value: detailIsPresent
                                 )
                         }
-
                     }
                 }.background(
                     RoundedRectangle(cornerRadius: 30)
@@ -120,7 +119,6 @@ struct taskCardFirstTimeAddition: View {
                         )
                         .frame(maxHeight: 150)
                         .padding(.horizontal)
-
 
                     DatePicker(
                         "due date",
@@ -201,7 +199,7 @@ struct taskCardFirstTimeAddition: View {
                                     privacy: "private"
                                 )
                             ),
-                            firstLaunch: true 
+                            firstLaunch: true
                         )
 
                         let completedTask = taskapeTask(
@@ -220,7 +218,7 @@ struct taskCardFirstTimeAddition: View {
                                 taskapeTask(
                                     name: "",
                                     taskDescription:
-                                        "Fix back button not working properly",
+                                    "Fix back button not working properly",
                                     author: "shevlfs",
                                     privacy: "private"
                                 )

@@ -15,14 +15,11 @@ struct TaskapeNumberField: View {
     @Binding var isCorrect: Bool
 
     func formatPhoneNumber(_ phoneNumber: String) -> String {
-
         let cleanNumber = phoneNumber.components(
             separatedBy: CharacterSet.decimalDigits.inverted
         ).joined()
 
-
         guard cleanNumber.count <= country.limit else {
-
             return String(cleanNumber.prefix(country.limit))
         }
 
@@ -31,19 +28,17 @@ struct TaskapeNumberField: View {
         }
 
         var formattedNumber = ""
-        let pattern = country.pattern.map { $0 }
+        let pattern = country.pattern.map(\.self)
         var numberIndex = cleanNumber.startIndex
         var patternIndex = pattern.startIndex
 
-        while numberIndex < cleanNumber.endIndex
-            && patternIndex < pattern.endIndex
+        while numberIndex < cleanNumber.endIndex,
+              patternIndex < pattern.endIndex
         {
             if pattern[patternIndex] == "#" {
-
                 formattedNumber.append(cleanNumber[numberIndex])
                 numberIndex = cleanNumber.index(after: numberIndex)
             } else {
-
                 formattedNumber.append(pattern[patternIndex])
             }
             patternIndex = pattern.index(after: patternIndex)
@@ -51,6 +46,7 @@ struct TaskapeNumberField: View {
 
         return formattedNumber
     }
+
     var body: some View {
         TextField(
             placeholder,
@@ -101,7 +97,6 @@ struct countryPicker: View {
             VStack {
                 ForEach(countries, id: \.id) { country in
                     Button(action: {
-
                         selectedCountry = country
                         onDismiss()
                     }) {
@@ -115,7 +110,6 @@ struct countryPicker: View {
                         .padding(.horizontal)
                         .padding(.vertical, 8)
                     }
-
                 }
             }
             .shadow(radius: 10)
@@ -128,7 +122,7 @@ struct countryPicker: View {
 
 struct RegistrationView: View {
     @FocusState private var isFocused: Bool
-    @State var selectedCountry: CPData = CPData.example
+    @State var selectedCountry: CPData = .example
     @Binding var phoneNumber: String
     let countries: [CPData] = Bundle.main.decode("CountryNumbers.json")
     @State private var countryPickerActive = false
@@ -137,64 +131,65 @@ struct RegistrationView: View {
     @Binding var phoneCode: String
 
     var body: some View {
-            ZStack {
-                Color.black
-                    .opacity(countryPickerActive ? 0.5 : 0)
-                    .ignoresSafeArea()
-                    .animation(
-                        .easeInOut(duration: 0.25),
-                        value: countryPickerActive
-                    ).onTapGesture {
-                        isFocused = false
-                        countryPickerActive = false
-                    }
-                VStack {
-                    Text("heyyy, so, uh...\n what's your number?")
-                        .multilineTextAlignment(.center)
-                        .font(.pathway(30)).padding(.top, 40)
-                    Spacer()
-                    HStack {
-                        Button(action: {
-                            isFocused = false
-                            countryPickerActive.toggle()
-                        }) {
-                            countrySelectionButton(country: selectedCountry)
-                        }
-                        .buttonStyle(.plain)
-
-                        TaskapeNumberField(
-                            current_string: $phoneNumber,
-                            placeholder: "banana phone",
-                            country: selectedCountry, isFocused: _isFocused,
-                            isCorrect: $numberOk
-                        )
-                    }
-                    Spacer()
+        ZStack {
+            Color.black
+                .opacity(countryPickerActive ? 0.5 : 0)
+                .ignoresSafeArea()
+                .animation(
+                    .easeInOut(duration: 0.25),
+                    value: countryPickerActive
+                ).onTapGesture {
+                    isFocused = false
+                    countryPickerActive = false
+                }
+            VStack {
+                Text("heyyy, so, uh...\n what's your number?")
+                    .multilineTextAlignment(.center)
+                    .font(.pathway(30)).padding(.top, 40)
+                Spacer()
+                HStack {
                     Button(action: {
-                        phoneCode = selectedCountry.dial_code
-                        phoneNumberReceived = true
+                        isFocused = false
+                        countryPickerActive.toggle()
                     }) {
-                        taskapeContinueButton()
-                    }.buttonStyle(.plain).disabled(
-                        !numberOk).padding(.bottom,120)
-                }.overlay(
-                    countryPicker(
-                        selectedCountry: $selectedCountry,
-                        countries: countries,
-                        onDismiss: { countryPickerActive = false }
-                    ).disabled(!countryPickerActive).opacity(
-                        countryPickerActive ? 1 : 0
+                        countrySelectionButton(country: selectedCountry)
+                    }
+                    .buttonStyle(.plain)
+
+                    TaskapeNumberField(
+                        current_string: $phoneNumber,
+                        placeholder: "banana phone",
+                        country: selectedCountry, isFocused: _isFocused,
+                        isCorrect: $numberOk
                     )
-                 .transition(.opacity)
-                    .animation(
-                        .bouncy(duration: 0.25), value: countryPickerActive))
-            .background(Color.clear)
+                }
+                Spacer()
+                Button(action: {
+                    phoneCode = selectedCountry.dial_code
+                    phoneNumberReceived = true
+                }) {
+                    taskapeContinueButton()
+                }.buttonStyle(.plain).disabled(
+                    !numberOk).padding(.bottom, 120)
+            }.overlay(
+                countryPicker(
+                    selectedCountry: $selectedCountry,
+                    countries: countries,
+                    onDismiss: { countryPickerActive = false }
+                ).disabled(!countryPickerActive).opacity(
+                    countryPickerActive ? 1 : 0
+                )
+                .transition(.opacity)
+                .animation(
+                    .bouncy(duration: 0.25), value: countryPickerActive
+                ))
+                .background(Color.clear)
         }
     }
 }
 
 #Preview {
-    @Previewable @State var selectedCountry: CPData = CPData.example
+    @Previewable @State var selectedCountry = CPData.example
     RegistrationView(
         selectedCountry: selectedCountry,
         phoneNumber: .constant(""),

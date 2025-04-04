@@ -1,10 +1,5 @@
 
 
-
-
-
-
-
 import Lottie
 import SwiftUI
 
@@ -27,16 +22,16 @@ struct LoadingView: View {
                     renderingEngine: .automatic
                 )
             ).looping().animationSpeed(0.75).frame(
-                maxWidth: 200, maxHeight: 200)
+                maxWidth: 200, maxHeight: 200
+            )
             Spacer()
         }.onAppear(perform: load)
     }
 
     func load() {
-
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            self.isLoading = false
-            self.path.append("task_addition")
+            isLoading = false
+            path.append("task_addition")
         }
     }
 }

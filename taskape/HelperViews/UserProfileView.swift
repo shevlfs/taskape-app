@@ -1,9 +1,4 @@
-//
-//  UserProfileView.swift
-//  taskape
-//
-//  Created by shevlfs on 4/2/25.
-//
+
 
 import CachedAsyncImage
 import SwiftData
@@ -20,10 +15,12 @@ struct UserSelfProfileView: View {
     @State private var errorMessage: String? = nil
     @State private var isRefreshingTasks = false
 
+    @State var userEvents: [taskapeEvent] = []
+
     @State private var showEditProfileView: Bool = false
 
     private var isCurrentUserProfile: Bool {
-        return userId == UserManager.shared.currentUserId
+        userId == UserManager.shared.currentUserId
     }
 
     var body: some View {
@@ -48,7 +45,7 @@ struct UserSelfProfileView: View {
                     .foregroundColor(.white)
                     .cornerRadius(20)
                 }
-            } else if let user = user {
+            } else if let user {
                 ScrollView {
                     VStack(spacing: 0) {
                         VStack {
@@ -82,7 +79,7 @@ struct UserSelfProfileView: View {
                                                 string: user.profileImageURL)
                                         ) { phase in
                                             switch phase {
-                                            case .success(let image):
+                                            case let .success(image):
                                                 image
                                                     .resizable()
                                                     .aspectRatio(
@@ -101,7 +98,7 @@ struct UserSelfProfileView: View {
                                                                 )
                                                                 .contrastingTextColor(
                                                                     in:
-                                                                        colorScheme
+                                                                    colorScheme
                                                                 ),
                                                                 lineWidth: 1
                                                             )
@@ -110,7 +107,7 @@ struct UserSelfProfileView: View {
                                             case .failure:
                                                 Image(
                                                     systemName:
-                                                        "person.circle.fill"
+                                                    "person.circle.fill"
                                                 )
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fill)
@@ -120,7 +117,8 @@ struct UserSelfProfileView: View {
                                             default:
                                                 ProgressView()
                                                     .frame(
-                                                        width: 100, height: 100)
+                                                        width: 100, height: 100
+                                                    )
                                             }
                                         }
                                     } else {
@@ -191,7 +189,6 @@ struct UserSelfProfileView: View {
 
                         VStack(alignment: .leading, spacing: 16) {
                             HStack(spacing: 0) {
-
                                 StatItem(
                                     title: "tasks",
                                     value: "\(user.tasks.count)",
@@ -201,19 +198,19 @@ struct UserSelfProfileView: View {
                                 StatItem(
                                     title: "completed",
                                     value:
-                                        "\(user.tasks.filter { $0.completion.isCompleted }.count)",
+                                    "\(user.tasks.filter(\.completion.isCompleted).count)",
                                     userColor: Color(hex: user.profileColor)
                                 )
 
                                 StatItem(
                                     title: "pending",
                                     value:
-                                        "\(user.tasks.filter { !$0.completion.isCompleted }.count)",
+                                    "\(user.tasks.filter { !$0.completion.isCompleted }.count)",
                                     userColor: Color(hex: user.profileColor)
                                 )
                             }
 
-                            if !isCurrentUserProfile && user.tasks.isEmpty {
+                            if !isCurrentUserProfile, user.tasks.isEmpty {
                                 Text("no publicly visible tasks...")
                                     .font(.pathwayItalic(16))
                                     .foregroundColor(.secondary)
@@ -226,6 +223,19 @@ struct UserSelfProfileView: View {
                         }.padding(.vertical, user.bio == "" ? 25 : 10)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
+
+                        StreakCard()
+                            .padding(.horizontal)
+                            .padding(.top, 10)
+                            .padding(.bottom, 15)
+
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack {
+                                ForEach(userEvents) { event in
+                                    EventCardCompact(event: event, user: user).modelContext(modelContext).padding(.leading, 12)
+                                }
+                            }
+                        }
 
                         if !user.tasks.isEmpty {
                             Text("to-do's")
@@ -263,43 +273,48 @@ struct UserSelfProfileView: View {
     }
 
     private func loadUser() {
-
-        if isCurrentUserProfile {
-
-            let currentUser = UserManager.shared.getCurrentUser(
-                context: modelContext)
-            self.user = currentUser
-            self.isLoading = false
-        } else {
-
-            Task {
-                if let fetchedUser = await fetchUser(userId: userId) {
-                    if let tasks = await fetchTasks(userId: userId) {
+        Task {
+            if let fetchedUser = await fetchUser(userId: userId) {
+                if let tasks = await fetchTasks(userId: userId) {
+                    if let events = await fetchUserRelatedEvents(
+                        userId: userId
+                    ) {
                         await MainActor.run {
+                            userEvents = events
                             fetchedUser.tasks = tasks
-
-                            self.user = fetchedUser
-                            self.isLoading = false
+                            loadRelatedTasksForEventsSelf(
+                                events: events,
+                                existingTasks: tasks
+                            )
+                            user = fetchedUser
+                            isLoading = false
                         }
                     } else {
                         await MainActor.run {
-                            fetchedUser.tasks = []
-                            self.user = fetchedUser
-                            self.isLoading = false
+                            userEvents = []
+                            fetchedUser.tasks = tasks
+                            user = fetchedUser
+                            isLoading = false
                         }
                     }
                 } else {
                     await MainActor.run {
-                        self.errorMessage = "error while loading user profile"
-                        self.isLoading = false
+                        fetchedUser.tasks = []
+                        user = fetchedUser
+                        isLoading = false
                     }
+                }
+            } else {
+                await MainActor.run {
+                    errorMessage = "error while loading user profile"
+                    isLoading = false
                 }
             }
         }
     }
 
     private func refreshTasks() {
-        guard !isCurrentUserProfile, let user = self.user else { return }
+        guard !isCurrentUserProfile, let user else { return }
 
         isRefreshingTasks = true
 
@@ -319,19 +334,147 @@ struct UserSelfProfileView: View {
     }
 }
 
+struct StreakCard: View {
+    @State private var streak: UserStreak?
+    @State private var isLoading = true
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("streak")
+                .font(.pathwayBold(18))
+                .foregroundColor(.primary)
+
+            if isLoading {
+                HStack {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+                }
+                .padding()
+            } else if let streak {
+                HStack(spacing: 20) {
+                    VStack(alignment: .center, spacing: 4) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.taskapeOrange.opacity(0.2))
+                                .frame(width: 60, height: 60)
+
+                            Image(systemName: "flame.fill")
+                                .font(.system(size: 30))
+                                .foregroundColor(.orange)
+                        }
+
+                        Text("\(streak.currentStreak)")
+                            .font(.pathwayBlack(18))
+                            .foregroundColor(.primary)
+
+                        Text("current")
+                            .font(.pathway(12))
+                            .foregroundColor(.secondary)
+                    }
+
+                    Spacer()
+
+                    VStack(alignment: .center, spacing: 4) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.yellow.opacity(0.2))
+                                .frame(width: 60, height: 60)
+
+                            Image(systemName: "trophy.fill")
+                                .font(.system(size: 30))
+                                .foregroundColor(.yellow)
+                        }
+
+                        Text("\(streak.longestStreak)")
+                            .font(.pathwayBlack(18))
+                            .foregroundColor(.primary)
+
+                        Text("best")
+                            .font(.pathway(12))
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.horizontal)
+
+                if let daysSince = streak.daysSinceLastCompleted, streak.currentStreak > 0 {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(daysSince <= 1 ? .orange : .red)
+                            .opacity(0.8)
+
+                        Text(streakStatusMessage(for: streak))
+                            .font(.pathway(14))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 4)
+                }
+            } else {
+                Text("complete a task to start your streak!")
+                    .font(.pathway(16))
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding()
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color(UIColor.secondarySystemBackground).opacity(0.5))
+        )
+        .onAppear {
+            loadStreak()
+        }
+    }
+
+    private func loadStreak() {
+        isLoading = true
+
+        Task {
+            if let streak = await UserManager.shared.getCurrentUserStreak() {
+                await MainActor.run {
+                    self.streak = streak
+                    isLoading = false
+                }
+            } else {
+                await MainActor.run {
+                    streak = nil
+                    isLoading = false
+                }
+            }
+        }
+    }
+
+    private func streakStatusMessage(for streak: UserStreak) -> String {
+        if let daysSince = streak.daysSinceLastCompleted {
+            if daysSince == 0 {
+                "you've completed a task today!"
+            } else if daysSince == 1 {
+                "complete a task today to keep your streak!"
+            } else {
+                "your streak was broken \(daysSince) days ago"
+            }
+        } else {
+            "\(streak.currentStreak) day streak!"
+        }
+    }
+}
+
 #Preview {
     do {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(
-            for: taskapeUser.self, taskapeTask.self, configurations: config)
+            for: taskapeUser.self, taskapeTask.self, configurations: config
+        )
 
         let user = taskapeUser(
             id: UUID().uuidString,
             handle: "shevlfs",
             bio:
-                "something",
+            "something",
             profileImage:
-                "https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg",
+            "https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg",
             profileColor: "#7A57FE"
         )
 

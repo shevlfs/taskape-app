@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 import SwiftUI
 
 struct taskapeContinueButton: View {
@@ -19,6 +12,5 @@ struct taskapeContinueButton: View {
 #Preview {
     ZStack {
         taskapeContinueButton()
-
     }
 }

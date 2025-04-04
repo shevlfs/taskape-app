@@ -6,17 +6,15 @@ struct taskCard: View {
     @State var detailIsPresent: Bool = false
     @State private var appearAnimation = false
     @State private var isAnimating: Bool = false
-    @State private var foregroundColor: Color = Color.primary
+    @State private var foregroundColor: Color = .primary
     @State private var selectedPrivacyLevel: PrivacySettings.PrivacyLevel =
         .everyone
     @State private var disappearAnimation: Bool = false
     @State private var shouldShow: Bool = true
     @State var labels: [TaskFlag] = []
 
-
     @Environment(\.modelContext) var modelContext
     @FocusState var isFocused: Bool
-
 
     var onCompletionAnimationFinished: ((taskapeTask) -> Void)?
 
@@ -26,7 +24,7 @@ struct taskCard: View {
         -> Color
     {
         let baseColor: Color = {
-            if flagColor != nil && task.flagName != "" {
+            if flagColor != nil, task.flagName != "" {
                 return Color(hex: flagColor!)
             }
             return Color.taskapeOrange
@@ -48,18 +46,15 @@ struct taskCard: View {
                             isAnimating = true
                         }
 
-
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             withAnimation {
                                 isAnimating = false
                             }
 
-
-                            if newValue == true && oldValue == false {
+                            if newValue == true, oldValue == false {
                                 withAnimation(.easeInOut(duration: 0.4)) {
                                     disappearAnimation = true
                                 }
-
 
                                 DispatchQueue.main.asyncAfter(
                                     deadline: .now() + 0.5
@@ -67,7 +62,6 @@ struct taskCard: View {
                                     withAnimation {
                                         shouldShow = false
                                     }
-
 
                                     onCompletionAnimationFinished?(task)
                                 }
@@ -154,7 +148,7 @@ struct taskCard: View {
                 .onAppear {
                     selectedPrivacyLevel = task.privacy.level
 
-                    if newCompletionStatus && !isAnimating {
+                    if newCompletionStatus, !isAnimating {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             isAnimating = true
                         }
@@ -198,20 +192,17 @@ struct taskCard: View {
     }
 }
 
-
 extension taskCard {
-
     init(
         task: taskapeTask,
         onCompletionAnimationFinished: ((taskapeTask) -> Void)? = nil
     ) {
         self.task = task
         self.onCompletionAnimationFinished = onCompletionAnimationFinished
-        self._shouldShow = State(initialValue: true)
-        self._disappearAnimation = State(initialValue: false)
+        _shouldShow = State(initialValue: true)
+        _disappearAnimation = State(initialValue: false)
     }
 }
-
 
 struct CompletedTaskModifier: ViewModifier {
     let isCompleted: Bool
@@ -241,10 +232,9 @@ struct CompletedTaskModifier: ViewModifier {
                                 x: isAnimating ? 1 : 0, anchor: .leading
                             )
                             .animation(
-                                .easeInOut(duration: 0.3), value: isAnimating)
-                    } else if requiresConfirmation {
-
-                    }
+                                .easeInOut(duration: 0.3), value: isAnimating
+                            )
+                    } else if requiresConfirmation {}
                 }
             )
     }
@@ -254,20 +244,20 @@ extension View {
     func completedTaskStyle(
         isCompleted: Bool, isAnimating: Bool, requiresConfirmation: Bool = false
     ) -> some View {
-        self.modifier(
+        modifier(
             CompletedTaskModifier(
                 isCompleted: isCompleted, isAnimating: isAnimating,
-                requiresConfirmation: requiresConfirmation))
+                requiresConfirmation: requiresConfirmation
+            ))
     }
 }
 
 #Preview {
-
     do {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(
-            for: taskapeTask.self, configurations: config)
-
+            for: taskapeTask.self, configurations: config
+        )
 
         let designTask = taskapeTask(
             name: "Design new UI",
@@ -300,12 +290,10 @@ extension View {
             privacy: PrivacySettings(level: .noone)
         )
 
-
         container.mainContext.insert(designTask)
         container.mainContext.insert(completedTask)
         container.mainContext.insert(flaggedTask)
         container.mainContext.insert(emptyTask)
-
 
         return VStack(spacing: 20) {
             ScrollView {

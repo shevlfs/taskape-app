@@ -1,7 +1,5 @@
 import SwiftUI
 
-
-
 struct TaskapeCodeField: View {
     let formatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -25,6 +23,7 @@ struct TaskapeCodeField: View {
 
         return cleanNumber
     }
+
     var body: some View {
         TextField(
             placeholder,
@@ -67,7 +66,7 @@ struct PhoneVerificationView: View {
         VStack(alignment: .center) {
             Text("uh, sent you a code...\nyada-yada...")
                 .multilineTextAlignment(.center)
-                .font(.pathway(30)).padding(.top,40)
+                .font(.pathway(30)).padding(.top, 40)
 
             Spacer()
 
@@ -101,7 +100,6 @@ struct PhoneVerificationView: View {
             .buttonStyle(.plain)
             .disabled(isResending)
 
-
             if showResendMessage {
                 Text("code sent!")
                     .font(.pathway(14))
@@ -110,7 +108,7 @@ struct PhoneVerificationView: View {
                     .transition(.opacity)
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                            withAnimation{
+                            withAnimation {
                                 showResendMessage = false
                             }
                         }
@@ -125,7 +123,7 @@ struct PhoneVerificationView: View {
                 taskapeContinueButton()
             }
             .buttonStyle(.plain)
-            .disabled(!isValid).padding(.bottom,120)
+            .disabled(!isValid).padding(.bottom, 120)
         }
     }
 

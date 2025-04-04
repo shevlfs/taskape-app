@@ -1,16 +1,8 @@
 
 
-
-
-
-
-
 import Foundation
 import SwiftUI
 import WidgetKit
-
-
-
 
 struct WidgetTaskModel: Identifiable, Codable {
     let id: String
@@ -26,12 +18,9 @@ class WidgetDataManager {
 
     private init() {}
 
-
     func saveTasks(_ tasks: [taskapeTask]) {
         print("WidgetDataManager: [STUB] Would save \(tasks.count) tasks")
-
     }
-
 
     func loadTasks() -> [WidgetTaskModel] {
         print("WidgetDataManager: [STUB] Would load tasks")
@@ -42,6 +31,5 @@ class WidgetDataManager {
 class TaskNotifier {
     static func notifyTasksUpdated() {
         print("TaskNotifier: [STUB] Would notify tasks updated")
-
     }
 }

@@ -26,13 +26,13 @@ final class taskapeUser {
         self.id = id
         self.handle = handle
         self.bio = bio
-        self.profileImageURL = profileImage
+        profileImageURL = profileImage
         self.profileColor = profileColor
-        self.tasks = []
-        self.friends = []
-        self.friendIds = []
-        self.incomingFriendRequestIds = []
-        self.outgoingFriendRequestIds = []
+        tasks = []
+        friends = []
+        friendIds = []
+        incomingFriendRequestIds = []
+        outgoingFriendRequestIds = []
     }
 
     func addFriend(_ friend: taskapeUser) {
@@ -48,7 +48,7 @@ final class taskapeUser {
     }
 
     func isFriend(_ userId: String) -> Bool {
-        return friendIds.contains(userId)
+        friendIds.contains(userId)
     }
 
     func addIncomingFriendRequest(_ requestId: String) {

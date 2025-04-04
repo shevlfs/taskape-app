@@ -1,10 +1,5 @@
 
 
-
-
-
-
-
 import SwiftUI
 
 struct MenuItem: View {
@@ -24,34 +19,35 @@ struct MenuItem: View {
                     LinearGradient(
                         stops: colorScheme == .dark
                             ? [
-
                                 Gradient.Stop(
                                     color: mainColor.opacity(0.95),
-                                    location: 0.05),
+                                    location: 0.05
+                                ),
                                 Gradient.Stop(
                                     color: mainColor.opacity(0.75),
-                                    location: 0.4),
+                                    location: 0.4
+                                ),
                                 Gradient.Stop(
                                     color: mainColor.opacity(0.5), location: 0.8
                                 ),
                             ]
                             : [
-
                                 Gradient.Stop(color: mainColor, location: 0.06),
                                 Gradient.Stop(
                                     color: mainColor.opacity(0.6),
-                                    location: 0.31),
+                                    location: 0.31
+                                ),
                                 Gradient.Stop(
                                     color: mainColor.opacity(0.25),
-                                    location: 0.81),
+                                    location: 0.81
+                                ),
                             ],
                         startPoint: UnitPoint(x: 0.5, y: 1),
                         endPoint: UnitPoint(x: 0.5, y: 0)
                     ).clipShape(RoundedRectangle(cornerRadius: 20))
                 )
 
-
-        } .overlay(
+        }.overlay(
             RoundedRectangle(cornerRadius: 30)
 
                 .stroke(
@@ -74,8 +70,7 @@ struct MenuItem: View {
 
 extension View {
     func glow(color: Color = .red, radius: CGFloat = 20) -> some View {
-        self
-            .shadow(color: color, radius: radius / 3)
+        shadow(color: color, radius: radius / 3)
             .shadow(color: color, radius: radius / 3)
             .shadow(color: color, radius: radius / 3)
     }
@@ -94,7 +89,6 @@ struct VisionProShadowStyle {
         let y: CGFloat
         let opacity: CGFloat
     }
-
 
     static let floatingCard = VisionProShadowStyle(
         primary: Shadow(
@@ -121,7 +115,6 @@ struct VisionProShadowStyle {
         backgroundBlur: 0.3
     )
 
-
     static let button = VisionProShadowStyle(
         primary: Shadow(
             color: .black,
@@ -140,7 +133,6 @@ struct VisionProShadowStyle {
         tertiary: nil,
         backgroundBlur: 0.15
     )
-
 
     static let text = VisionProShadowStyle(
         primary: Shadow(
@@ -162,44 +154,41 @@ struct VisionProShadowStyle {
     )
 }
 
-
 extension View {
     @ViewBuilder
     func visionProShadow(style: VisionProShadowStyle = .floatingCard)
         -> some View
     {
-        self
-            .shadow(
-                color: style.primary.color.opacity(style.primary.opacity),
-                radius: style.primary.radius,
-                x: style.primary.x,
-                y: style.primary.y
-            )
-            .shadow(
-                color: style.secondary.color.opacity(style.secondary.opacity),
-                radius: style.secondary.radius,
-                x: style.secondary.x,
-                y: style.secondary.y
-            )
-            .overlay(
-                style.tertiary.map { tertiary in
-                    Color.clear
-                        .shadow(
-                            color: tertiary.color.opacity(tertiary.opacity),
-                            radius: tertiary.radius,
-                            x: tertiary.x,
-                            y: tertiary.y
-                        )
-                        .allowsHitTesting(false)
-                }
-            )
-            .background(
-                BlurEffect(style: .systemUltraThinMaterial)
-                    .opacity(style.backgroundBlur)
+        shadow(
+            color: style.primary.color.opacity(style.primary.opacity),
+            radius: style.primary.radius,
+            x: style.primary.x,
+            y: style.primary.y
+        )
+        .shadow(
+            color: style.secondary.color.opacity(style.secondary.opacity),
+            radius: style.secondary.radius,
+            x: style.secondary.x,
+            y: style.secondary.y
+        )
+        .overlay(
+            style.tertiary.map { tertiary in
+                Color.clear
+                    .shadow(
+                        color: tertiary.color.opacity(tertiary.opacity),
+                        radius: tertiary.radius,
+                        x: tertiary.x,
+                        y: tertiary.y
+                    )
                     .allowsHitTesting(false)
-            )
+            }
+        )
+        .background(
+            BlurEffect(style: .systemUltraThinMaterial)
+                .opacity(style.backgroundBlur)
+                .allowsHitTesting(false)
+        )
     }
-
 
     func visionProFloatingCard(
         cornerRadius: CGFloat = 16,
@@ -238,11 +227,11 @@ extension View {
 struct BlurEffect: UIViewRepresentable {
     let style: UIBlurEffect.Style
 
-    func makeUIView(context: Context) -> UIVisualEffectView {
-        return UIVisualEffectView(effect: UIBlurEffect(style: style))
+    func makeUIView(context _: Context) -> UIVisualEffectView {
+        UIVisualEffectView(effect: UIBlurEffect(style: style))
     }
 
-    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
+    func updateUIView(_ uiView: UIVisualEffectView, context _: Context) {
         uiView.effect = UIBlurEffect(style: style)
     }
 }

@@ -1,10 +1,5 @@
 
 
-
-
-
-
-
 import Alamofire
 import Foundation
 import SwiftData
@@ -34,14 +29,14 @@ func searchUsers(query: String, limit: Int = 10) async -> [UserSearchResult]? {
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             if response.success {
                 return response.users
             } else {
                 print("Search failed: \(response.message ?? "Unknown error")")
                 return nil
             }
-        case .failure(let error):
+        case let .failure(error):
             print("Failed to search users: \(error.localizedDescription)")
             return nil
         }
@@ -50,7 +45,7 @@ func searchUsers(query: String, limit: Int = 10) async -> [UserSearchResult]? {
 
 func sendFriendRequest(receiverId: String) async -> Bool {
     guard let token = UserDefaults.standard.string(forKey: "authToken"),
-        let userId = UserDefaults.standard.string(forKey: "user_id")
+          let userId = UserDefaults.standard.string(forKey: "user_id")
     else {
         print("No auth token or user ID found")
         return false
@@ -74,9 +69,9 @@ func sendFriendRequest(receiverId: String) async -> Bool {
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             return response.success
-        case .failure(let error):
+        case let .failure(error):
             print(
                 "Failed to send friend request: \(error.localizedDescription)")
             return false
@@ -86,14 +81,13 @@ func sendFriendRequest(receiverId: String) async -> Bool {
 
 func respondToFriendRequest(requestId: String, response: String) async -> Bool {
     guard let token = UserDefaults.standard.string(forKey: "authToken"),
-        let userId = UserDefaults.standard.string(forKey: "user_id")
+          let userId = UserDefaults.standard.string(forKey: "user_id")
     else {
         print("No auth token or user ID found")
         return false
     }
 
-
-    if response != "accept" && response != "reject" {
+    if response != "accept", response != "reject" {
         print("Invalid response: must be 'accept' or 'reject'")
         return false
     }
@@ -117,9 +111,9 @@ func respondToFriendRequest(requestId: String, response: String) async -> Bool {
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             return response.success
-        case .failure(let error):
+        case let .failure(error):
             print(
                 "Failed to respond to friend request: \(error.localizedDescription)"
             )
@@ -151,7 +145,7 @@ func getUserFriends(userId: String) async -> [Friend]? {
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             if response.success {
                 return response.friends
             } else {
@@ -160,7 +154,7 @@ func getUserFriends(userId: String) async -> [Friend]? {
                 )
                 return nil
             }
-        case .failure(let error):
+        case let .failure(error):
             print("Failed to get user friends: \(error.localizedDescription)")
             return nil
         }
@@ -169,14 +163,13 @@ func getUserFriends(userId: String) async -> [Friend]? {
 
 func getFriendRequests(type: String) async -> [FriendRequest]? {
     guard let token = UserDefaults.standard.string(forKey: "authToken"),
-        let userId = UserDefaults.standard.string(forKey: "user_id")
+          let userId = UserDefaults.standard.string(forKey: "user_id")
     else {
         print("No auth token or user ID found")
         return nil
     }
 
-
-    if type != "incoming" && type != "outgoing" {
+    if type != "incoming", type != "outgoing" {
         print("Invalid request type: must be 'incoming' or 'outgoing'")
         return nil
     }
@@ -198,7 +191,7 @@ func getFriendRequests(type: String) async -> [FriendRequest]? {
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             if response.success {
                 return response.requests
             } else {
@@ -207,7 +200,7 @@ func getFriendRequests(type: String) async -> [FriendRequest]? {
                 )
                 return nil
             }
-        case .failure(let error):
+        case let .failure(error):
             print(
                 "Failed to get friend requests: \(error.localizedDescription)")
             return nil

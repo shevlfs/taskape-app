@@ -1,10 +1,5 @@
 
 
-
-
-
-
-
 import CachedAsyncImage
 import SwiftData
 import SwiftUI
@@ -55,7 +50,6 @@ struct MainRootView: View {
                     }
                 }
             }
-
         }
         .onAppear {
             Task {
@@ -74,7 +68,6 @@ struct MainRootView: View {
                 if !userId.isEmpty {
                     print("Loading profile for user ID: \(userId)")
 
-
                     let existingUser = UserManager.shared.getCurrentUser(
                         context: modelContext)
 
@@ -90,24 +83,23 @@ struct MainRootView: View {
 
                     let user = await fetchUser(userId: userId)
 
-
                     let tasks = await fetchTasks(userId: userId)
 
                     await MainActor.run {
-                        if let user = user {
+                        if let user {
                             print("User fetched from server: \(user.id)")
                             insertUser(user: user, context: modelContext)
 
-                            if let tasks = tasks {
+                            if let tasks {
                                 syncUserTasks(
                                     userId: userId,
                                     remoteTasks: tasks,
                                     modelContext: modelContext
                                 )
 
-
                                 updateWidgetWithTasks(
-                                    userId: userId, modelContext: modelContext)
+                                    userId: userId, modelContext: modelContext
+                                )
                             }
 
                             loadData()
@@ -151,7 +143,8 @@ struct MainRootView: View {
                     )
                     updateWidgetWithTasks(
                         userId: UserManager.shared.currentUserId,
-                        modelContext: modelContext)
+                        modelContext: modelContext
+                    )
                 }
             }
         }
@@ -159,12 +152,12 @@ struct MainRootView: View {
 }
 
 #Preview {
-    var user: taskapeUser = taskapeUser(
+    var user = taskapeUser(
         id: UUID().uuidString,
         handle: "shevlfs",
         bio: "i am shevlfs",
         profileImage:
-            "https://static.wikia.nocookie.net/character-stats-and-profiles/images/c/c7/DZuvg1d.png/revision/latest?cb=20181120135131",
+        "https://static.wikia.nocookie.net/character-stats-and-profiles/images/c/c7/DZuvg1d.png/revision/latest?cb=20181120135131",
         profileColor: "blue"
     )
 

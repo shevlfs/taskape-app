@@ -7,7 +7,6 @@ class FlagManager: ObservableObject {
     @Published var flagChangeCounter: Int = 0
 
     func flagChanged() {
-
         DispatchQueue.main.async {
             self.flagChangeCounter += 1
         }
@@ -19,12 +18,12 @@ class TaskFlag: Equatable, Hashable, Comparable {
     var flagColor: String
 
     init(flagname: String, flagcolor: String) {
-        self.flagName = flagname
-        self.flagColor = flagcolor
+        flagName = flagname
+        flagColor = flagcolor
     }
 
     static func == (lhs: TaskFlag, rhs: TaskFlag) -> Bool {
-        return lhs.flagName == rhs.flagName
+        lhs.flagName == rhs.flagName
             && lhs.flagColor == rhs.flagColor
     }
 
@@ -34,7 +33,7 @@ class TaskFlag: Equatable, Hashable, Comparable {
     }
 
     static func < (lhs: TaskFlag, rhs: TaskFlag) -> Bool {
-        return lhs.flagName < rhs.flagName
+        lhs.flagName < rhs.flagName
     }
 }
 
@@ -42,7 +41,7 @@ func getUserFlags(_ user: taskapeUser) -> [TaskFlag] {
     var flagNames: Set<TaskFlag> = []
     for task in user.tasks {
         if let flagName = task.flagName, task.flagStatus,
-            let flagColor = task.flagColor
+           let flagColor = task.flagColor
         {
             flagNames.insert(
                 TaskFlag(flagname: flagName, flagcolor: flagColor))
@@ -58,7 +57,6 @@ struct UserJungleDetailedView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var currentUser: taskapeUser?
 
-
     @ObservedObject private var flagManager = FlagManager.shared
 
     @State private var isRefreshing: Bool = false
@@ -68,9 +66,7 @@ struct UserJungleDetailedView: View {
     @State private var showNewTaskDetail: Bool = false
     @State private var draggingItem: taskapeTask?
 
-
     @State private var completingTasks: [String: Bool] = [:]
-
 
     private enum TabType: Equatable {
         case all
@@ -110,19 +106,18 @@ struct UserJungleDetailedView: View {
             .padding(.top, 12)
             .padding(.bottom, 8)
 
-
             TabBarView(
                 tabBarItems: $tabBarItems,
                 tabBarViewIndex: $tabBarViewIndex
-            )
+            ).padding(.bottom, 5)
 
             if let user = currentUser {
                 if user.tasks.isEmpty {
                     VStack(spacing: 20) {
                         Spacer()
-                        Text("No tasks here yet")
+                        Text("no tasks here yet")
                             .font(.pathway(18))
-                        Text("Add a new task to start growing your jungle!")
+                        Text("add a new task to start growing your jungle!")
                             .font(.pathwayItalic(16))
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -133,25 +128,31 @@ struct UserJungleDetailedView: View {
                 } else {
                     let tasks = filteredTasks(user.tasks)
                         .sorted { $0.displayOrder < $1.displayOrder }
-                    ScrollView {
-                        LazyVStack(spacing: 12) {
-                            ForEach(tasks) { task in
-                                AnimatedTaskCard(
-                                    task: task,
-                                    isDisappearing: completingTasks[task.id]
-                                        ?? false,
-                                    onCompletion: { completedTask in
-                                        handleTaskCompletion(
-                                            task: completedTask)
-                                    }, labels: getUserFlags(currentUser!)
-                                )
-                                .padding(.horizontal, 16)
+
+                    if tasks.isEmpty {
+                        Text("no tasks here yet")
+                    } else {
+                        ScrollView {
+                            LazyVStack(spacing: 12) {
+                                ForEach(tasks) { task in
+                                    AnimatedTaskCard(
+                                        task: task,
+                                        isDisappearing: completingTasks[task.id]
+                                            ?? false,
+                                        onCompletion: { completedTask in
+                                            handleTaskCompletion(
+                                                task: completedTask)
+                                        }, labels: getUserFlags(currentUser!)
+                                    )
+                                    .padding(.horizontal, 16)
+                                }
                             }
+                            .padding(.vertical, 12)
+                            .animation(
+                                .spring(response: 0.3, dampingFraction: 0.7),
+                                value: tasks.count
+                            )
                         }
-                        .padding(.vertical, 12)
-                        .animation(
-                            .spring(response: 0.3, dampingFraction: 0.7),
-                            value: tasks.count)
                     }
                 }
             } else {
@@ -197,7 +198,7 @@ struct UserJungleDetailedView: View {
             isPresented: $showNewTaskDetail,
             onDismiss: {
                 if currentUser != nil {
-                    updateTabBarItems() 
+                    updateTabBarItems()
                 }
             }
         ) {
@@ -223,20 +224,21 @@ struct UserJungleDetailedView: View {
                 if abs(horizontalAmount) > abs(verticalAmount) {
                     if horizontalAmount < 0 {
                         withAnimation {
-                            self.tabBarViewIndex = min(
-                                self.tabBarViewIndex + 1,
-                                self.tabBarItems.count - 1)
+                            tabBarViewIndex = min(
+                                tabBarViewIndex + 1,
+                                tabBarItems.count - 1
+                            )
                         }
                     } else {
                         withAnimation {
-                            self.tabBarViewIndex = max(
-                                0, self.tabBarViewIndex - 1)
+                            tabBarViewIndex = max(
+                                0, tabBarViewIndex - 1
+                            )
                         }
                     }
                 }
             })
     }
-
 
     private func updateTabBarItems() {
         var items = [
@@ -256,7 +258,6 @@ struct UserJungleDetailedView: View {
         tabBarItems = items
     }
 
-
     private func getCurrentTabType() -> TabType {
         guard tabBarViewIndex < tabBarItems.count else { return .all }
 
@@ -268,7 +269,6 @@ struct UserJungleDetailedView: View {
             return .flagType(flagName)
         }
     }
-
 
     private func filteredTasks(_ tasks: [taskapeTask]) -> [taskapeTask] {
         let tabType = getCurrentTabType()
@@ -282,22 +282,19 @@ struct UserJungleDetailedView: View {
                 !$0.completion.isCompleted || completingTasks[$0.id] == true
             }
         case .completed:
-            return tasks.filter { $0.completion.isCompleted }
+            return tasks.filter(\.completion.isCompleted)
         case .flagged:
-            return tasks.filter { $0.flagStatus }
-        case .flagType(let flagName):
+            return tasks.filter(\.flagStatus)
+        case let .flagType(flagName):
             return tasks.filter { $0.flagStatus && $0.flagName == flagName }
         }
     }
 
-
     private func handleTaskCompletion(task: taskapeTask) {
-        if getCurrentTabType() == .incomplete && task.completion.isCompleted {
-
+        if getCurrentTabType() == .incomplete, task.completion.isCompleted {
             withAnimation {
                 completingTasks[task.id] = true
             }
-
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                 withAnimation {
@@ -348,8 +345,7 @@ struct UserJungleDetailedView: View {
 
         let userId = UserManager.shared.currentUserId
 
-
-        let maxOrder = user.tasks.map { $0.displayOrder }.max() ?? 0
+        let maxOrder = user.tasks.map(\.displayOrder).max() ?? 0
         let nextOrder = maxOrder + 1
 
         let task = taskapeTask(
@@ -388,12 +384,10 @@ struct UserJungleDetailedView: View {
         do {
             try modelContext.save()
             if currentUser != nil {
-                updateTabBarItems() 
+                updateTabBarItems()
 
-
-                let userId = UserManager.shared.currentUserId 
-                    updateWidgetWithTasks(userId: userId, modelContext: modelContext)
-
+                let userId = UserManager.shared.currentUserId
+                updateWidgetWithTasks(userId: userId, modelContext: modelContext)
             }
 
             Task {
@@ -404,7 +398,6 @@ struct UserJungleDetailedView: View {
         }
     }
 }
-
 
 struct AnimatedTaskCard: View {
     @Bindable var task: taskapeTask
@@ -420,7 +413,6 @@ struct AnimatedTaskCard: View {
     var body: some View {
         TaskCardWithCheckbox(task: task, labels: $labels)
             .background(
-
                 GeometryReader { geo in
                     Color.clear.onAppear {
                         taskHeight = geo.size.height
@@ -428,7 +420,7 @@ struct AnimatedTaskCard: View {
                 }
             )
             .onChange(of: task.completion.isCompleted) { oldValue, newValue in
-                if oldValue == false && newValue == true {
+                if oldValue == false, newValue == true {
                     onCompletion(task)
                 }
             }
@@ -441,10 +433,10 @@ struct AnimatedTaskCard: View {
             )
             .animation(
                 .spring(response: 0.6, dampingFraction: 0.7),
-                value: isDisappearing)
+                value: isDisappearing
+            )
     }
 }
-
 
 struct TaskDropDelegate: DropDelegate {
     let item: taskapeTask
@@ -452,57 +444,48 @@ struct TaskDropDelegate: DropDelegate {
     @Binding var draggedItem: taskapeTask?
     var modelContext: ModelContext
 
-    func performDrop(info: DropInfo) -> Bool {
-        guard let draggedItem = self.draggedItem else {
+    func performDrop(info _: DropInfo) -> Bool {
+        guard let draggedItem else {
             return false
         }
-
 
         if draggedItem.id == item.id {
             return false
         }
 
-
         let fromIndex = items.firstIndex { $0.id == draggedItem.id } ?? 0
         let toIndex = items.firstIndex { $0.id == item.id } ?? 0
 
-
         var updatedOrders: [(taskID: String, order: Int)] = []
 
-
         if fromIndex > toIndex {
-
-            for i in toIndex..<fromIndex {
+            for i in toIndex ..< fromIndex {
                 items[i].displayOrder += 1
                 updatedOrders.append((items[i].id, items[i].displayOrder))
             }
-
 
             draggedItem.displayOrder = items[toIndex].displayOrder - 1
             updatedOrders.append((draggedItem.id, draggedItem.displayOrder))
         }
 
         else if fromIndex < toIndex {
-
-            for i in (fromIndex + 1)...toIndex {
+            for i in (fromIndex + 1) ... toIndex {
                 items[i].displayOrder -= 1
                 updatedOrders.append((items[i].id, items[i].displayOrder))
             }
-
 
             draggedItem.displayOrder = items[toIndex].displayOrder + 1
             updatedOrders.append((draggedItem.id, draggedItem.displayOrder))
         }
 
-
         do {
             try modelContext.save()
-
 
             Task {
                 if let userId = items.first?.user_id, !userId.isEmpty {
                     let success = await updateTaskOrder(
-                        userID: userId, taskOrders: updatedOrders)
+                        userID: userId, taskOrders: updatedOrders
+                    )
                     if success {
                         print("Task orders successfully updated on server")
                     } else {
@@ -518,18 +501,17 @@ struct TaskDropDelegate: DropDelegate {
         }
     }
 
-    func dropEntered(info: DropInfo) {
-        guard let draggedItem = self.draggedItem,
-            draggedItem.id != item.id
+    func dropEntered(info _: DropInfo) {
+        guard let draggedItem,
+              draggedItem.id != item.id
         else {
             return
         }
 
-
         withAnimation(.default) {}
     }
 
-    func dropUpdated(info: DropInfo) -> DropProposal? {
-        return DropProposal(operation: .move)
+    func dropUpdated(info _: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
     }
 }

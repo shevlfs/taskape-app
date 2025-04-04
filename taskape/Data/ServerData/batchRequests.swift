@@ -4,8 +4,6 @@ import SwiftData
 import SwiftDotenv
 import SwiftUI
 
-// MARK: - Get Users Batch
-
 struct GetUsersBatchRequest: Codable {
     let user_ids: [String]
     let token: String
@@ -16,8 +14,6 @@ struct GetUsersBatchResponse: Codable {
     let users: [UserResponse]
     let message: String?
 }
-
-// MARK: - Get Users Tasks Batch
 
 struct GetUsersTasksBatchRequest: Codable {
     let user_ids: [String]
@@ -30,8 +26,6 @@ struct GetUsersTasksBatchResponse: Codable {
     let user_tasks: [String: [TaskResponse]]
     let message: String?
 }
-
-// MARK: - Edit User Profile
 
 struct EditUserProfileRequest: Codable {
     let user_id: String
@@ -47,22 +41,18 @@ struct EditUserProfileResponse: Codable {
     let message: String?
 }
 
-// MARK: - API Functions
-
 func getUsersBatch(userIds: [String]) async -> [taskapeUser]? {
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
         print("no auth token found")
         return nil
     }
-    
-    // Create request payload
+
     let request = GetUsersBatchRequest(
         user_ids: userIds,
         token: token
     )
-    
+
     do {
-        // Make the API request
         let result = await AF.request(
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/getUsersBatch",
             method: .post,
@@ -74,9 +64,8 @@ func getUsersBatch(userIds: [String]) async -> [taskapeUser]? {
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             if response.success {
-                // Convert API response to local taskapeUser objects
                 let users = response.users.map { userResponse in
                     taskapeUser(
                         id: userResponse.id,
@@ -91,7 +80,7 @@ func getUsersBatch(userIds: [String]) async -> [taskapeUser]? {
                 print("failed to fetch users batch: \(response.message ?? "unknown error")")
                 return nil
             }
-        case .failure(let error):
+        case let .failure(error):
             print("failed to fetch users batch: \(error.localizedDescription)")
             return nil
         }
@@ -103,16 +92,14 @@ func getUsersTasksBatch(userIds: [String], requesterId: String) async -> [String
         print("no auth token found")
         return nil
     }
-    
-    // Create request payload
+
     let request = GetUsersTasksBatchRequest(
         user_ids: userIds,
         requester_id: requesterId,
         token: token
     )
-    
+
     do {
-        // Make the API request
         let result = await AF.request(
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/getUsersTasksBatch",
             method: .post,
@@ -122,24 +109,23 @@ func getUsersTasksBatch(userIds: [String], requesterId: String) async -> [String
         .validate()
         .serializingDecodable(GetUsersTasksBatchResponse.self)
         .response
-        
+
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             if response.success {
-                // Convert API response to local taskapeTask objects
                 var userTasks: [String: [taskapeTask]] = [:]
-                
+
                 for (userId, tasks) in response.user_tasks {
                     let convertedTasks = tasks.map { convertToLocalTask($0) }
                     userTasks[userId] = convertedTasks
                 }
-                
+
                 return userTasks
             } else {
                 print("failed to fetch users tasks batch: \(response.message ?? "unknown error")")
                 return nil
             }
-        case .failure(let error):
+        case let .failure(error):
             print("failed to fetch users tasks batch: \(error.localizedDescription)")
             return nil
         }
@@ -151,8 +137,7 @@ func editUserProfile(userId: String, handle: String? = nil, bio: String? = nil, 
         print("no auth token found")
         return false
     }
-    
-    // Create request payload with only fields that are provided
+
     var request = EditUserProfileRequest(
         user_id: userId,
         handle: handle ?? "",
@@ -161,9 +146,8 @@ func editUserProfile(userId: String, handle: String? = nil, bio: String? = nil, 
         profile_picture: profilePictureURL ?? "",
         token: token
     )
-    
+
     do {
-        // Make the API request
         let result = await AF.request(
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/editUserProfile",
             method: .post,
@@ -173,11 +157,11 @@ func editUserProfile(userId: String, handle: String? = nil, bio: String? = nil, 
         .validate()
         .serializingDecodable(EditUserProfileResponse.self)
         .response
-        
+
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             return response.success
-        case .failure(let error):
+        case let .failure(error):
             print("failed to edit user profile: \(error.localizedDescription)")
             return false
         }

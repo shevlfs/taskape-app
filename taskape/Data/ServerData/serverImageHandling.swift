@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 import Alamofire
 import Foundation
 import SwiftDotenv
@@ -20,7 +13,7 @@ func uploadImage(_ image: UIImage) async throws -> String {
     }
 
     let parameters: [String: Any] = [
-        "key": apiKey
+        "key": apiKey,
     ]
 
     return try await withCheckedThrowingContinuation { continuation in
@@ -41,17 +34,17 @@ func uploadImage(_ image: UIImage) async throws -> String {
         )
         .responseJSON { response in
             switch response.result {
-            case .success(let value):
+            case let .success(value):
                 if let json = value as? [String: Any],
-                    let data = json["data"] as? [String: Any],
-                    let medium = data["thumb"] as? [String: Any],
-                    let url = medium["url"] as? String
+                   let data = json["data"] as? [String: Any],
+                   let medium = data["thumb"] as? [String: Any],
+                   let url = medium["url"] as? String
                 {
                     continuation.resume(returning: url)
                 } else {
                     continuation.resume(throwing: URLError(.badServerResponse))
                 }
-            case .failure(let error):
+            case let .failure(error):
                 print("error: \(error)")
                 continuation.resume(throwing: error)
             }

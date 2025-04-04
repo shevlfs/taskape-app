@@ -1,28 +1,58 @@
-
-
-
-
-
-
-
+import Foundation
 import SwiftData
 
 @Model
-final class taskapeGroup {
+final class taskapeGroup: Identifiable {
     var id: String
-    var userids: [String]
-    var group_name: String
+    var name: String
     var group_description: String
+    var color: String
+    var creatorId: String
+    var createdAt: Date
+
+    var members: [String] = []
     var admins: [String] = []
 
+    @Relationship var tasks: [taskapeTask] = []
+
     init(
-        id: String, userids: [String], group_name: String,
-        group_description: String, admins: [String]
+        id: String = UUID().uuidString,
+        name: String,
+        group_description: String,
+        color: String,
+        creatorId: String,
+        createdAt: Date = Date()
     ) {
         self.id = id
-        self.userids = userids
-        self.group_name = group_name
+        self.name = name
         self.group_description = group_description
-        self.admins = admins
+        self.color = color
+        self.creatorId = creatorId
+        self.createdAt = createdAt
+        members = [creatorId]
+        admins = [creatorId]
+    }
+
+    func isAdmin(userId: String) -> Bool {
+        admins.contains(userId)
+    }
+
+    func isMember(userId: String) -> Bool {
+        members.contains(userId)
+    }
+
+    func addMember(userId: String, isAdmin: Bool = false) {
+        if !members.contains(userId) {
+            members.append(userId)
+        }
+
+        if isAdmin, !admins.contains(userId) {
+            admins.append(userId)
+        }
+    }
+
+    func removeMember(userId: String) {
+        members.removeAll { $0 == userId }
+        admins.removeAll { $0 == userId }
     }
 }

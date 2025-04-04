@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 import Foundation
 
 struct VerificationResponse: Codable {
@@ -39,17 +32,20 @@ struct UserResponse: Codable {
         handle = try container.decode(String.self, forKey: .handle)
         bio = try container.decode(String.self, forKey: .bio)
         profile_picture = try container.decode(
-            String.self, forKey: .profile_picture)
+            String.self, forKey: .profile_picture
+        )
         color = try container.decode(String.self, forKey: .color)
         error = try container.decodeIfPresent(String.self, forKey: .error)
         friends =
             try container.decodeIfPresent([Friend].self, forKey: .friends) ?? []
         incoming_requests =
             try container.decodeIfPresent(
-                [FriendRequest].self, forKey: .incoming_requests) ?? []
+                [FriendRequest].self, forKey: .incoming_requests
+            ) ?? []
         outgoing_requests =
             try container.decodeIfPresent(
-                [FriendRequest].self, forKey: .outgoing_requests) ?? []
+                [FriendRequest].self, forKey: .outgoing_requests
+            ) ?? []
     }
 }
 
@@ -98,7 +94,6 @@ struct BatchTaskSubmissionRequest: Codable {
     let tasks: [TaskSubmission]
     let token: String
 }
-
 
 struct TaskSubmission: Codable {
     let id: String
@@ -175,7 +170,6 @@ struct TaskResponse: Codable {
     let flag_name: String?
     let display_order: Int
 
-
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
@@ -189,78 +183,86 @@ struct TaskResponse: Codable {
         group = try container.decodeIfPresent(String.self, forKey: .group)
         group_id = try container.decodeIfPresent(String.self, forKey: .group_id)
 
-
         if let assignedTo = try? container.decodeIfPresent(
-            [String].self, forKey: .assigned_to)
-        {
+            [String].self, forKey: .assigned_to
+        ) {
             assigned_to = assignedTo
         } else {
             assigned_to = []
         }
 
         task_difficulty = try container.decode(
-            String.self, forKey: .task_difficulty)
+            String.self, forKey: .task_difficulty
+        )
         custom_hours = try container.decodeIfPresent(
-            Int.self, forKey: .custom_hours)
+            Int.self, forKey: .custom_hours
+        )
         is_completed = try container.decode(Bool.self, forKey: .is_completed)
         proof_url = try container.decodeIfPresent(
-            String.self, forKey: .proof_url)
+            String.self, forKey: .proof_url
+        )
 
-
-        requires_confirmation = try container.decodeIfPresent(
-            Bool.self, forKey: .requires_confirmation) ?? false
-        is_confirmed = try container.decodeIfPresent(
-            Bool.self, forKey: .is_confirmed) ?? false
+        requires_confirmation =
+            try container.decodeIfPresent(
+                Bool.self, forKey: .requires_confirmation
+            ) ?? false
+        is_confirmed =
+            try container.decodeIfPresent(
+                Bool.self, forKey: .is_confirmed
+            ) ?? false
         confirmation_user_id = try container.decodeIfPresent(
-            String.self, forKey: .confirmation_user_id)
+            String.self, forKey: .confirmation_user_id
+        )
         confirmed_at = try container.decodeIfPresent(
-            String.self, forKey: .confirmed_at)
+            String.self, forKey: .confirmed_at
+        )
 
         privacy_level = try container.decode(
-            String.self, forKey: .privacy_level)
-
+            String.self, forKey: .privacy_level
+        )
 
         if let privacyExceptIds = try? container.decodeIfPresent(
-            [String].self, forKey: .privacy_except_ids)
-        {
+            [String].self, forKey: .privacy_except_ids
+        ) {
             privacy_except_ids = privacyExceptIds
         } else {
             privacy_except_ids = []
         }
 
-
         flag_status =
             try container.decodeIfPresent(Bool.self, forKey: .flag_status)
-            ?? false
+                ?? false
         flag_color = try container.decodeIfPresent(
-            String.self, forKey: .flag_color)
+            String.self, forKey: .flag_color
+        )
         flag_name = try container.decodeIfPresent(
-            String.self, forKey: .flag_name)
+            String.self, forKey: .flag_name
+        )
         display_order =
             try container.decodeIfPresent(Int.self, forKey: .display_order) ?? 0
     }
 
     enum CodingKeys: String, CodingKey {
         case id, name, description, author, group
-        case user_id = "user_id"
-        case created_at = "created_at"
+        case user_id
+        case created_at
         case deadline
-        case group_id = "group_id"
-        case assigned_to = "assigned_to"
-        case task_difficulty = "task_difficulty"
-        case custom_hours = "custom_hours"
-        case is_completed = "is_completed"
-        case proof_url = "proof_url"
-        case requires_confirmation = "requires_confirmation"
-        case is_confirmed = "is_confirmed"
-        case confirmation_user_id = "confirmation_user_id"
-        case confirmed_at = "confirmed_at"
-        case privacy_level = "privacy_level"
-        case privacy_except_ids = "privacy_except_ids"
-        case flag_status = "flag_status"
-        case flag_color = "flag_color"
-        case flag_name = "flag_name"
-        case display_order = "display_order"
+        case group_id
+        case assigned_to
+        case task_difficulty
+        case custom_hours
+        case is_completed
+        case proof_url
+        case requires_confirmation
+        case is_confirmed
+        case confirmation_user_id
+        case confirmed_at
+        case privacy_level
+        case privacy_except_ids
+        case flag_status
+        case flag_color
+        case flag_name
+        case display_order
     }
 }
 
@@ -307,7 +309,7 @@ struct FriendRequest: Codable {
     let created_at: String
 
     var isIncoming: Bool {
-        return UserDefaults.standard.string(forKey: "user_id") == receiver_id
+        UserDefaults.standard.string(forKey: "user_id") == receiver_id
     }
 }
 
@@ -321,6 +323,24 @@ struct SearchUsersResponse: Codable {
     let success: Bool
     let users: [UserSearchResult]
     let message: String?
+}
+
+struct UserStreakResponse: Codable {
+    let success: Bool
+    let current_streak: Int
+    let longest_streak: Int
+    let last_completed_date: String?
+    let streak_start_date: String?
+    let message: String?
+}
+
+enum CodingKeys: String, CodingKey {
+    case success
+    case current_streak
+    case longest_streak
+    case last_completed_date
+    case streak_start_date
+    case message
 }
 
 struct UserSearchResult: Codable {
@@ -345,7 +365,7 @@ struct SendFriendRequestResponse: Codable {
 struct RespondToFriendRequestRequest: Codable {
     let request_id: String
     let user_id: String
-    let response: String 
+    let response: String
     let token: String
 }
 
@@ -359,8 +379,6 @@ struct GetTaskResponse: Codable {
     let task: TaskResponse
     let message: String?
 }
-
-
 
 struct EventResponse: Codable {
     let id: String

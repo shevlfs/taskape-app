@@ -20,7 +20,8 @@ struct taskapeColorPicker: View {
                                 .stroke(
                                     Color.white,
                                     lineWidth: selectedColor == colorItem.hex
-                                        ? 3 : 0)
+                                        ? 3 : 0
+                                )
                         )
                         .shadow(radius: 2)
                         .onTapGesture {
@@ -67,12 +68,11 @@ struct ProfileCreationColorSelectionView: View {
 
             Button(
                 action: {
-
                     if color.isEmpty {
                         color = TaskapeColor.presetColors.first!.hex
                     }
 
-                    UserDefaults.standard.set(self.color, forKey: "color")
+                    UserDefaults.standard.set(color, forKey: "color")
                     path.append("pfp_selection")
                     progress += 1 / 5
 
@@ -89,7 +89,7 @@ struct ProfileCreationColorSelectionView: View {
 }
 
 #Preview {
-    @Previewable @State var color: String = ""
+    @Previewable @State var color = ""
     @Previewable @State var path = NavigationPath()
     ProfileCreationColorSelectionView(
         color: $color,

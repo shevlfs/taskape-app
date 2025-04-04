@@ -1,10 +1,5 @@
 
 
-
-
-
-
-
 import SwiftData
 import SwiftUI
 
@@ -17,16 +12,12 @@ struct SettingsView: View {
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 24) {
-                
-                
-                
                 if let user = currentUser {
-
                     VStack(alignment: .center, spacing: 12) {
                         Text("logged in as")
                             .font(.pathway(16))
                             .foregroundColor(.secondary)
-                        
+
                         Text("\(user.handle)")
                             .font(.pathwayBlack(22))
                     }
@@ -38,7 +29,7 @@ struct SettingsView: View {
                     )
                     .padding(.horizontal)
                 }
-                
+
                 Button(action: {
                     showLogoutConfirmation = true
                 }) {
@@ -53,8 +44,7 @@ struct SettingsView: View {
                         )
                 }
                 .padding(.bottom, 32)
-                .alert("logout confirmation", isPresented: $showLogoutConfirmation)
-                {
+                .alert("logout confirmation", isPresented: $showLogoutConfirmation) {
                     Button("cancel", role: .cancel) {}
                     Button("logout", role: .destructive) {
                         performLogout()
@@ -72,11 +62,8 @@ struct SettingsView: View {
     }
 
     func performLogout() {
-
         do {
-
             UserManager.shared.setCurrentUser(userId: "")
-
 
             let userDescriptor = FetchDescriptor<taskapeUser>()
             let taskDescriptor = FetchDescriptor<taskapeTask>()
@@ -96,7 +83,6 @@ struct SettingsView: View {
 
             print("User data cleared for logout")
 
-
             appState.logout()
 
         } catch {
@@ -111,8 +97,8 @@ struct SettingsView: View {
     do {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(
-            for: taskapeUser.self, taskapeTask.self, configurations: config)
-
+            for: taskapeUser.self, taskapeTask.self, configurations: config
+        )
 
         let user = taskapeUser(
             id: UUID().uuidString,
@@ -121,7 +107,6 @@ struct SettingsView: View {
             profileImage: "https://example.com/profile.jpg",
             profileColor: "blue"
         )
-
 
         container.mainContext.insert(user)
         try container.mainContext.save()

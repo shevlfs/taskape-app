@@ -1,9 +1,4 @@
-//
-//  EventCardCompact.swift
-//  taskape
-//
-//  Created by shevlfs on 4/2/25.
-//
+
 
 import SwiftData
 import SwiftUI
@@ -34,49 +29,107 @@ struct EventCardCompact: View {
     }
 
     func getTextColor() -> Color {
-        return Color(hex: user.profileColor).contrastingTextColor(
+        Color(hex: user.profileColor).contrastingTextColor(
             in: colorScheme)
     }
 
     var body: some View {
         NavigationLink(destination: {
             EventCardDetailedView(
-                event: event)
-            .modelContext(modelContext).navigationTransition(.zoom(sourceID: event.id, in: namespace))}
-        ){
-            VStack (alignment: .center){
-                VStack{
-                    ForEach (event.relatedTasks.prefix(2), id: \.self) { task in
+                event: event
+            )
+            .modelContext(modelContext).navigationTransition(
+                .zoom(sourceID: event.id, in: namespace))
+        }
+        ) {
+            if event.expiresAt! > Date() {
+                VStack(alignment: .center) {
+                    VStack {
+                        ForEach(event.relatedTasks.prefix(2), id: \.self) {
+                            task in
 
-                        Text("• \(task.name)").font(.pathway(13)).minimumScaleFactor(0.01)
-                    }
+                            Text("• \(task.name)").font(.pathway(13))
+                                .minimumScaleFactor(0.01)
+                        }
 
-                    if (event.relatedTasks.count > 2){
-                        Text("& \(event.relatedTasks.count - 2) more").font(.pathwaySemiBold(12))
-                    }
-                }.padding(.top, 10)
-
-
-                Spacer()
-
-                HStack{
-                    Text("\(event.createdAt.formatted())").font(.pathwaySemiBold(12)).multilineTextAlignment(.center)
+                        if event.relatedTasks.count > 2 {
+                            Text("& \(event.relatedTasks.count - 2) more").font(
+                                .pathwaySemiBold(12))
+                        }
+                    }.padding(.top, 10)
 
                     Spacer()
 
+                    HStack {
+                        Text("\(event.createdAt.formatted())").font(
+                            .pathwaySemiBold(12)
+                        ).multilineTextAlignment(.center)
 
-                    Text("\(getEventTypeText())")
-                        .font(.pathwaySemiBold(12))
-                        .multilineTextAlignment(.center)
+                        Spacer()
 
-                }.padding(.horizontal)
-            }.padding().foregroundColor(getTextColor()).background(
-                RoundedRectangle(cornerRadius: 20).fill(
-                    Color(hex: user.profileColor)
-                        .opacity(0.75)).frame(width: 260, height: 150)).frame(width: 260, height: 150).shadow(radius:5).matchedTransitionSource(
-                            id: event.id,
-                            in: namespace
-                        )
+                        Text("\(getEventTypeText())")
+                            .font(.pathwaySemiBold(12))
+                            .multilineTextAlignment(.center).foregroundColor(
+                                getTextColor())
+
+                    }.padding(.horizontal)
+                }.padding().foregroundColor(getTextColor()).background(
+                    RoundedRectangle(cornerRadius: 20).fill(
+                        Color(hex: user.profileColor)
+                            .opacity(0.75)
+                    ).frame(width: 260, height: 150)
+                ).frame(width: 260, height: 150).matchedTransitionSource(
+                    id: event.id,
+                    in: namespace
+                ).shadow(color: .secondary, radius: 2, x: 0, y: 2).padding(
+                    .vertical, 5
+                )
+            } else {
+                VStack(alignment: .center) {
+                    VStack {
+                        ForEach(event.relatedTasks.prefix(2), id: \.self) {
+                            task in
+
+                            Text("• \(task.name)").font(.pathway(13))
+                                .minimumScaleFactor(0.01)
+                        }
+
+                        if event.relatedTasks.count > 2 {
+                            Text("& \(event.relatedTasks.count - 2) more").font(
+                                .pathwaySemiBold(12))
+                        }
+                    }.padding(.top, 10)
+
+                    Spacer()
+
+                    Text("expired").font(.pathwaySemiBold(12)).padding(
+                        .bottom, 5)
+
+                    HStack {
+                        Text("\(event.createdAt.formatted())").font(
+                            .pathwaySemiBold(12)
+                        ).multilineTextAlignment(.center)
+
+                        Spacer()
+
+                        Text("\(getEventTypeText())")
+                            .font(.pathwaySemiBold(12))
+                            .multilineTextAlignment(.center).foregroundColor(
+                                getTextColor())
+
+                    }.padding(.horizontal)
+                }.padding().foregroundColor(getTextColor()).background(
+                    RoundedRectangle(cornerRadius: 20).fill(
+                        Color(UIColor.systemGray4)
+                            .opacity(0.75)
+                    ).frame(width: 260, height: 150)
+                ).frame(width: 260, height: 150).matchedTransitionSource(
+                    id: event.id,
+                    in: namespace
+                ).shadow(color: .secondary, radius: 2, x: 0, y: 2).padding(
+                    .vertical, 5
+                )
+            }
         }
     }
 }
@@ -87,18 +140,21 @@ struct EventCardCompactPreview: View {
         handle: "dmitryddddd",
         bio: "87CEFA",
         profileImage:
-            "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
-        profileColor: "")
+        "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
+        profileColor: ""
+    )
     let gogaUser = taskapeUser(
         id: "user2", handle: "seconduser", bio: "F5F5DC",
         profileImage:
-            "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
-        profileColor: "")
+        "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
+        profileColor: ""
+    )
     let shevlfsUser = taskapeUser(
         id: "user3", handle: "seconduser", bio: "FFC0CB",
         profileImage:
-            "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
-        profileColor: "")
+        "https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Original_Doge_meme.jpg/290px-Original_Doge_meme.jpg",
+        profileColor: ""
+    )
 
     let designTask = taskapeTask(
         id: "task1",
@@ -168,11 +224,11 @@ struct EventCardCompactPreview: View {
             targetUserId: shevlfsUser.id,
             eventType: .newlyReceived,
             eventSize: .large,
-            createdAt: Date().addingTimeInterval(-172800),
-            taskIds: [figmaTask.id,figmaTask.id,figmaTask.id]
+            createdAt: Date().addingTimeInterval(-172_800),
+            taskIds: [figmaTask.id, figmaTask.id, figmaTask.id]
         )
         event.user = shevlfsUser
-        event.relatedTasks = [figmaTask,designTask,uiTask]
+        event.relatedTasks = [figmaTask, designTask, uiTask]
         return event
     }
 

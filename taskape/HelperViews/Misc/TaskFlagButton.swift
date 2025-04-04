@@ -4,13 +4,12 @@ struct TaskFlagButton: View {
     @Bindable var task: taskapeTask
     @State private var showFlagPicker = false
 
-
     private let flagOptions = [
         (name: "High Priority", color: "#FF6B6B"),
         (name: "Medium Priority", color: "#FFD166"),
         (name: "Low Priority", color: "#06D6A0"),
         (name: "Info", color: "#118AB2"),
-        (name: "Planning", color: "#073B4C")
+        (name: "Planning", color: "#073B4C"),
     ]
 
     var body: some View {
@@ -94,9 +93,7 @@ struct TaskFlagButton: View {
         return Color.gray
     }
 
-
     private func notifyFlagChanged() {
-
         FlagManager.shared.flagChanged()
     }
 }

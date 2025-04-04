@@ -33,11 +33,11 @@ struct CompletionStatus: Codable {
 
 struct PrivacySettings: Codable {
     enum PrivacyLevel: String, Codable, CaseIterable {
-        case everyone = "everyone"
+        case everyone
         case friendsOnly = "friends-only"
-        case group = "group"
-        case noone = "noone"
-        case except = "except"
+        case group
+        case noone
+        case except
     }
 
     var level: PrivacyLevel
@@ -59,33 +59,34 @@ struct PrivacySettings: Codable {
         self.exceptIDs = exceptIDs
     }
 
-
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-
 
         do {
             let levelString = try container.decode(String.self, forKey: .level)
             if let level = PrivacyLevel(rawValue: levelString) {
                 self.level = level
             } else {
-                self.level = .everyone 
+                level = .everyone
             }
         } catch {
-            self.level = .everyone 
+            level = .everyone
         }
 
-        self.groupID = try container.decodeIfPresent(
-            String.self, forKey: .groupID)
+        groupID = try container.decodeIfPresent(
+            String.self, forKey: .groupID
+        )
 
         do {
-            self.exceptIDs = try container.decode(
-                [String].self, forKey: .exceptIDs)
+            exceptIDs = try container.decode(
+                [String].self, forKey: .exceptIDs
+            )
         } catch {
-            self.exceptIDs = [] 
+            exceptIDs = []
         }
     }
 }
+
 @Model
 final class taskapeTask: Identifiable {
     var id: String
@@ -107,12 +108,10 @@ final class taskapeTask: Identifiable {
     var privacyGroupID: String?
     var privacyExceptIDs: [String] = []
 
-
     var flagStatus: Bool = false
     var flagColor: String? = nil
     var flagName: String? = nil
     var displayOrder: Int = 0
-
 
     var proofNeeded: Bool? = false
     var proofDescription: String? = nil
@@ -120,10 +119,11 @@ final class taskapeTask: Identifiable {
         get {
             let level =
                 PrivacySettings.PrivacyLevel(rawValue: privacyLevel)
-                ?? .everyone
+                    ?? .everyone
             return PrivacySettings(
                 level: level, groupID: privacyGroupID,
-                exceptIDs: privacyExceptIDs)
+                exceptIDs: privacyExceptIDs
+            )
         }
         set {
             privacyLevel = newValue.level.rawValue
@@ -157,14 +157,14 @@ final class taskapeTask: Identifiable {
         self.name = name
         self.taskDescription = taskDescription
         self.author = author
-        self.createdAt = Date()
+        createdAt = Date()
         self.group = group
         self.group_id = group_id
         self.assignedToTask = assignedToTask
         self.task_difficulty = task_difficulty
         self.custom_hours = custom_hours
         self.mentioned_in_event = mentioned_in_event
-        self.completion = CompletionStatus()
+        completion = CompletionStatus()
         self.privacy = privacy
         self.flagStatus = flagStatus
         self.flagColor = flagColor
@@ -173,24 +173,24 @@ final class taskapeTask: Identifiable {
         self.proofNeeded = proofNeeded
         self.proofDescription = proofDescription
     }
+
     func toggleFlag() {
-        self.flagStatus.toggle()
-        if !self.flagStatus {
-            self.flagColor = nil
-            self.flagName = nil
-        } else if self.flagColor == nil {
-            self.flagColor = "#FF6B6B" 
-            self.flagName = "High Priority" 
+        flagStatus.toggle()
+        if !flagStatus {
+            flagColor = nil
+            flagName = nil
+        } else if flagColor == nil {
+            flagColor = "#FF6B6B"
+            flagName = "High Priority"
         }
     }
 
     func setFlag(color: String, name: String) {
-        self.flagColor = color
-        self.flagName = name
-        self.flagStatus = true
+        flagColor = color
+        flagName = name
+        flagStatus = true
     }
 }
-
 
 extension taskapeTask {
     convenience init(
@@ -211,24 +211,24 @@ extension taskapeTask {
         flagName: String? = nil,
         displayOrder: Int = 0
     ) {
-        let privacyLevel: PrivacySettings.PrivacyLevel
-        switch privacy.lowercased() {
+        let privacyLevel: PrivacySettings.PrivacyLevel = switch privacy.lowercased() {
         case "everyone", "public":
-            privacyLevel = .everyone
+            .everyone
         case "friends-only", "friends":
-            privacyLevel = .friendsOnly
+            .friendsOnly
         case "group", "team":
-            privacyLevel = .group
+            .group
         case "noone", "private":
-            privacyLevel = .noone
+            .noone
         case "except":
-            privacyLevel = .except
+            .except
         default:
-            privacyLevel = .everyone
+            .everyone
         }
 
         let privacySettings = PrivacySettings(
-            level: privacyLevel, exceptIDs: [])
+            level: privacyLevel, exceptIDs: []
+        )
 
         self.init(
             id: id,

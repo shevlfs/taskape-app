@@ -141,7 +141,8 @@ struct ProfileCreationFirstTaskSetup: View {
                                     ).animation(
                                         .spring(
                                             response: 0.4,
-                                            dampingFraction: 0.8)
+                                            dampingFraction: 0.8
+                                        )
                                     ),
                                     removal: .opacity.animation(
                                         .easeOut(duration: 0.2))
@@ -156,7 +157,8 @@ struct ProfileCreationFirstTaskSetup: View {
                                 ).animation(
                                     .spring(
                                         response: 0.4,
-                                        dampingFraction: 0.8)
+                                        dampingFraction: 0.8
+                                    )
                                 ),
                                 removal: .opacity.animation(
                                     .easeOut(duration: 0.2))
@@ -243,9 +245,7 @@ struct ProfileCreationFirstTaskSetup: View {
                     if !tasks.isEmpty {
                         saveTasks()
                         UserDefaults.standard.set(true, forKey: "profileExists")
-                        withAnimation(.spring(response: 1, dampingFraction: 0.5)){
-
-
+                        withAnimation(.spring(response: 1, dampingFraction: 0.5)) {
                             appState.login()
                             userAlreadyExists = true
                             progress = 1.0
@@ -278,19 +278,20 @@ struct ProfileCreationFirstTaskSetup: View {
                 let userId = UserManager.shared.currentUserId
 
                 updateWidgetWithTasks(
-                    userId: userId, modelContext: modelContext)
+                    userId: userId, modelContext: modelContext
+                )
 
                 var tasksToSubmit = tasks
-                for i in 0..<tasksToSubmit.count {
+                for i in 0 ..< tasksToSubmit.count {
                     tasksToSubmit[i].user_id = userId ?? user.id
                 }
 
                 Task {
                     let response = await submitTasksBatch(tasks: tasksToSubmit)
-                    if let response = response, response.success {
+                    if let response, response.success {
                         print("All tasks successfully saved to server")
                         if response.task_ids.count == tasks.count {
-                            for i in 0..<tasks.count {
+                            for i in 0 ..< tasks.count {
                                 tasks[i].id = response.task_ids[i]
                             }
                             try? modelContext.save()

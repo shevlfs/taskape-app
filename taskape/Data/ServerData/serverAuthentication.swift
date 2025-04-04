@@ -1,15 +1,10 @@
 
 
-
-
-
-
-
 import Alamofire
 import Foundation
 import SwiftData
-import SwiftUI
 import SwiftDotenv
+import SwiftUI
 
 func serverHandShake() async -> Bool {
     do {
@@ -38,7 +33,7 @@ func sendVerificationCode(phoneNumber: String, country_code: String) async {
 
     do {
         let parameters: [String: Any] = [
-            "phone": user_phone
+            "phone": user_phone,
         ]
         _ = await AF.request(
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/sendVerificationCode",
@@ -46,7 +41,6 @@ func sendVerificationCode(phoneNumber: String, country_code: String) async {
             encoding: JSONEncoding.default
         ).validate().serializingData().response
     }
-    return
 }
 
 enum verificationResult {
@@ -74,14 +68,15 @@ func phoneNumberIsVerified(
             encoding: JSONEncoding.default
         ).validate().serializingDecodable(VerificationResponse.self).response
 
-
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             if !response.authToken.isEmpty {
                 UserDefaults.standard.set(
-                    response.authToken, forKey: "authToken")
+                    response.authToken, forKey: "authToken"
+                )
                 UserDefaults.standard.set(
-                    response.refreshToken, forKey: "refreshToken")
+                    response.refreshToken, forKey: "refreshToken"
+                )
                 UserDefaults.standard.set(user_phone, forKey: "phone")
 
                 if response.profileExists {
@@ -93,7 +88,7 @@ func phoneNumberIsVerified(
                 return .success
             }
             return .failed
-        case .failure(let error):
+        case let .failure(error):
             print(
                 "Failed to verify phone number: \(error.localizedDescription)")
             return .failed
@@ -103,12 +98,11 @@ func phoneNumberIsVerified(
 
 func validateToken(token: String) async -> Bool {
     do {
-
         let result = await AF.request(
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/validateToken",
             method: .post,
             parameters: [
-                "token": token
+                "token": token,
             ],
             encoding: JSONEncoding.default
         ).serializingString().response
@@ -122,7 +116,7 @@ func validateToken(token: String) async -> Bool {
 
         default:
             print(
-                "unexpected status code while validating token \( String(describing: result.response?.statusCode))"
+                "unexpected status code while validating token \(String(describing: result.response?.statusCode))"
             )
             return false
         }
@@ -149,17 +143,19 @@ func refreshTokenRequest(token: String, refreshToken: String, phone: String)
         ).response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             if !response.authToken.isEmpty {
                 UserDefaults.standard.set(
-                    response.authToken, forKey: "authToken")
+                    response.authToken, forKey: "authToken"
+                )
                 UserDefaults.standard.set(
-                    response.refreshToken, forKey: "refreshToken")
+                    response.refreshToken, forKey: "refreshToken"
+                )
                 return true
             }
             return false
 
-        case .failure(let error):
+        case let .failure(error):
             print(
                 "failed to refresh token \(error.localizedDescription)")
             return false
@@ -192,9 +188,9 @@ func registerProfile(
         .validate()
         .responseDecodable(of: RegisterNewProfileResponse.self) { response in
             switch response.result {
-            case .success(let registerResponse):
+            case let .success(registerResponse):
                 continuation.resume(returning: registerResponse)
-            case .failure(let error):
+            case let .failure(error):
                 continuation.resume(throwing: error)
             }
         }
@@ -220,10 +216,10 @@ func checkHandleAvailability(handle: String) async -> Bool {
         .serializingDecodable(CheckHandleAvailabilityResponse.self)
         .response
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             print("Handle availability: \(response.available)")
             return response.available
-        case .failure(let error):
+        case let .failure(error):
             print(
                 "Failed to check handle availability: \(error.localizedDescription)"
             )

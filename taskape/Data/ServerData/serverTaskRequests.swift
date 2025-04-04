@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 import Alamofire
 import Foundation
 import SwiftData
@@ -28,19 +21,17 @@ func submitTasksBatch(tasks: [taskapeTask]) async
             deadlineString = nil
         }
 
-
-        let privacyLevelString: String
-        switch task.privacy.level {
+        let privacyLevelString = switch task.privacy.level {
         case .everyone:
-            privacyLevelString = "everyone"
+            "everyone"
         case .noone:
-            privacyLevelString = "noone"
+            "noone"
         case .friendsOnly:
-            privacyLevelString = "friends-only"
+            "friends-only"
         case .group:
-            privacyLevelString = "group"
+            "group"
         case .except:
-            privacyLevelString = "except"
+            "except"
         }
 
         return TaskSubmission(
@@ -86,10 +77,10 @@ func submitTasksBatch(tasks: [taskapeTask]) async
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             print("Successfully submitted \(response.task_ids.count) tasks")
             return response
-        case .failure(let error):
+        case let .failure(error):
             print("Failed to submit tasks batch: \(error.localizedDescription)")
             return nil
         }
@@ -126,10 +117,10 @@ func updateTaskOrder(userID: String, taskOrders: [(taskID: String, order: Int)])
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             print("Task order update success: \(response.success)")
             return response.success
-        case .failure(let error):
+        case let .failure(error):
             print("Failed to update task order: \(error.localizedDescription)")
             return false
         }
@@ -150,22 +141,19 @@ func updateTask(task: taskapeTask) async -> Bool {
         deadlineString = nil
     }
 
-
-    let privacyLevelString: String
-
-    switch task.privacy.level {
+    let privacyLevelString = switch task.privacy.level {
     case .everyone:
-        privacyLevelString = "everyone"
+        "everyone"
     case .noone:
-        privacyLevelString = "noone"
+        "noone"
     case .friendsOnly:
-        privacyLevelString = "friends-only"
+        "friends-only"
     case .group:
-        privacyLevelString = "group"
+        "group"
     case .except:
-        privacyLevelString = "except"
+        "except"
     @unknown default:
-        privacyLevelString = "everyone"
+        "everyone"
     }
 
     let request = TaskUpdateRequest(
@@ -204,25 +192,24 @@ func updateTask(task: taskapeTask) async -> Bool {
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             print("Task updated successfully: \(response.success)")
             return response.success
-        case .failure(let error):
+        case let .failure(error):
             print("Failed to update task: \(error.localizedDescription)")
             return false
         }
     }
 }
+
 func syncTaskChanges(task: taskapeTask) async {
     let success = await updateTask(task: task)
 
     if success {
         print("Task synced successfully with server")
 
-
         task.syncWithWidget()
         TaskNotifier.notifyTasksUpdated()
-
 
         DispatchQueue.main.async {
             TaskNotifier.notifyTasksUpdated()
@@ -232,39 +219,16 @@ func syncTaskChanges(task: taskapeTask) async {
     }
 }
 
-func updateWidgetWithTasks(userId: String, modelContext: ModelContext) {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}
+func updateWidgetWithTasks(userId _: String, modelContext _: ModelContext) {}
 
 func syncUserTasks(
     userId: String, remoteTasks: [taskapeTask], modelContext: ModelContext
 ) {
-
     let userDescriptor = FetchDescriptor<taskapeUser>(
         predicate: #Predicate<taskapeUser> { user in
             user.id == userId
         }
     )
-
 
     let taskDescriptor = FetchDescriptor<taskapeTask>(
         predicate: #Predicate<taskapeTask> { task in
@@ -273,7 +237,6 @@ func syncUserTasks(
     )
 
     do {
-
         let users = try modelContext.fetch(userDescriptor)
         guard let user = users.first else {
             print("Error: No user found with ID \(userId) to sync tasks with")
@@ -285,13 +248,10 @@ func syncUserTasks(
             "Syncing tasks: Found \(existingTasks.count) local tasks and \(remoteTasks.count) remote tasks"
         )
 
-
         var remoteTaskMap = [String: taskapeTask]()
         for task in remoteTasks {
-
             remoteTaskMap[task.id] = task
         }
-
 
         var existingTaskMap = [String: taskapeTask]()
         for task in existingTasks {
@@ -300,10 +260,8 @@ func syncUserTasks(
 
         print("After deduplication: \(remoteTaskMap.count) unique remote tasks")
 
-
         for existingTask in existingTasks {
             if let remoteTask = remoteTaskMap[existingTask.id] {
-
                 existingTask.name = remoteTask.name
                 existingTask.taskDescription = remoteTask.taskDescription
                 existingTask.deadline = remoteTask.deadline
@@ -320,14 +278,10 @@ func syncUserTasks(
                     "Updated existing task: \(existingTask.id) - \(existingTask.name)"
                 )
             } else {
-
-
-                if !existingTask.id.isEmpty && !existingTask.id.contains("temp")
-                {
+                if !existingTask.id.isEmpty, !existingTask.id.contains("temp") {
                     print(
                         "Deleting task not present on server: \(existingTask.id) - \(existingTask.name)"
                     )
-
 
                     if let index = user.tasks.firstIndex(where: {
                         $0.id == existingTask.id
@@ -340,15 +294,12 @@ func syncUserTasks(
             }
         }
 
-
         for (id, remoteTask) in remoteTaskMap {
             if existingTaskMap[id] == nil {
-
                 print(
                     "Inserting new remote task: \(remoteTask.id) - \(remoteTask.name)"
                 )
                 modelContext.insert(remoteTask)
-
 
                 if !user.tasks.contains(where: { $0.id == remoteTask.id }) {
                     user.tasks.append(remoteTask)
@@ -356,19 +307,8 @@ func syncUserTasks(
             }
         }
 
-
-
-
-
-
-
-
-
-
-
         try modelContext.save()
         print("Successfully synced tasks for user \(userId)")
-
 
         updateWidgetWithTasks(userId: userId, modelContext: modelContext)
 
@@ -385,7 +325,7 @@ func fetchTask(taskId: String, requesterId: String) async -> taskapeTask? {
 
     do {
         let headers: HTTPHeaders = [
-            "Authorization": token
+            "Authorization": token,
         ]
 
         let result = await AF.request(
@@ -398,7 +338,7 @@ func fetchTask(taskId: String, requesterId: String) async -> taskapeTask? {
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             if response.success {
                 return convertToLocalTask(response.task)
             } else {
@@ -407,7 +347,7 @@ func fetchTask(taskId: String, requesterId: String) async -> taskapeTask? {
                 )
                 return nil
             }
-        case .failure(let error):
+        case let .failure(error):
             print("failed to fetch task: \(error.localizedDescription)")
             return nil
         }

@@ -12,7 +12,7 @@ func fetchUser(userId: String) async -> taskapeUser? {
 
     do {
         let headers: HTTPHeaders = [
-            "Authorization": token
+            "Authorization": token,
         ]
 
         let result = await AF.request(
@@ -25,7 +25,7 @@ func fetchUser(userId: String) async -> taskapeUser? {
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             if response.success {
                 let user = taskapeUser(
                     id: String(response.id),
@@ -36,12 +36,7 @@ func fetchUser(userId: String) async -> taskapeUser? {
                 )
                 print("user handle:", user.handle)
 
-
-                if let friends = response.friends, !friends.isEmpty {
-
-
-
-                }
+                if let friends = response.friends, !friends.isEmpty {}
 
                 return user
             } else {
@@ -50,25 +45,22 @@ func fetchUser(userId: String) async -> taskapeUser? {
                 )
                 return nil
             }
-        case .failure(let error):
+        case let .failure(error):
             print("Failed to fetch user: \(error.localizedDescription)")
             return nil
         }
     }
 }
 
-
 func insertUser(user: taskapeUser, context: ModelContext) {
-    let userID = user.id 
+    let userID = user.id
     print("Inserting user with ID: \(userID), handle: \(user.handle)")
-
 
     let descriptor = FetchDescriptor<taskapeUser>(
         predicate: #Predicate<taskapeUser> { $0.id == userID }
     )
 
     do {
-
         let allUsersDescriptor = FetchDescriptor<taskapeUser>()
         let allUsers = try context.fetch(allUsersDescriptor)
 
@@ -77,14 +69,12 @@ func insertUser(user: taskapeUser, context: ModelContext) {
                 "Found \(allUsers.count) existing users - will ensure only the current user exists"
             )
 
-
             for existingUser in allUsers {
                 if existingUser.id != userID {
                     context.delete(existingUser)
                 }
             }
         }
-
 
         let existingUsers = try context.fetch(descriptor)
 
@@ -99,7 +89,6 @@ func insertUser(user: taskapeUser, context: ModelContext) {
             existingUser.bio = user.bio
             existingUser.profileImageURL = user.profileImageURL
             existingUser.profileColor = user.profileColor
-
         }
 
         try context.save()
@@ -109,20 +98,17 @@ func insertUser(user: taskapeUser, context: ModelContext) {
     }
 }
 
-
 func fetchTasks(userId: String) async -> [taskapeTask]? {
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
         print("No auth token found")
         return nil
     }
 
-
     let requesterId = UserManager.shared.currentUserId
 
     print("Fetching tasks for user ID: \(userId), requester ID: \(requesterId)")
 
     do {
-
         let url =
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)/tasks?requester_id=\(requesterId)"
 
@@ -136,7 +122,7 @@ func fetchTasks(userId: String) async -> [taskapeTask]? {
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             if response.success {
                 let localTasks = response.tasks.map { convertToLocalTask($0) }
                 return localTasks
@@ -146,7 +132,7 @@ func fetchTasks(userId: String) async -> [taskapeTask]? {
                 )
                 return nil
             }
-        case .failure(let error):
+        case let .failure(error):
             print("Failed to fetch tasks: \(error.localizedDescription)")
             return nil
         }
@@ -156,40 +142,40 @@ func fetchTasks(userId: String) async -> [taskapeTask]? {
 func convertToLocalTask(_ taskResponse: TaskResponse) -> taskapeTask {
     let dateFormatter = ISO8601DateFormatter()
 
-    var deadline: Date? = nil
+    var deadline: Date?
     if let deadlineString = taskResponse.deadline {
         deadline = dateFormatter.date(from: deadlineString)
     }
 
     let createdAt = dateFormatter.date(from: taskResponse.created_at) ?? Date()
 
-    var confirmedAt: Date? = nil
+    var confirmedAt: Date?
     if let confirmedAtString = taskResponse.confirmed_at {
         confirmedAt = dateFormatter.date(from: confirmedAtString)
     }
 
-    let privacyLevel: PrivacySettings.PrivacyLevel
-    if taskResponse.privacy_level.isEmpty {
-        privacyLevel = .everyone
+    let privacyLevel: PrivacySettings.PrivacyLevel = if taskResponse.privacy_level.isEmpty {
+        .everyone
     } else {
         switch taskResponse.privacy_level {
         case "everyone":
-            privacyLevel = .everyone
+            .everyone
         case "friends-only":
-            privacyLevel = .friendsOnly
+            .friendsOnly
         case "group":
-            privacyLevel = .group
+            .group
         case "noone":
-            privacyLevel = .noone
+            .noone
         case "except":
-            privacyLevel = .except
+            .except
         default:
-            privacyLevel = .everyone
+            .everyone
         }
     }
 
     let privacySettings = PrivacySettings(
-        level: privacyLevel, exceptIDs: taskResponse.privacy_except_ids)
+        level: privacyLevel, exceptIDs: taskResponse.privacy_except_ids
+    )
 
     let completionStatus = CompletionStatus(
         isCompleted: taskResponse.is_completed,
@@ -200,18 +186,17 @@ func convertToLocalTask(_ taskResponse: TaskResponse) -> taskapeTask {
         confirmedAt: confirmedAt
     )
 
-    let difficulty: TaskDifficulty
-    switch taskResponse.task_difficulty {
+    let difficulty: TaskDifficulty = switch taskResponse.task_difficulty {
     case "small":
-        difficulty = .small
+        .small
     case "medium":
-        difficulty = .medium
+        .medium
     case "large":
-        difficulty = .large
+        .large
     case "custom":
-        difficulty = .custom
+        .custom
     default:
-        difficulty = .medium
+        .medium
     }
 
     let task = taskapeTask(

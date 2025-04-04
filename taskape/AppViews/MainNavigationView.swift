@@ -2,7 +2,6 @@ import CachedAsyncImage
 import SwiftData
 import SwiftUI
 
-
 struct MainNavigationView: View {
     @State private var selectedTabIndex: Int = 1
     @State var mainTabBarItems: [tabBarItem] = [
@@ -19,7 +18,6 @@ struct MainNavigationView: View {
 
     @State private var mainNavigationPath = NavigationPath()
 
-
     @State private var isLoading: Bool = true
     @State private var logoOpacity: Double = 1.0
     @State private var contentOpacity: Double = 0.0
@@ -30,11 +28,13 @@ struct MainNavigationView: View {
     @Binding var fullyLoaded: Bool
 
     var body: some View {
-
         NavigationStack(path: $mainNavigationPath) {
             VStack {
                 UserGreetingCard(
-                    user: $currentUser).modelContext(modelContext).padding(.horizontal).padding(.top, 10).padding(.bottom, 10)
+                    user: $currentUser
+                ).modelContext(modelContext).padding(.horizontal).padding(
+                    .top, 10
+                ).padding(.bottom, 10)
                 TabBarView(
                     tabBarItems: $mainTabBarItems,
                     tabBarViewIndex: $selectedTabIndex
@@ -57,20 +57,23 @@ struct MainNavigationView: View {
                             if abs(horizontalAmount) > abs(verticalAmount) {
                                 if horizontalAmount < 0 {
                                     withAnimation {
-                                        self.selectedTabIndex = min(
-                                            self.selectedTabIndex + 1,
-                                            self.mainTabBarItems.count - 1)
+                                        selectedTabIndex = min(
+                                            selectedTabIndex + 1,
+                                            mainTabBarItems.count - 1
+                                        )
                                     }
                                 } else {
                                     withAnimation {
-                                        self.selectedTabIndex = max(
-                                            0, self.selectedTabIndex - 1)
+                                        selectedTabIndex = max(
+                                            0, selectedTabIndex - 1
+                                        )
                                     }
                                 }
                             }
                         })
                 case 1:
-                    MainView(eventsUpdated: $eventsUpdated,
+                    MainView(
+                        eventsUpdated: $eventsUpdated,
                         navigationPath: $mainNavigationPath
                     )
                     .modelContext(modelContext)
@@ -87,14 +90,16 @@ struct MainNavigationView: View {
                             if abs(horizontalAmount) > abs(verticalAmount) {
                                 if horizontalAmount < 0 {
                                     withAnimation {
-                                        self.selectedTabIndex = min(
-                                            self.selectedTabIndex + 1,
-                                            self.mainTabBarItems.count - 1)
+                                        selectedTabIndex = min(
+                                            selectedTabIndex + 1,
+                                            mainTabBarItems.count - 1
+                                        )
                                     }
                                 } else {
                                     withAnimation {
-                                        self.selectedTabIndex = max(
-                                            0, self.selectedTabIndex - 1)
+                                        selectedTabIndex = max(
+                                            0, selectedTabIndex - 1
+                                        )
                                     }
                                 }
                             }
@@ -113,21 +118,21 @@ struct MainNavigationView: View {
                 context: modelContext)
         }
     }
-
 }
 
 #Preview {
     do {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(
-            for: taskapeUser.self, taskapeTask.self, configurations: config)
+            for: taskapeUser.self, taskapeTask.self, configurations: config
+        )
 
         let user = taskapeUser(
             id: UUID().uuidString,
             handle: "shevlfs",
             bio: "i am shevlfs",
             profileImage:
-                "https://static.wikia.nocookie.net/character-stats-and-profiles/images/c/c7/DZuvg1d.png/revision/latest?cb=20181120135131",
+            "https://static.wikia.nocookie.net/character-stats-and-profiles/images/c/c7/DZuvg1d.png/revision/latest?cb=20181120135131",
             profileColor: "blue"
         )
 

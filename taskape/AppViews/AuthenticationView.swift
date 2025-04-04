@@ -1,8 +1,5 @@
 
 
-
-
-
 import Lottie
 import SwiftData
 import SwiftUI
@@ -24,7 +21,7 @@ struct AuthenticationView: View {
     @State var verifyCodeReceived: Bool = false
     @State var numberRegistrationComplete: Bool = false
     @State var displayCodeError: Bool = false
-    @State private var path: NavigationPath = NavigationPath()
+    @State private var path: NavigationPath = .init()
     @State var progress: Float = 1 / 5
 
     @State var userHandle: String = ""
@@ -54,7 +51,6 @@ struct AuthenticationView: View {
             print("Error clearing existing users: \(error)")
         }
 
-
         let userId = UserDefaults.standard.string(forKey: "user_id") ?? user_id
         let newUser = taskapeUser(
             id: userId,
@@ -68,10 +64,9 @@ struct AuthenticationView: View {
 
         modelContext.insert(newUser)
 
-
         UserManager.shared.setCurrentUser(userId: userId)
 
-        let userPhone: String = "\(phoneCode)\(phoneNumber)"
+        let userPhone = "\(phoneCode)\(phoneNumber)"
             .replacingOccurrences(of: " ", with: "")
 
         do {
@@ -104,7 +99,7 @@ struct AuthenticationView: View {
                     )
                     .blur(
                         radius:
-                            LandingButtonPressed ? 15 : 0
+                        LandingButtonPressed ? 15 : 0
                     ).animation(
                         .snappy(
                             duration: 1.0
@@ -115,7 +110,8 @@ struct AuthenticationView: View {
                             #selector(UIResponder.resignFirstResponder),
                             to: nil,
                             from: nil,
-                            for: nil)
+                            for: nil
+                        )
                     }
 
                 RegistrationView(
@@ -129,7 +125,8 @@ struct AuthenticationView: View {
                     UIApplication.shared.sendAction(
                         #selector(UIResponder.resignFirstResponder), to: nil,
                         from: nil,
-                        for: nil)
+                        for: nil
+                    )
                 }
                 .animation(
                     .snappy(duration: 1.0),
@@ -149,7 +146,7 @@ struct AuthenticationView: View {
                         .buttonStyle(.plain)
                         .opacity(LandingButtonPressed ? 0 : 1).blur(
                             radius:
-                                LandingButtonPressed ? 10 : 0
+                            LandingButtonPressed ? 10 : 0
                         ).animation(
                             .snappy(duration: 1.0), value: LandingButtonPressed
                         )
@@ -165,7 +162,8 @@ struct AuthenticationView: View {
                     UIApplication.shared.sendAction(
                         #selector(UIResponder.resignFirstResponder), to: nil,
                         from: nil,
-                        for: nil)
+                        for: nil
+                    )
                 }
                 .opacity(phoneNumberReceived ? 1 : 0)
                 .animation(
@@ -195,13 +193,13 @@ struct AuthenticationView: View {
                         case .userexists:
 
                             UserDefaults.standard.set(
-                                true, forKey: "profileExists")
-
+                                true, forKey: "profileExists"
+                            )
 
                             print(
                                 "Existing user detected with ID: \(UserManager.shared.currentUserId)"
                             )
-                            withAnimation(.spring(response: 1, dampingFraction: 0.5)){
+                            withAnimation(.spring(response: 1, dampingFraction: 0.5)) {
                                 userAlreadyExists = true
                             }
                         }

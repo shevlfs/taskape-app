@@ -1,7 +1,6 @@
 import SwiftData
 import SwiftUI
 
-
 struct DetailViewHeader: View {
     @Binding var detailIsPresent: Bool
 
@@ -15,7 +14,6 @@ struct DetailViewHeader: View {
     }
 }
 
-
 struct TaskNameField: View {
     @Binding var name: String
     @Environment(\.colorScheme) var colorScheme
@@ -25,7 +23,7 @@ struct TaskNameField: View {
     private func getTaskColor()
         -> Color
     {
-        if flagColor != nil && flagName != "" {
+        if flagColor != nil, flagName != "" {
             return Color(hex: flagColor!)
         }
         return Color.taskapeOrange.opacity(0.8)
@@ -34,7 +32,7 @@ struct TaskNameField: View {
     private func getTaskTextColor()
         -> Color
     {
-        if flagColor != nil && flagName != "" {
+        if flagColor != nil, flagName != "" {
             return Color(hex: flagColor!).contrastingTextColor(in: colorScheme)
         }
         return Color.white
@@ -71,7 +69,6 @@ struct TaskNameField: View {
     }
 }
 
-
 struct TaskDescriptionField: View {
     @Binding var description: String
     @FocusState var isFocused: Bool
@@ -94,7 +91,6 @@ struct TaskDescriptionField: View {
             .padding(.horizontal)
     }
 }
-
 
 struct TaskDeadlinePicker: View {
     @Binding var deadline: Date?
@@ -120,7 +116,6 @@ struct TaskDeadlinePicker: View {
     }
 }
 
-
 struct TaskPrioritySelector: View {
     @Binding var flagStatus: Bool
     @Binding var flagColor: String?
@@ -128,7 +123,6 @@ struct TaskPrioritySelector: View {
     @Binding var labels: [TaskFlag]
     @State private var showPriorityPicker: Bool = false
     @Binding var accentcolor: Color
-
 
     @State var priorityOptions: [TaskFlag] = [
         TaskFlag(flagname: "important", flagcolor: "#FF6B6B"),
@@ -167,7 +161,8 @@ struct TaskPrioritySelector: View {
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12))
                         .foregroundColor(accentcolor).padding(
-                            .trailing, 12)
+                            .trailing, 12
+                        )
                 }
             }
             .buttonStyle(PlainButtonStyle())
@@ -178,7 +173,7 @@ struct TaskPrioritySelector: View {
                     flagName: $flagName,
                     priorityOptions: getLabels(),
                     showPicker: $showPriorityPicker
-                ).presentationDetents([.medium])
+                ).presentationDetents([.fraction(1 / 2)])
             }
         }
         .padding()
@@ -190,7 +185,7 @@ struct TaskPrioritySelector: View {
     }
 
     private func getLabels() -> [TaskFlag] {
-        return (priorityOptions + uniqueFlags).uniqued()
+        (priorityOptions + uniqueFlags).uniqued()
     }
 }
 
@@ -200,7 +195,6 @@ extension Sequence where Element: Hashable {
         return filter { set.insert($0).inserted }
     }
 }
-
 
 struct PriorityPickerContent: View {
     @Binding var flagStatus: Bool
@@ -244,7 +238,6 @@ struct PriorityPickerContent: View {
 
                 Spacer()
 
-
                 Text("label name")
                     .font(.pathway(17))
                     .padding(.horizontal)
@@ -271,8 +264,6 @@ struct PriorityPickerContent: View {
                             .frame(width: 30, height: 30)
                         ForEach(defaultColors, id: \.self) { color in
 
-
-
                             Circle()
                                 .fill(color)
                                 .frame(width: 30, height: 30)
@@ -280,7 +271,9 @@ struct PriorityPickerContent: View {
                                     Circle()
                                         .stroke(
                                             Color.white,
-                                            lineWidth: customColor == color ? 3 : 0)
+                                            lineWidth: customColor == color
+                                                ? 3 : 0
+                                        )
                                 )
                                 .shadow(radius: 2)
                                 .onTapGesture {
@@ -320,9 +313,7 @@ struct PriorityPickerContent: View {
                     .padding(.horizontal)
             }
         } else {
-
             VStack(spacing: 0) {
-
                 Text("select label")
                     .font(.pathway(17))
                     .fontWeight(.medium)
@@ -332,8 +323,7 @@ struct PriorityPickerContent: View {
                 Divider()
                     .padding(.bottom, 8)
 
-
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 0) {
                         ForEach(priorityOptions, id: \.flagName) { option in
                             Button(action: {
@@ -356,9 +346,9 @@ struct PriorityPickerContent: View {
 
                                     Spacer()
 
-                                    if flagStatus
-                                        && flagColor == option.flagColor
-                                        && flagName == option.flagName
+                                    if flagStatus,
+                                        flagColor == option.flagColor,
+                                        flagName == option.flagName
                                     {
                                         Image(systemName: "checkmark")
                                             .foregroundColor(.blue)
@@ -391,8 +381,8 @@ struct PriorityPickerContent: View {
 
                                 Spacer()
 
-                                if !flagStatus && flagColor == nil
-                                    && flagName == nil
+                                if !flagStatus, flagColor == nil,
+                                    flagName == nil
                                 {
                                     Image(systemName: "checkmark")
                                         .foregroundColor(.blue)
@@ -407,7 +397,6 @@ struct PriorityPickerContent: View {
                         Divider()
                             .padding(.vertical, 8)
 
-
                         Button(action: {
                             withAnimation {
                                 isAddingCustomLabel = true
@@ -418,7 +407,8 @@ struct PriorityPickerContent: View {
                                 Image(systemName: "plus.circle.fill")
                                     .foregroundColor(.taskapeOrange)
                                     .font(.system(size: 18)).frame(
-                                        width: 18, height: 18)
+                                        width: 18, height: 18
+                                    )
 
                                 Text("add custom label")
                                     .font(.pathway(17))
@@ -438,7 +428,6 @@ struct PriorityPickerContent: View {
         }
     }
 }
-
 
 struct TaskPrivacySelector: View {
     @Binding var privacyLevel: PrivacySettings.PrivacyLevel
@@ -469,7 +458,6 @@ struct TaskPrivacySelector: View {
     }
 }
 
-
 struct ExceptPeopleSelector: View {
     @Bindable var task: taskapeTask
     @ObservedObject private var friendManager = FriendManager.shared
@@ -480,7 +468,6 @@ struct ExceptPeopleSelector: View {
     var body: some View {
         VStack(spacing: 8) {
             Button(action: {
-
                 if friendManager.friends.isEmpty {
                     isLoading = true
                     Task {
@@ -526,7 +513,6 @@ struct ExceptPeopleSelector: View {
             .buttonStyle(PlainButtonStyle())
             .disabled(isLoading)
 
-
             if !task.privacy.exceptIDs.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -552,7 +538,6 @@ struct ExceptPeopleSelector: View {
     }
 }
 
-
 struct ExcludedFriendTag: View {
     let friendId: String
     @Bindable var task: taskapeTask
@@ -571,7 +556,6 @@ struct ExcludedFriendTag: View {
 
             Button(action: {
                 withAnimation {
-
                     task.privacy.exceptIDs.removeAll(where: { $0 == friendId })
                 }
             }) {
@@ -590,7 +574,6 @@ struct ExcludedFriendTag: View {
     }
 }
 
-
 struct FriendSelectionSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable var task: taskapeTask
@@ -601,9 +584,9 @@ struct FriendSelectionSheet: View {
 
     private var filteredFriends: [Friend] {
         if searchText.isEmpty {
-            return friendManager.friends
+            friendManager.friends
         } else {
-            return friendManager.friends.filter {
+            friendManager.friends.filter {
                 $0.handle.localizedCaseInsensitiveContains(searchText)
             }
         }
@@ -611,7 +594,6 @@ struct FriendSelectionSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-
             HStack {
                 Text("exclude friends")
                     .font(.pathwayBold(18))
@@ -625,7 +607,6 @@ struct FriendSelectionSheet: View {
                 .foregroundColor(accentcolor)
             }
             .padding()
-
 
             HStack {
                 Image(systemName: "magnifyingglass")
@@ -652,7 +633,8 @@ struct FriendSelectionSheet: View {
             .background(
                 RoundedRectangle(cornerRadius: 30)
                     .fill(Color(UIColor.systemGray6)).stroke(
-                        .regularMaterial, lineWidth: 1)
+                        .regularMaterial, lineWidth: 1
+                    )
             )
             .padding(.horizontal)
             .padding(.bottom, 10)
@@ -680,7 +662,6 @@ struct FriendSelectionSheet: View {
                     Spacer()
                 }
             } else {
-
                 List {
                     ForEach(filteredFriends, id: \.id) { friend in
                         FriendSelectRow(
@@ -689,14 +670,12 @@ struct FriendSelectionSheet: View {
                                 friend.id),
                             onToggle: { selected in
                                 if selected {
-
                                     if !task.privacy.exceptIDs.contains(
                                         friend.id)
                                     {
                                         task.privacy.exceptIDs.append(friend.id)
                                     }
                                 } else {
-
                                     task.privacy.exceptIDs.removeAll(where: {
                                         $0 == friend.id
                                     })
@@ -709,7 +688,6 @@ struct FriendSelectionSheet: View {
             }
         }
         .onAppear {
-
             if friendManager.friends.isEmpty {
                 Task {
                     await friendManager.refreshFriendDataBatched()
@@ -718,7 +696,6 @@ struct FriendSelectionSheet: View {
         }
     }
 }
-
 
 struct FriendSelectRow: View {
     let friend: Friend
@@ -730,12 +707,11 @@ struct FriendSelectRow: View {
             onToggle(!isSelected)
         }) {
             HStack {
-
                 if !friend.profile_picture.isEmpty {
                     AsyncImage(url: URL(string: friend.profile_picture)) {
                         phase in
                         switch phase {
-                        case .success(let image):
+                        case let .success(image):
                             image
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
@@ -776,7 +752,6 @@ struct FriendSelectRow: View {
 
                 Spacer()
 
-
                 ZStack {
                     Circle()
                         .stroke(
@@ -807,7 +782,7 @@ struct ProofSelectRow: View {
     @Binding var confirmationRequired: Bool
 
     var body: some View {
-        VStack{
+        VStack {
             HStack {
                 Text("proof needed").font(.pathway(17))
                 Spacer()
@@ -835,7 +810,7 @@ struct ProofSelectRow: View {
             }
         }.disabled(task.privacy.level == .noone)
 
-        if (task.privacy.level == .noone){
+        if task.privacy.level == .noone {
             if confirmationRequired {
                 Text(
                     "you can't select proof needed for this task\nbecause it is private"
@@ -844,11 +819,9 @@ struct ProofSelectRow: View {
                 .font(.pathway(15))
                 .padding(.top)
             }
-
         }
     }
 }
-
 
 struct taskCardDetailView: View {
     @Binding var detailIsPresent: Bool
@@ -863,28 +836,28 @@ struct taskCardDetailView: View {
             VStack {
                 TaskNameField(
                     name: $task.name, flagColor: $task.flagColor,
-                    flagName: $task.flagName)
-
+                    flagName: $task.flagName
+                )
 
                 TaskDescriptionField(
-                    description: $task.taskDescription, isFocused: _isFocused, accentcolor: $taskColor)
+                    description: $task.taskDescription, isFocused: _isFocused,
+                    accentcolor: $taskColor
+                )
 
-
-                TaskDeadlinePicker(deadline: $task.deadline, accentcolor: $taskColor)
-
+                TaskDeadlinePicker(
+                    deadline: $task.deadline, accentcolor: $taskColor)
 
                 TaskPrioritySelector(
                     flagStatus: $task.flagStatus,
                     flagColor: $task.flagColor,
-                    flagName: $task.flagName, labels: $labels, accentcolor: $taskColor
+                    flagName: $task.flagName, labels: $labels,
+                    accentcolor: $taskColor
                 )
-
 
                 TaskPrivacySelector(
                     privacyLevel: $task.privacy.level,
                     accentcolor: $taskColor
                 )
-
 
                 switch task.privacy.level {
                 case .everyone, .noone, .friendsOnly:
@@ -900,10 +873,11 @@ struct taskCardDetailView: View {
                         .transition(
                             .move(edge: .bottom).combined(with: .opacity))
                 }
-                ProofSelectRow(task: task,
+                ProofSelectRow(
+                    task: task,
                     proofNeeded: $task.proofNeeded,
-                    accentcolor: $taskColor, confirmationRequired: $task.completion.requiresConfirmation
-                )
+                    accentcolor: $taskColor,
+                    confirmationRequired: $task.completion.requiresConfirmation)
 
             }.animation(.easeInOut(duration: 0.3), value: task.privacy.level)
                 .padding(.top, 20)
@@ -913,38 +887,21 @@ struct taskCardDetailView: View {
         .presentationDetents(detents)
         .animation(.easeInOut, value: detents)
         .onAppear {
-            self.taskColor = self.getTaskColor()
+            taskColor = getTaskColor()
         }
         .onChange(of: task.flagColor) { _, _ in
-            self.taskColor = self.getTaskColor()
-        }.onChange(of: task.privacy.level){
-            if (task.privacy.level == .noone) {
+            taskColor = getTaskColor()
+        }.onChange(of: task.privacy.level) {
+            if task.privacy.level == .noone {
                 task.proofNeeded = false
             }
         }
     }
 
     private func getTaskColor() -> Color {
-        if task.flagColor != nil && task.flagName != "" {
+        if task.flagColor != nil, task.flagName != "" {
             return Color(hex: task.flagColor!)
         }
         return Color.taskapeOrange.opacity(0.8)
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,10 +1,5 @@
 
 
-
-
-
-
-
 import SwiftDotenv
 import SwiftUI
 
@@ -16,8 +11,8 @@ struct RootView: View {
 
     func tokenIsActive() async -> Bool {
         if let path = Bundle.main.path(
-            forResource: ".env", ofType: nil)
-        {
+            forResource: ".env", ofType: nil
+        ) {
             print("loading dotenv")
             try! Dotenv.configure(atPath: path)
         } else {
@@ -30,7 +25,6 @@ struct RootView: View {
                 print("token validate success")
                 phoneExistsInDatabase = true
 
-
                 if let userId = UserDefaults.standard.string(forKey: "user_id") {
                     UserManager.shared.setCurrentUser(userId: userId)
                 }
@@ -41,14 +35,13 @@ struct RootView: View {
             print("validate token failed")
 
             if let refreshToken = UserDefaults.standard.string(forKey: "refreshToken"),
-               let phone = UserDefaults.standard.string(forKey: "phone") {
-
+               let phone = UserDefaults.standard.string(forKey: "phone")
+            {
                 if await refreshTokenRequest(
-                    token: token!, refreshToken: refreshToken, phone: phone)
-                {
+                    token: token!, refreshToken: refreshToken, phone: phone
+                ) {
                     print("refresh success")
                     phoneExistsInDatabase = true
-
 
                     if let userId = UserDefaults.standard.string(forKey: "user_id") {
                         UserManager.shared.setCurrentUser(userId: userId)
@@ -59,7 +52,6 @@ struct RootView: View {
                 print("refresh failed")
             }
         }
-
 
         UserManager.shared.setCurrentUser(userId: "")
         return false
@@ -86,7 +78,7 @@ struct RootView: View {
                         userAlreadyExists = false
                     }
                     .onChange(of: userAlreadyExists) {
-                        withAnimation(.spring(response: 1, dampingFraction: 0.5)){
+                        withAnimation(.spring(response: 1, dampingFraction: 0.5)) {
                             appState.login()
                         }
                     }
@@ -107,7 +99,7 @@ struct RootView: View {
                     forKey: "profileExists")
 
                 await MainActor.run {
-                    if tokenActive && profileExists {
+                    if tokenActive, profileExists {
                         appState.isLoggedIn = true
                     } else {
                         appState.isLoggedIn = false

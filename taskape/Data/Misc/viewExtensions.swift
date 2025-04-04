@@ -31,6 +31,7 @@ extension Color {
     static var taskapeLightOrange: Color {
         Color(hex: "FF9500")
     }
+
     init(hex: String) {
         let hex = hex.trimmingCharacters(
             in: CharacterSet.alphanumerics.inverted)
@@ -93,27 +94,24 @@ extension Color {
 
             return String(format: "#%02X%02X%02X", rInt, gInt, bInt)
         #else
-            return "#000000" 
+            return "#000000"
         #endif
     }
 }
 
 extension View {
     func percentageOffset(x: Double = 0, y: Double = 0) -> some View {
-        self
-            .modifier(PercentageOffset(x: x, y: y))
+        modifier(PercentageOffset(x: x, y: y))
     }
 }
 
 struct PercentageOffset: ViewModifier {
-
     let x: Double
     let y: Double
 
     @State private var size: CGSize = .zero
 
     func body(content: Content) -> some View {
-
         content
             .background(
                 GeometryReader { geo in Color.clear.onAppear { size = geo.size }

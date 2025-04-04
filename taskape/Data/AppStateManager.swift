@@ -5,25 +5,22 @@ class AppStateManager: ObservableObject {
     @Published var isLoggedIn: Bool
 
     init() {
-
         let profileExists = UserDefaults.standard.bool(forKey: "profileExists")
         let hasToken = UserDefaults.standard.string(forKey: "authToken") != nil
         let hasUserId = !UserManager.shared.currentUserId.isEmpty
 
-        self.isLoggedIn = profileExists && hasToken && hasUserId
+        isLoggedIn = profileExists && hasToken && hasUserId
 
-        print("AppStateManager initialized with isLoggedIn: \(self.isLoggedIn)")
+        print("AppStateManager initialized with isLoggedIn: \(isLoggedIn)")
         print("- profileExists: \(profileExists)")
         print("- hasToken: \(hasToken)")
         print("- hasUserId: \(hasUserId)")
     }
 
     func logout() {
-
         UserDefaults.standard.removeObject(forKey: "authToken")
         UserDefaults.standard.removeObject(forKey: "refreshToken")
         UserDefaults.standard.set(false, forKey: "profileExists")
-
 
         UserDefaults.standard.removeObject(forKey: "user_id")
         UserDefaults.standard.removeObject(forKey: "handle")
@@ -34,9 +31,7 @@ class AppStateManager: ObservableObject {
         UserDefaults.standard.set(false, forKey: "numberIsRegistered")
         UserDefaults.standard.removeObject(forKey: "userPhoneNumber")
 
-
         UserManager.shared.setCurrentUser(userId: "")
-
 
         DispatchQueue.main.async {
             self.isLoggedIn = false
@@ -44,7 +39,6 @@ class AppStateManager: ObservableObject {
     }
 
     func login() {
-
         if let userId = UserDefaults.standard.string(forKey: "user_id"), !userId.isEmpty {
             UserManager.shared.setCurrentUser(userId: userId)
         }

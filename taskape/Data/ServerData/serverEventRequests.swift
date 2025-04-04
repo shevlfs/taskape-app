@@ -1,19 +1,12 @@
-
-
-
-
-
-
-
 import Alamofire
 import Foundation
 import SwiftData
 import SwiftDotenv
 import SwiftUI
 
-
-
-func fetchEvents(userId: String, includeExpired: Bool = false, limit: Int = 20) async -> [taskapeEvent]? {
+func fetchEvents(userId: String, includeExpired: Bool = false, limit: Int = 20)
+    async -> [taskapeEvent]?
+{
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
         print("no auth token found")
         return nil
@@ -21,14 +14,19 @@ func fetchEvents(userId: String, includeExpired: Bool = false, limit: Int = 20) 
 
     do {
         let headers: HTTPHeaders = [
-            "Authorization": token
+            "Authorization": token,
         ]
 
-
-        var urlComponents = URLComponents(string: "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)/events")
+        var urlComponents = URLComponents(
+            string:
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)/events"
+        )
         urlComponents?.queryItems = [
-            URLQueryItem(name: "include_expired", value: includeExpired ? "true" : "false"),
-            URLQueryItem(name: "limit", value: "\(limit)")
+            URLQueryItem(
+                name: "include_expired",
+                value: includeExpired ? "true" : "false"
+            ),
+            URLQueryItem(name: "limit", value: "\(limit)"),
         ]
 
         guard let url = urlComponents?.url else {
@@ -45,24 +43,28 @@ func fetchEvents(userId: String, includeExpired: Bool = false, limit: Int = 20) 
         .responseData { response in
 
             if let data = response.data {
-
-
-
                 do {
-                    let decoded = try JSONDecoder().decode(GetEventsResponse.self, from: data)
-                  
+                    let decoded = try JSONDecoder().decode(
+                        GetEventsResponse.self, from: data
+                    )
+
                 } catch {
                     print("Decode error: \(error)")
 
-
                     if let decodingError = error as? DecodingError {
                         switch decodingError {
-                        case .keyNotFound(let key, let context):
-                            print("Missing key: \(key), path: \(context.codingPath)")
-                        case .typeMismatch(let type, let context):
-                            print("Type mismatch: expected \(type), path: \(context.codingPath)")
-                        case .valueNotFound(let type, let context):
-                            print("Value not found: expected \(type), path: \(context.codingPath)")
+                        case let .keyNotFound(key, context):
+                            print(
+                                "Missing key: \(key), path: \(context.codingPath)"
+                            )
+                        case let .typeMismatch(type, context):
+                            print(
+                                "Type mismatch: expected \(type), path: \(context.codingPath)"
+                            )
+                        case let .valueNotFound(type, context):
+                            print(
+                                "Value not found: expected \(type), path: \(context.codingPath)"
+                            )
                         default:
                             print("Other decoding error: \(decodingError)")
                         }
@@ -74,22 +76,22 @@ func fetchEvents(userId: String, includeExpired: Bool = false, limit: Int = 20) 
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             if response.success {
                 let events = response.events.map { convertToLocalEvent($0) }
                 return events
             } else {
-                print("failed to fetch events: \(response.message ?? "unknown error")")
+                print(
+                    "failed to fetch events: \(response.message ?? "unknown error")"
+                )
                 return nil
             }
-        case .failure(let error):
+        case let .failure(error):
             print("failed to fetch events: \(error.localizedDescription)")
             return nil
         }
     }
 }
-
-
 
 func likeEvent(eventId: String, userId: String) async -> Bool {
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
@@ -109,7 +111,7 @@ func likeEvent(eventId: String, userId: String) async -> Bool {
             parameters: request,
             encoder: JSONParameterEncoder.default,
             headers: [
-                "Authorization": token
+                "Authorization": token,
             ]
         )
         .validate()
@@ -117,9 +119,9 @@ func likeEvent(eventId: String, userId: String) async -> Bool {
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             return response.success
-        case .failure(let error):
+        case let .failure(error):
             print("failed to like event: \(error.localizedDescription)")
             return false
         }
@@ -132,10 +134,11 @@ func unlikeEvent(eventId: String, userId: String) async -> Bool {
         return false
     }
 
-
-    var urlComponents = URLComponents(string: "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/events/\(eventId)/like")
+    var urlComponents = URLComponents(
+        string:
+        "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/events/\(eventId)/like")
     urlComponents?.queryItems = [
-        URLQueryItem(name: "user_id", value: userId)
+        URLQueryItem(name: "user_id", value: userId),
     ]
 
     guard let url = urlComponents?.url else {
@@ -144,7 +147,7 @@ func unlikeEvent(eventId: String, userId: String) async -> Bool {
     }
 
     let headers: HTTPHeaders = [
-        "Authorization": token
+        "Authorization": token,
     ]
 
     do {
@@ -158,28 +161,30 @@ func unlikeEvent(eventId: String, userId: String) async -> Bool {
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             return response.success
-        case .failure(let error):
+        case let .failure(error):
             print("failed to unlike event: \(error.localizedDescription)")
             return false
         }
     }
 }
 
-
-
-func fetchEventComments(eventId: String, limit: Int = 20, offset: Int = 0) async -> [EventComment]? {
+func fetchEventComments(eventId: String, limit: Int = 20, offset: Int = 0) async
+    -> [EventComment]?
+{
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
         print("no auth token found")
         return nil
     }
 
-
-    var urlComponents = URLComponents(string: "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/events/\(eventId)/comments")
+    var urlComponents = URLComponents(
+        string:
+        "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/events/\(eventId)/comments"
+    )
     urlComponents?.queryItems = [
         URLQueryItem(name: "limit", value: "\(limit)"),
-        URLQueryItem(name: "offset", value: "\(offset)")
+        URLQueryItem(name: "offset", value: "\(offset)"),
     ]
 
     guard let url = urlComponents?.url else {
@@ -188,7 +193,7 @@ func fetchEventComments(eventId: String, limit: Int = 20, offset: Int = 0) async
     }
 
     let headers: HTTPHeaders = [
-        "Authorization": token
+        "Authorization": token,
     ]
 
     do {
@@ -202,21 +207,24 @@ func fetchEventComments(eventId: String, limit: Int = 20, offset: Int = 0) async
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             if response.success {
-                let comments = response.comments.map { convertToLocalComment($0) }
+                let comments = response.comments.map {
+                    convertToLocalComment($0)
+                }
                 return comments
             } else {
-                print("failed to fetch comments: \(response.message ?? "unknown error")")
+                print(
+                    "failed to fetch comments: \(response.message ?? "unknown error")"
+                )
                 return nil
             }
-        case .failure(let error):
+        case let .failure(error):
             print("failed to fetch comments: \(error.localizedDescription)")
             return nil
         }
     }
 }
-
 
 struct AddEventCommentResponse: Codable {
     let success: Bool
@@ -224,7 +232,9 @@ struct AddEventCommentResponse: Codable {
     let message: String?
 }
 
-func addEventComment(eventId: String, userId: String, content: String) async -> EventComment? {
+func addEventComment(eventId: String, userId: String, content: String) async
+    -> EventComment?
+{
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
         print("no auth token found")
         return nil
@@ -241,8 +251,9 @@ func addEventComment(eventId: String, userId: String, content: String) async -> 
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/events/\(eventId)/comments",
             method: .post,
             parameters: request,
-            encoder: JSONParameterEncoder.default, headers: [
-                "Authorization": token
+            encoder: JSONParameterEncoder.default,
+            headers: [
+                "Authorization": token,
             ]
         )
         .validate()
@@ -250,14 +261,16 @@ func addEventComment(eventId: String, userId: String, content: String) async -> 
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             if response.success {
                 return convertToLocalComment(response.comment)
             } else {
-                print("failed to add comment: \(response.message ?? "unknown error")")
+                print(
+                    "failed to add comment: \(response.message ?? "unknown error")"
+                )
                 return nil
             }
-        case .failure(let error):
+        case let .failure(error):
             print("failed to add comment: \(error.localizedDescription)")
             return nil
         }
@@ -269,16 +282,20 @@ struct DeleteEventCommentResponse: Codable {
     let message: String?
 }
 
-func deleteEventComment(eventId: String, commentId: String, userId: String) async -> Bool {
+func deleteEventComment(eventId: String, commentId: String, userId: String)
+    async -> Bool
+{
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
         print("no auth token found")
         return false
     }
 
-
-    var urlComponents = URLComponents(string: "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/events/\(eventId)/comments/\(commentId)")
+    var urlComponents = URLComponents(
+        string:
+        "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/events/\(eventId)/comments/\(commentId)"
+    )
     urlComponents?.queryItems = [
-        URLQueryItem(name: "user_id", value: userId)
+        URLQueryItem(name: "user_id", value: userId),
     ]
 
     guard let url = urlComponents?.url else {
@@ -287,7 +304,7 @@ func deleteEventComment(eventId: String, commentId: String, userId: String) asyn
     }
 
     let headers: HTTPHeaders = [
-        "Authorization": token
+        "Authorization": token,
     ]
 
     do {
@@ -301,18 +318,18 @@ func deleteEventComment(eventId: String, commentId: String, userId: String) asyn
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             return response.success
-        case .failure(let error):
+        case let .failure(error):
             print("failed to delete comment: \(error.localizedDescription)")
             return false
         }
     }
 }
 
-
-
-func confirmTaskCompletion(taskId: String, confirmerId: String, isConfirmed: Bool) async -> Bool {
+func confirmTaskCompletion(
+    taskId: String, confirmerId: String, isConfirmed: Bool
+) async -> Bool {
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
         print("no auth token found")
         return false
@@ -330,31 +347,31 @@ func confirmTaskCompletion(taskId: String, confirmerId: String, isConfirmed: Boo
             "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/confirmTaskCompletion",
             method: .post,
             parameters: request,
-            encoder: JSONParameterEncoder.default, headers: ["Authorization": token]
+            encoder: JSONParameterEncoder.default,
+            headers: ["Authorization": token]
         )
         .validate()
         .serializingDecodable(ConfirmTaskCompletionResponse.self)
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             return response.success
-        case .failure(let error):
-            print("failed to confirm task completion: \(error.localizedDescription)")
+        case let .failure(error):
+            print(
+                "failed to confirm task completion: \(error.localizedDescription)"
+            )
             return false
         }
     }
 }
-
-
-
 
 func convertToLocalEvent(_ event: EventResponse) -> taskapeEvent {
     let dateFormatter = ISO8601DateFormatter()
 
     let createdAt = dateFormatter.date(from: event.created_at) ?? Date()
 
-    var expiresAt: Date? = nil
+    var expiresAt: Date?
     if let expiresAtStr = event.expires_at {
         expiresAt = dateFormatter.date(from: expiresAtStr)
     }
@@ -378,7 +395,6 @@ func convertToLocalEvent(_ event: EventResponse) -> taskapeEvent {
     )
 }
 
-
 func convertToLocalComment(_ comment: EventCommentResponse) -> EventComment {
     let dateFormatter = ISO8601DateFormatter()
 
@@ -400,25 +416,19 @@ func convertToLocalComment(_ comment: EventCommentResponse) -> EventComment {
     )
 }
 
-
-func loadRelatedTasksForEvents(events: [taskapeEvent], modelContext: ModelContext) async {
-
-    var allTaskIds: Set<String> = Set<String>()
+func loadRelatedTasksForEvents(
+    events: [taskapeEvent], modelContext: ModelContext
+) {
+    var allTaskIds = Set<String>()
     for event in events {
         allTaskIds.formUnion(event.taskIds)
     }
-
 
     if allTaskIds.isEmpty {
         return
     }
 
-
-    let requesterId = UserManager.shared.currentUserId
-
-
     for taskId in allTaskIds {
-
         let taskDescriptor = FetchDescriptor<taskapeTask>(
             predicate: #Predicate<taskapeTask> { task in
                 task.id == taskId
@@ -428,63 +438,61 @@ func loadRelatedTasksForEvents(events: [taskapeEvent], modelContext: ModelContex
         do {
             let existingTasks = try modelContext.fetch(taskDescriptor)
             if !existingTasks.isEmpty {
-
                 let task = existingTasks[0]
                 for event in events where event.taskIds.contains(taskId) {
                     if !event.relatedTasks.contains(where: { $0.id == task.id }) {
                         event.relatedTasks.append(task)
                     }
                 }
-                continue
             }
         } catch {
             print("error checking for existing task: \(error)")
         }
-
-
-        guard let task = await fetchTask(taskId: taskId, requesterId: requesterId) else {
-            continue
-        }
-
-
-        modelContext.insert(task)
-
-
-        for event in events where event.taskIds.contains(taskId) {
-            if !event.relatedTasks.contains(where: { $0.id == task.id }) {
-                event.relatedTasks.append(task)
-            }
-        }
-    }
-
-
-    do {
-        try modelContext.save()
-    } catch {
-        print("error saving context after loading related tasks: \(error)")
     }
 }
 
-func fetchUserRelatedEvents(userId: String, includeExpired: Bool = true, limit: Int = 50) async -> [taskapeEvent]? {
+func loadRelatedTasksForEventsSelf(
+    events: [taskapeEvent], existingTasks: [taskapeTask]
+) {
+    let tasksById = Dictionary(uniqueKeysWithValues: existingTasks.map { ($0.id, $0) })
+
+    for event in events {
+        for taskId in event.taskIds {
+            if let task = tasksById[taskId] {
+                if !event.relatedTasks.contains(where: { $0.id == task.id }) {
+                    event.relatedTasks.append(task)
+                }
+            }
+        }
+    }
+}
+
+func fetchUserRelatedEvents(
+    userId: String, includeExpired: Bool = true, limit: Int = 50
+) async -> [taskapeEvent]? {
     guard let token = UserDefaults.standard.string(forKey: "authToken") else {
         print("no auth token found")
         return nil
     }
 
-    // Get the current user ID to use as requester_id
     let currentUserId = UserManager.shared.currentUserId
 
     do {
         let headers: HTTPHeaders = [
-            "Authorization": token
+            "Authorization": token,
         ]
 
-        // Create URL with query parameters
-        var urlComponents = URLComponents(string: "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)/relatedEvents")
+        var urlComponents = URLComponents(
+            string:
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)/relatedEvents"
+        )
         urlComponents?.queryItems = [
-            URLQueryItem(name: "include_expired", value: includeExpired ? "true" : "false"),
+            URLQueryItem(
+                name: "include_expired",
+                value: includeExpired ? "true" : "false"
+            ),
             URLQueryItem(name: "limit", value: "\(limit)"),
-            URLQueryItem(name: "requester_id", value: currentUserId)
+            URLQueryItem(name: "requester_id", value: currentUserId),
         ]
 
         guard let url = urlComponents?.url else {
@@ -502,19 +510,19 @@ func fetchUserRelatedEvents(userId: String, includeExpired: Bool = true, limit: 
         .response
 
         switch result.result {
-        case .success(let response):
+        case let .success(response):
             if response.success {
                 let events = response.events.map { convertToLocalEvent($0) }
                 return events
             } else {
-                print("failed to fetch events: \(response.message ?? "unknown error")")
+                print(
+                    "failed to fetch events: \(response.message ?? "unknown error")"
+                )
                 return nil
             }
-        case .failure(let error):
+        case let .failure(error):
             print("failed to fetch events: \(error.localizedDescription)")
             return nil
         }
     }
 }
-
-

@@ -126,7 +126,8 @@ struct ProfileCreationPFPSelectionView: View {
 
                     if !url.isEmpty {
                         UserDefaults.standard.set(
-                            url, forKey: "profile_picture_url")
+                            url, forKey: "profile_picture_url"
+                        )
                     } else {
                         showError = true
                     }
@@ -147,7 +148,8 @@ struct ProfileCreationPFPSelectionView: View {
                     if response.success {
                         let userId = String(response.id)
                         UserDefaults.standard.set(
-                            userId, forKey: "user_id")
+                            userId, forKey: "user_id"
+                        )
                         print("Set user_id to: \(userId)")
                         path.append(
                             "task_addition"
