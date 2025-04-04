@@ -5,7 +5,7 @@ struct taskapeColorPicker: View {
     @State private var customColor = Color.white
 
     let columns = [
-        GridItem(.adaptive(minimum: 60))
+        GridItem(.adaptive(minimum: 60)),
     ]
 
     var body: some View {

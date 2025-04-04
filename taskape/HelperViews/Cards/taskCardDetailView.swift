@@ -143,7 +143,7 @@ struct TaskPrioritySelector: View {
                     if flagStatus, let colorHex = flagColor {
                         let priorityLabel =
                             priorityOptions.first { $0.flagColor == colorHex }?
-                            .flagName ?? flagName ?? "Custom"
+                                .flagName ?? flagName ?? "Custom"
                         Group {
                             Circle()
                                 .fill(Color(hex: colorHex))
@@ -347,8 +347,8 @@ struct PriorityPickerContent: View {
                                     Spacer()
 
                                     if flagStatus,
-                                        flagColor == option.flagColor,
-                                        flagName == option.flagName
+                                       flagColor == option.flagColor,
+                                       flagName == option.flagName
                                     {
                                         Image(systemName: "checkmark")
                                             .foregroundColor(.blue)
@@ -382,7 +382,7 @@ struct PriorityPickerContent: View {
                                 Spacer()
 
                                 if !flagStatus, flagColor == nil,
-                                    flagName == nil
+                                   flagName == nil
                                 {
                                     Image(systemName: "checkmark")
                                         .foregroundColor(.blue)
@@ -845,7 +845,8 @@ struct taskCardDetailView: View {
                 )
 
                 TaskDeadlinePicker(
-                    deadline: $task.deadline, accentcolor: $taskColor)
+                    deadline: $task.deadline, accentcolor: $taskColor
+                )
 
                 TaskPrioritySelector(
                     flagStatus: $task.flagStatus,
@@ -877,7 +878,8 @@ struct taskCardDetailView: View {
                     task: task,
                     proofNeeded: $task.proofNeeded,
                     accentcolor: $taskColor,
-                    confirmationRequired: $task.completion.requiresConfirmation)
+                    confirmationRequired: $task.completion.requiresConfirmation
+                )
 
             }.animation(.easeInOut(duration: 0.3), value: task.privacy.level)
                 .padding(.top, 20)

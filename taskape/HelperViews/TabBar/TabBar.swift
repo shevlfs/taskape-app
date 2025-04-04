@@ -159,17 +159,15 @@ struct MainMenuTabBarView: View {
                     }
 
                     Button(action: {
-                     showGroupSheet = true
+                        showGroupSheet = true
                     }) {
                         HStack(spacing: 12) {
                             Text("\(Image(systemName: "plus"))")
                                 .foregroundColor(.primary)
-                                .font(.system(size: 18,weight: .bold))
-
+                                .font(.system(size: 18, weight: .bold))
                                 .padding(.horizontal, 2)
                                 .overlay(alignment: .topTrailing) {
-                                    if inviteCount > 0
-                                    {
+                                    if inviteCount > 0 {
                                         NotificationBadge(
                                             badgeCount: $inviteCount
                                         )
@@ -182,7 +180,6 @@ struct MainMenuTabBarView: View {
                 }
                 .padding(.horizontal, 16)
 
-                
             }.onChange(
                 of: tabBarViewIndex
             ) { _, newValue in

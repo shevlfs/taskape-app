@@ -103,7 +103,7 @@ struct OtherUserProfileView: View {
     @State private var errorMessage: String? = nil
     @State private var isRefreshingTasks = false
     @State private var userEvents: [taskapeEvent] = []
-    @State var showBackButton: Bool = false
+    @State var showBackButton: Bool = true
 
     private var isCurrentUserProfile: Bool {
         userId == UserManager.shared.currentUserId
@@ -132,451 +132,193 @@ struct OtherUserProfileView: View {
                     .cornerRadius(20)
                 }
             } else if let user {
-                if !showBackButton {
-                    NavigationView {
-                        ScrollView {
-                            VStack(spacing: 0) {
-                                ZStack {
-                                    HStack {
-                                        Button(action: {
-                                            dismiss()
-                                        }) {
-                                            Image(
-                                                systemName: "chevron.left"
-                                            )
-                                            .font(.pathwayBold(20))
-                                            .foregroundColor(.primary)
-                                        }
-                                        Spacer()
-
-                                    }.padding().padding(.top, 10)
-                                    RoundedRectangle(cornerRadius: 9)
-                                        .foregroundColor(
-                                            Color(hex: user.profileColor)
-                                        )
-                                        .frame(
-                                            maxWidth: .infinity, maxHeight: 250
-                                        )
-
-                                    VStack(alignment: .center, spacing: 16) {
-                                        if !user.profileImageURL.isEmpty {
-                                            CachedAsyncImage(
-                                                url: URL(
-                                                    string: user.profileImageURL
-                                                )
-                                            ) { phase in
-                                                switch phase {
-                                                case let .success(image):
-                                                    image
-                                                        .resizable()
-                                                        .aspectRatio(
-                                                            contentMode: .fill
-                                                        )
-                                                        .frame(
-                                                            width: 100,
-                                                            height: 100
-                                                        )
-                                                        .clipShape(Circle())
-                                                        .overlay(
-                                                            Circle()
-                                                                .stroke(
-                                                                    Color(
-                                                                        hex:
-                                                                        user
-                                                                            .profileColor
-                                                                    )
-                                                                    .contrastingTextColor(
-                                                                        in:
-                                                                        colorScheme
-                                                                    ),
-                                                                    lineWidth: 1
-                                                                )
-                                                                .shadow(
-                                                                    radius: 3)
-                                                        )
-                                                case .failure:
-                                                    Image(
-                                                        systemName:
-                                                        "person.circle.fill"
-                                                    )
-                                                    .resizable()
-                                                    .aspectRatio(
-                                                        contentMode: .fill
-                                                    )
-                                                    .frame(
-                                                        width: 100, height: 100
-                                                    )
-                                                    .foregroundColor(
-                                                        .white.opacity(0.8))
-                                                default:
-                                                    ProgressView()
-                                                        .frame(
-                                                            width: 100,
-                                                            height: 100
-                                                        )
-                                                }
-                                            }
-                                        } else {
-                                            Image(
-                                                systemName: "person.circle.fill"
-                                            )
+                ScrollView {
+                    VStack {
+                        HStack {
+                            if showBackButton {
+                                Button(action: {
+                                    dismiss()
+                                }) {
+                                    Image(
+                                        systemName: "chevron.left"
+                                    )
+                                    .font(.pathwayBold(20))
+                                    .foregroundColor(.primary)
+                                }
+                            }
+                            Spacer()
+                        }.padding().padding(.top, 10)
+                        VStack(alignment: .center, spacing: 16) {
+                            if !user.profileImageURL.isEmpty {
+                                CachedAsyncImage(
+                                    url: URL(
+                                        string: user.profileImageURL
+                                    )
+                                ) { phase in
+                                    switch phase {
+                                    case let .success(image):
+                                        image
                                             .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                            .frame(width: 100, height: 100)
-                                            .foregroundColor(
-                                                .white.opacity(0.8))
-                                        }
-
-                                        Text("@\(user.handle)")
-                                            .font(.pathwayBlack(25))
-                                            .foregroundColor(
-                                                Color(hex: user.profileColor)
-                                                    .contrastingTextColor(
-                                                        in: colorScheme))
-                                    }
-                                    .padding(.vertical, 30)
-                                }
-
-                                if user.bio != "" {
-                                    ZStack {
-                                        VStack(alignment: .leading, spacing: 8) {
-                                            Text("about me")
-                                                .font(.pathwayBold(18))
-                                                .foregroundColor(.primary)
-                                                .padding(.top, 30)
-                                                .padding(.leading, 16)
-
-                                            Text(user.bio)
-                                                .font(.pathway(16))
-                                                .foregroundColor(
-                                                    .primary.opacity(0.8)
-                                                )
-                                                .padding(.horizontal, 16)
-                                                .padding(.bottom, 20)
-                                        }
-                                        .frame(
-                                            maxWidth: .infinity,
-                                            alignment: .leading
-                                        )
-                                        .background(
-                                            CustomRoundedRectangle(
-                                                topLeadingRadius: 0,
-                                                topTrailingRadius: 0,
-                                                bottomLeadingRadius: 16,
-                                                bottomTrailingRadius: 16
+                                            .aspectRatio(
+                                                contentMode: .fill
                                             )
-                                            .fill(Color.clear)
-                                            .overlay(
-                                                CustomRoundedRectangle(
-                                                    topLeadingRadius: 0,
-                                                    topTrailingRadius: 0,
-                                                    bottomLeadingRadius: 16,
-                                                    bottomTrailingRadius: 16
-                                                )
-                                                .stroke(
-                                                    Color(
-                                                        hex: user.profileColor),
-                                                    lineWidth: 1
-                                                )
-                                                .blur(radius: 0.5)
-                                            )
-                                        )
-                                    }
-                                    .offset(y: -16)
-                                }
-
-                                VStack(alignment: .leading, spacing: 16) {
-                                    HStack(spacing: 0) {
-                                        StatItem(
-                                            title: "tasks",
-                                            value: "\(user.tasks.count)",
-                                            userColor: Color(
-                                                hex: user.profileColor)
-                                        )
-
-                                        StatItem(
-                                            title: "completed",
-                                            value:
-                                            "\(user.tasks.filter(\.completion.isCompleted).count)",
-                                            userColor: Color(
-                                                hex: user.profileColor)
-                                        )
-
-                                        StatItem(
-                                            title: "pending",
-                                            value:
-                                            "\(user.tasks.filter { !$0.completion.isCompleted }.count)",
-                                            userColor: Color(
-                                                hex: user.profileColor)
-                                        )
-                                    }
-
-                                    if !isCurrentUserProfile,
-                                       user.tasks.isEmpty
-                                    {
-                                        Text("no publicly visible tasks...")
-                                            .font(.pathwayItalic(16))
-                                            .foregroundColor(.secondary)
                                             .frame(
-                                                maxWidth: .infinity,
-                                                alignment: .center
+                                                width: 125,
+                                                height: 125
                                             )
-                                            .padding(.top, 20)
-                                    }
-
-                                }.padding(.vertical, user.bio == "" ? 25 : 10)
-                                    .frame(
-                                        maxWidth: .infinity, alignment: .leading
-                                    )
-                                    .padding(.horizontal)
-
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack {
-                                        ForEach(userEvents) { event in
-                                            EventCardCompact(
-                                                event: event, user: user
-                                            ).modelContext(modelContext)
-                                                .padding(
-                                                    .leading, 12
-                                                )
-                                        }
-                                    }
-                                }
-
-                                if !user.tasks.isEmpty {
-                                    Text("to-do's")
-                                        .font(.pathwayBold(18))
-                                        .frame(
-                                            maxWidth: .infinity,
-                                            alignment: .leading
+                                            .clipShape(Circle())
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(
+                                                        Color(
+                                                            hex:
+                                                            user
+                                                                .profileColor
+                                                        )
+                                                        .contrastingTextColor(
+                                                            in:
+                                                            colorScheme
+                                                        ),
+                                                        lineWidth: 1
+                                                    )
+                                                    .shadow(
+                                                        radius: 3)
+                                            )
+                                    case .failure:
+                                        Image(
+                                            systemName:
+                                            "person.circle.fill"
                                         )
-                                        .padding(.horizontal)
-                                        .padding(.top, 15).padding(.bottom, 5)
-
-                                    LazyVStack(spacing: 12) {
-                                        ForEach(user.tasks) { task in
-                                            TaskListItem(task: task)
-                                        }
-                                    }
-                                    .padding(.horizontal)
-                                    .padding(.top, 8)
-                                }
-
-                                Spacer(minLength: 40)
-                            }
-                        }
-                    }.edgesIgnoringSafeArea(.top)
-                } else {
-                    ScrollView {
-                        VStack(spacing: 0) {
-                            VStack {
-                                VStack(alignment: .center, spacing: 16) {
-                                    VStack {
-                                        ZStack {
-                                            HStack {
-                                                Button(action: {
-                                                    dismiss()
-                                                }) {
-                                                    Image(
-                                                        systemName: "chevron.left"
-                                                    )
-                                                    .font(.pathwayBold(20))
-                                                    .foregroundColor(.primary)
-                                                }
-                                                Spacer()
-                                            }.padding().padding(.top, 10)
-                                        }
-                                        if !user.profileImageURL.isEmpty {
-                                            CachedAsyncImage(
-                                                url: URL(
-                                                    string: user.profileImageURL)
-                                            ) { phase in
-                                                switch phase {
-                                                case let .success(image):
-                                                    image
-                                                        .resizable()
-                                                        .aspectRatio(
-                                                            contentMode: .fill
-                                                        )
-                                                        .frame(
-                                                            width: 125, height: 125
-                                                        )
-                                                        .clipShape(Circle())
-                                                        .overlay(
-                                                            Circle()
-                                                                .stroke(
-                                                                    Color(
-                                                                        hex: user
-                                                                            .profileColor
-                                                                    )
-                                                                    .contrastingTextColor(
-                                                                        in:
-                                                                        colorScheme
-                                                                    ),
-                                                                    lineWidth: 1
-                                                                )
-                                                                .shadow(radius: 3)
-                                                        )
-                                                case .failure:
-                                                    Image(
-                                                        systemName:
-                                                        "person.circle.fill"
-                                                    )
-                                                    .resizable()
-                                                    .aspectRatio(contentMode: .fill)
-                                                    .frame(width: 100, height: 100)
-                                                    .foregroundColor(
-                                                        .white.opacity(0.8))
-                                                default:
-                                                    ProgressView()
-                                                        .frame(
-                                                            width: 100, height: 100
-                                                        )
-                                                }
-                                            }
-                                        } else {
-                                            Image(systemName: "person.circle.fill")
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                                .frame(width: 100, height: 100)
-                                                .foregroundColor(
-                                                    .white.opacity(0.8))
-                                        }
-                                    }.padding(.top)
-
-                                    Text("@\(user.handle)")
-                                        .font(.pathwayBlack(25))
+                                        .resizable()
+                                        .aspectRatio(
+                                            contentMode: .fill
+                                        )
+                                        .frame(
+                                            width: 100, height: 100
+                                        )
                                         .foregroundColor(
-                                            Color(hex: user.profileColor)
-                                                .contrastingTextColor(
-                                                    in: colorScheme))
-                                }
-                                .padding(.vertical, 30)
-                            }.background(
-                                RoundedRectangle(cornerRadius: 9)
-                                    .foregroundColor(Color(hex: user.profileColor))
-                                    .frame(maxWidth: .infinity, maxHeight: 400)
-                                    .ignoresSafeArea(edges: .top))
-
-                            if user.bio != "" {
-                                ZStack {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        Text("about me")
-                                            .font(.pathwayBold(18))
-                                            .foregroundColor(.primary)
-                                            .padding(.top, 30)
-                                            .padding(.leading, 16)
-
-                                        Text(user.bio)
-                                            .font(.pathway(16))
-                                            .foregroundColor(
-                                                .primary.opacity(0.8)
+                                            .white.opacity(0.8))
+                                    default:
+                                        ProgressView()
+                                            .frame(
+                                                width: 100,
+                                                height: 100
                                             )
-                                            .padding(.horizontal, 16)
-                                            .padding(.bottom, 20)
-                                    }
-                                    .frame(
-                                        maxWidth: .infinity, alignment: .leading
-                                    )
-                                    .background(
-                                        CustomRoundedRectangle(
-                                            topLeadingRadius: 0,
-                                            topTrailingRadius: 0,
-                                            bottomLeadingRadius: 16,
-                                            bottomTrailingRadius: 16
-                                        )
-                                        .fill(Color.clear)
-                                        .overlay(
-                                            CustomRoundedRectangle(
-                                                topLeadingRadius: 0,
-                                                topTrailingRadius: 0,
-                                                bottomLeadingRadius: 16,
-                                                bottomTrailingRadius: 16
-                                            )
-                                            .stroke(
-                                                Color(hex: user.profileColor),
-                                                lineWidth: 1
-                                            )
-                                            .blur(radius: 0.5)
-                                        )
-                                    )
-                                }
-                                .offset(y: -16)
-                            }
-
-                            VStack(alignment: .leading, spacing: 16) {
-                                HStack(spacing: 0) {
-                                    StatItem(
-                                        title: "tasks",
-                                        value: "\(user.tasks.count)",
-                                        userColor: Color(hex: user.profileColor)
-                                    )
-
-                                    StatItem(
-                                        title: "completed",
-                                        value:
-                                        "\(user.tasks.filter(\.completion.isCompleted).count)",
-                                        userColor: Color(hex: user.profileColor)
-                                    )
-
-                                    StatItem(
-                                        title: "pending",
-                                        value:
-                                        "\(user.tasks.filter { !$0.completion.isCompleted }.count)",
-                                        userColor: Color(hex: user.profileColor)
-                                    )
-                                }
-
-                                if !isCurrentUserProfile, user.tasks.isEmpty {
-                                    Text("no publicly visible tasks...")
-                                        .font(.pathwayItalic(16))
-                                        .foregroundColor(.secondary)
-                                        .frame(
-                                            maxWidth: .infinity,
-                                            alignment: .center
-                                        )
-                                        .padding(.top, 20)
-                                }
-
-                            }.padding(.vertical, user.bio == "" ? 25 : 10)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal)
-
-                            ScrollView(.horizontal, showsIndicators: false) {
-                                HStack {
-                                    ForEach(userEvents) { event in
-                                        EventCardCompact(
-                                            event: event, user: user
-                                        ).modelContext(modelContext).padding(
-                                            .leading, 12
-                                        )
                                     }
                                 }
+                            } else {
+                                Image(
+                                    systemName: "person.circle.fill"
+                                )
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 100, height: 100)
+                                .foregroundColor(
+                                    .white.opacity(0.8))
                             }
 
-                            if !user.tasks.isEmpty {
-                                Text("to-do's")
+                            Text("@\(user.handle)")
+                                .font(.pathwayBlack(25))
+                                .foregroundColor(
+                                    Color(hex: user.profileColor)
+                                        .contrastingTextColor(
+                                            in: colorScheme))
+                        }
+                        .padding(.vertical, 30)
+                    }.background(
+                        RoundedRectangle(cornerRadius: 9)
+                            .foregroundColor(
+                                Color(hex: user.profileColor)
+                            )
+                            .frame(
+                                maxWidth: .infinity, maxHeight: 300
+                            ).ignoresSafeArea(edges: .top))
+
+                    if user.bio != "" {
+                        ZStack {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("about me")
                                     .font(.pathwayBold(18))
-                                    .frame(
-                                        maxWidth: .infinity, alignment: .leading
+                                    .foregroundColor(.primary)
+                                    .padding(.top, 30)
+                                    .padding(.leading, 16)
+
+                                Text(user.bio)
+                                    .font(.pathway(16))
+                                    .foregroundColor(
+                                        .primary.opacity(0.8)
                                     )
-                                    .padding(.horizontal)
-                                    .padding(.top, 15).padding(.bottom, 5)
-
-                                LazyVStack(spacing: 12) {
-                                    ForEach(user.tasks) { task in
-                                        TaskListItem(task: task)
-                                    }
-                                }
-                                .padding(.horizontal)
-                                .padding(.top, 8)
+                                    .padding(.horizontal, 16)
+                                    .padding(.bottom, 20)
                             }
+                            .frame(
+                                maxWidth: .infinity,
+                                alignment: .leading
+                            )
+                            .background(
+                                CustomRoundedRectangle(
+                                    topLeadingRadius: 0,
+                                    topTrailingRadius: 0,
+                                    bottomLeadingRadius: 16,
+                                    bottomTrailingRadius: 16
+                                )
+                                .fill(Color.clear)
+                                .overlay(
+                                    CustomRoundedRectangle(
+                                        topLeadingRadius: 0,
+                                        topTrailingRadius: 0,
+                                        bottomLeadingRadius: 16,
+                                        bottomTrailingRadius: 16
+                                    )
+                                    .stroke(
+                                        Color(
+                                            hex: user.profileColor),
+                                        lineWidth: 1
+                                    )
+                                    .blur(radius: 0.5)
+                                )
+                            )
+                        }
+                        .offset(y: -16)
+                    }
+                    StreakAndStatsCard(user: user)
+                        .padding(.vertical, user.bio == "" ? 25 : 10)
 
-                            Spacer(minLength: 40)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack {
+                            ForEach(userEvents) { event in
+                                EventCardCompact(
+                                    event: event, user: user
+                                ).modelContext(modelContext)
+                                    .padding(
+                                        .leading, 12
+                                    )
+                            }
                         }
                     }
-                    .edgesIgnoringSafeArea(.top)
+
+                    if !user.tasks.isEmpty {
+                        Text("to-do's")
+                            .font(.pathwayBold(18))
+                            .frame(
+                                maxWidth: .infinity,
+                                alignment: .leading
+                            )
+                            .padding(.horizontal)
+                            .padding(.top, 15).padding(.bottom, 5)
+
+                        LazyVStack(spacing: 12) {
+                            ForEach(user.tasks) { task in
+                                TaskListItem(task: task)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                    }
+
+                    Spacer(minLength: 40)
                 }
+
             } else {
                 Text("User not found")
                     .font(.pathway(16))

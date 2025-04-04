@@ -100,7 +100,9 @@ func getUserStreak(userId: String) async -> UserStreak? {
             method: .get,
             headers: headers
         )
-        .validate()
+        .validate().responseString {
+            value in print(value)
+        }
         .serializingDecodable(UserStreakResponse.self)
         .response
 

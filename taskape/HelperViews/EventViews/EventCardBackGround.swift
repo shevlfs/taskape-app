@@ -4,8 +4,7 @@ struct EventCardBackGround: View {
     var friendColor: Color
     var size: EventSize
 
-    private var proportions: (widthProportion: Double, heightProportion: Double)
-    {
+    private var proportions: (widthProportion: Double, heightProportion: Double) {
         switch size {
         case .small:
             (0.32, 0.16)

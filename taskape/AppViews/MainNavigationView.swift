@@ -114,7 +114,6 @@ struct MainNavigationView: View {
             }
             .edgesIgnoringSafeArea(.bottom)
             .toolbar(.hidden).sheet(isPresented: $showGroupSheet, content: {
-
                 GroupCreationView().modelContext(modelContext)
             })
         }

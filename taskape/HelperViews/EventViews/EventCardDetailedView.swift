@@ -59,10 +59,11 @@ struct EventCardDetailedView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     HStack(spacing: 12) {
                         NavigationLink(destination: {
-                            UserProfileView(userId: event.userId).modelContext(
-                                modelContext
-                            ).navigationTransition(
-                                .zoom(sourceID: "eventOwner", in: namespace))
+                            OtherUserProfileView(userId: event.userId)
+                                .modelContext(
+                                    modelContext
+                                ).navigationTransition(
+                                    .zoom(sourceID: "eventOwner", in: namespace)).navigationBarBackButtonHidden(true).toolbar(.hidden)
                         }) {
                             Group {
                                 CachedAsyncImage(url: URL(string: userImage)) {
@@ -630,9 +631,9 @@ struct CommentRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             NavigationLink(destination: {
-                UserProfileView(userId: comment.userId)
+                OtherUserProfileView(userId: comment.userId)
                     .modelContext(modelContext).navigationTransition(
-                        .zoom(sourceID: "comment_\(comment.id)", in: namespace))
+                        .zoom(sourceID: "comment_\(comment.id)", in: namespace)).navigationBarBackButtonHidden(true).toolbar(.hidden)
             }) {
                 Group {
                     CachedAsyncImage(url: URL(string: userImage)) { phase in

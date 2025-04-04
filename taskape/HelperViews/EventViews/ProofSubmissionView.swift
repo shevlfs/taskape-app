@@ -1,5 +1,5 @@
-import AVFoundation
 import Alamofire
+import AVFoundation
 import Photos
 import PhotosUI
 import SwiftDotenv
@@ -323,7 +323,7 @@ struct ProofSubmissionView: View {
         }
 
         let parameters: [String: Any] = [
-            "key": apiKey
+            "key": apiKey,
         ]
 
         return try await withCheckedThrowingContinuation { continuation in
@@ -346,8 +346,8 @@ struct ProofSubmissionView: View {
                 switch response.result {
                 case let .success(value):
                     if let json = value as? [String: Any],
-                        let data = json["data"] as? [String: Any],
-                        let url = data["url"] as? String
+                       let data = json["data"] as? [String: Any],
+                       let url = data["url"] as? String
                     {
                         continuation.resume(returning: url)
                     } else {

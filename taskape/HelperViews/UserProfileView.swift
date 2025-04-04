@@ -1,5 +1,3 @@
-
-
 import CachedAsyncImage
 import SwiftData
 import SwiftUI
@@ -70,8 +68,9 @@ struct UserSelfProfileView: View {
                                                     .font(.pathwayBold(20))
                                                     .foregroundColor(.primary)
                                             }
-
-                                        }.padding().padding(.top, 10)
+                                        }
+                                        .padding()
+                                        .padding(.top, 10)
                                     }
                                     if !user.profileImageURL.isEmpty {
                                         CachedAsyncImage(
@@ -129,21 +128,25 @@ struct UserSelfProfileView: View {
                                             .foregroundColor(
                                                 .white.opacity(0.8))
                                     }
-                                }.padding(.top)
+                                }
+                                .padding(.top)
 
                                 Text("@\(user.handle)")
                                     .font(.pathwayBlack(25))
                                     .foregroundColor(
                                         Color(hex: user.profileColor)
                                             .contrastingTextColor(
-                                                in: colorScheme))
+                                                in: colorScheme)
+                                    )
                             }
                             .padding(.vertical, 30)
-                        }.background(
+                        }
+                        .background(
                             RoundedRectangle(cornerRadius: 9)
                                 .foregroundColor(Color(hex: user.profileColor))
                                 .frame(maxWidth: .infinity, maxHeight: 400)
-                                .ignoresSafeArea(edges: .top))
+                                .ignoresSafeArea(edges: .top)
+                        )
 
                         if user.bio != "" {
                             ZStack {
@@ -153,7 +156,6 @@ struct UserSelfProfileView: View {
                                         .foregroundColor(.primary)
                                         .padding(.top, 30)
                                         .padding(.leading, 16)
-
                                     Text(user.bio)
                                         .font(.pathway(16))
                                         .foregroundColor(.primary.opacity(0.8))
@@ -187,52 +189,15 @@ struct UserSelfProfileView: View {
                             .offset(y: -16)
                         }
 
-                        VStack(alignment: .leading, spacing: 16) {
-                            HStack(spacing: 0) {
-                                StatItem(
-                                    title: "tasks",
-                                    value: "\(user.tasks.count)",
-                                    userColor: Color(hex: user.profileColor)
-                                )
-
-                                StatItem(
-                                    title: "completed",
-                                    value:
-                                    "\(user.tasks.filter(\.completion.isCompleted).count)",
-                                    userColor: Color(hex: user.profileColor)
-                                )
-
-                                StatItem(
-                                    title: "pending",
-                                    value:
-                                    "\(user.tasks.filter { !$0.completion.isCompleted }.count)",
-                                    userColor: Color(hex: user.profileColor)
-                                )
-                            }
-
-                            if !isCurrentUserProfile, user.tasks.isEmpty {
-                                Text("no publicly visible tasks...")
-                                    .font(.pathwayItalic(16))
-                                    .foregroundColor(.secondary)
-                                    .frame(
-                                        maxWidth: .infinity, alignment: .center
-                                    )
-                                    .padding(.top, 20)
-                            }
-
-                        }.padding(.vertical, user.bio == "" ? 25 : 10)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal)
-
-                        StreakCard()
-                            .padding(.horizontal)
-                            .padding(.top, 10)
-                            .padding(.bottom, 15)
+                        StreakAndStatsCard(user: user)
+                            .padding(.vertical, user.bio == "" ? 25 : 10)
 
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack {
                                 ForEach(userEvents) { event in
-                                    EventCardCompact(event: event, user: user).modelContext(modelContext).padding(.leading, 12)
+                                    EventCardCompact(event: event, user: user)
+                                        .modelContext(modelContext)
+                                        .padding(.leading, 12)
                                 }
                             }
                         }
@@ -242,7 +207,8 @@ struct UserSelfProfileView: View {
                                 .font(.pathwayBold(18))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.horizontal)
-                                .padding(.top, 15).padding(.bottom, 5)
+                                .padding(.top, 15)
+                                .padding(.bottom, 5)
 
                             LazyVStack(spacing: 12) {
                                 ForEach(user.tasks) { task in
@@ -255,12 +221,12 @@ struct UserSelfProfileView: View {
 
                         Spacer(minLength: 40)
                     }
-                }.ignoresSafeArea(edges: .top).sheet(
-                    isPresented: $showEditProfileView,
-                    content: {
-                        ProfileEditView(user: user).modelContext(modelContext)
-                    }
-                )
+                }
+                .ignoresSafeArea(edges: .top)
+                .sheet(isPresented: $showEditProfileView) {
+                    ProfileEditView(user: user)
+                        .modelContext(modelContext)
+                }
             } else {
                 Text("User not found")
                     .font(.pathway(16))
@@ -276,15 +242,12 @@ struct UserSelfProfileView: View {
         Task {
             if let fetchedUser = await fetchUser(userId: userId) {
                 if let tasks = await fetchTasks(userId: userId) {
-                    if let events = await fetchUserRelatedEvents(
-                        userId: userId
-                    ) {
+                    if let events = await fetchUserRelatedEvents(userId: userId) {
                         await MainActor.run {
                             userEvents = events
                             fetchedUser.tasks = tasks
                             loadRelatedTasksForEventsSelf(
-                                events: events,
-                                existingTasks: tasks
+                                events: events, existingTasks: tasks
                             )
                             user = fetchedUser
                             isLoading = false
@@ -315,9 +278,7 @@ struct UserSelfProfileView: View {
 
     private func refreshTasks() {
         guard !isCurrentUserProfile, let user else { return }
-
         isRefreshingTasks = true
-
         Task {
             if let tasks = await fetchTasks(userId: userId) {
                 await MainActor.run {
@@ -331,6 +292,165 @@ struct UserSelfProfileView: View {
                 }
             }
         }
+    }
+}
+
+struct StreakAndStatsCard: View {
+    let user: taskapeUser
+    @State private var streak: UserStreak?
+    @State private var isLoading = true
+
+    var body: some View {
+        VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("streak")
+                    .font(.pathwayBold(18))
+                    .foregroundColor(.primary)
+
+                if isLoading {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                        Spacer()
+                    }
+                    .padding()
+                } else if let streak {
+                    HStack(spacing: 10) {
+                        Spacer()
+                        VStack(alignment: .center, spacing: 4) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.taskapeOrange.opacity(0.2))
+                                    .frame(width: 60, height: 60)
+                                Image(systemName: "flame.fill")
+                                    .font(.system(size: 30))
+                                    .foregroundColor(streak.currentStreak == 0 ? .gray : Color.taskapeOrange)
+                            }
+                            Text("\(streak.currentStreak)")
+                                .font(.pathwayBlack(18))
+                                .foregroundColor(.primary)
+                            Text("current")
+                                .font(.pathway(12))
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        VStack(alignment: .center, spacing: 4) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color.yellow.opacity(0.2))
+                                    .frame(width: 60, height: 60)
+                                Image(systemName: "trophy.fill")
+                                    .font(.system(size: 30))
+                                    .foregroundColor(.yellow)
+                            }
+                            Text("\(streak.longestStreak)")
+                                .font(.pathwayBlack(18))
+                                .foregroundColor(.primary)
+                            Text("best")
+                                .font(.pathway(12))
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+
+                } else {
+                    Text("complete a task to start your streak!")
+                        .font(.pathway(16))
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding()
+                }
+            }
+            .padding()
+
+            Divider()
+
+            HStack(spacing: 0) {
+                StatItem(
+                    title: "tasks",
+                    value: "\(user.tasks.count)",
+                    userColor: Color(hex: user.profileColor)
+                )
+                StatItem(
+                    title: "completed",
+                    value:
+                    "\(user.tasks.filter(\.completion.isCompleted).count)",
+                    userColor: Color(hex: user.profileColor)
+                )
+                StatItem(
+                    title: "pending",
+                    value:
+                    "\(user.tasks.filter { !$0.completion.isCompleted }.count)",
+                    userColor: Color(hex: user.profileColor)
+                )
+            }
+            .padding()
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color(UIColor.secondarySystemBackground).opacity(0.5))
+        )
+        .padding(.horizontal)
+        .onAppear {
+            loadStreak()
+        }
+    }
+
+    private func loadStreak() {
+        isLoading = true
+        Task {
+            if let fetchedStreak = await getUserStreak(userId: user.id) {
+                await MainActor.run {
+                    streak = fetchedStreak
+                    isLoading = false
+                }
+            } else {
+                await MainActor.run {
+                    streak = nil
+                    isLoading = false
+                }
+            }
+        }
+    }
+
+    private func streakStatusMessage(for streak: UserStreak) -> String {
+        if let daysSince = streak.daysSinceLastCompleted {
+            if daysSince == 0 {
+                "a \(streak.currentStreak) day streak is active!"
+            } else if daysSince == 1 {
+                "needs to complete a task today to keep their streak!"
+            } else {
+                "streak was broken \(daysSince) days ago"
+            }
+        } else {
+            "\(streak.currentStreak) day streak!"
+        }
+    }
+}
+
+#Preview {
+    do {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try ModelContainer(
+            for: taskapeUser.self, taskapeTask.self, configurations: config
+        )
+
+        let user = taskapeUser(
+            id: UUID().uuidString,
+            handle: "shevlfs",
+            bio: "something",
+            profileImage:
+            "https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg",
+            profileColor: "#7A57FE"
+        )
+
+        container.mainContext.insert(user)
+        try container.mainContext.save()
+
+        return UserSelfProfileView(userId: user.id).modelContainer(container)
+    } catch {
+        return Text("Failed to create preview: \(error.localizedDescription)")
     }
 }
 
@@ -397,7 +517,9 @@ struct StreakCard: View {
                 }
                 .padding(.horizontal)
 
-                if let daysSince = streak.daysSinceLastCompleted, streak.currentStreak > 0 {
+                if let daysSince = streak.daysSinceLastCompleted,
+                   streak.currentStreak > 0
+                {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundColor(daysSince <= 1 ? .orange : .red)
@@ -411,7 +533,7 @@ struct StreakCard: View {
                     .padding(.top, 4)
                 }
             } else {
-                Text("complete a task to start your streak!")
+                Text("no streak active :(")
                     .font(.pathway(16))
                     .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)

@@ -472,7 +472,11 @@ struct UserSearchResultRow: View {
         }
         .sheet(isPresented: $showDetail) {
             if let profile = userProfile {
-                UserProfileView(userId: user.id).modelContext(modelContext)
+                NavigationView {
+                    OtherUserProfileView(userId: user.id, showBackButton: false)
+                        .modelContext(modelContext)
+                        .navigationBarBackButtonHidden(true).toolbar(.hidden)
+                }
             }
         }
     }

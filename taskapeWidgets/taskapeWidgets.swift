@@ -3,21 +3,22 @@ import SwiftUI
 import WidgetKit
 
 struct Provider: TimelineProvider {
-    func placeholder(in context: Context) -> SimpleEntry {
+    func placeholder(in _: Context) -> SimpleEntry {
         SimpleEntry(date: Date(), tasks: sampleTasks)
     }
 
     func getSnapshot(
-        in context: Context, completion: @escaping (SimpleEntry) -> Void
+        in _: Context, completion: @escaping (SimpleEntry) -> Void
     ) {
         let tasks = WidgetDataManager.shared.loadTasks()
         let entry = SimpleEntry(
-            date: Date(), tasks: tasks.isEmpty ? sampleTasks : tasks)
+            date: Date(), tasks: tasks.isEmpty ? sampleTasks : tasks
+        )
         completion(entry)
     }
 
     func getTimeline(
-        in context: Context, completion: @escaping (Timeline<Entry>) -> Void
+        in _: Context, completion: @escaping (Timeline<Entry>) -> Void
     ) {
         let currentDate = Date()
         let tasks = WidgetDataManager.shared.loadTasks()
@@ -29,10 +30,10 @@ struct Provider: TimelineProvider {
             to: currentDate
         )!
         let timeline = Timeline(
-            entries: [entry], policy: .after(nextUpdateDate))
+            entries: [entry], policy: .after(nextUpdateDate)
+        )
         completion(timeline)
     }
-
 }
 
 struct SimpleEntry: TimelineEntry {
@@ -47,7 +48,6 @@ struct TaskapeWidgetEntryView: View {
 
     var body: some View {
         ZStack {
-
             RoundedRectangle(cornerRadius: 30).fill(.background)
 
             VStack(alignment: .leading, spacing: 0) {
@@ -71,19 +71,19 @@ struct TaskapeWidgetEntryView: View {
                         ForEach(Array(entry.tasks.prefix(3))) { task in
                             HStack {
                                 if let flagColor = task.flagColor,
-                                    !flagColor.isEmpty
+                                   !flagColor.isEmpty
                                 {
                                     Circle()
                                         .fill(Color(hex: flagColor))
                                         .frame(width: 8, height: 8)
                                         .padding(.horizontal)
                                 } else {
-
                                     Circle()
                                         .fill(.primary)
                                         .frame(width: 4, height: 4)
                                         .padding(.leading).offset(x: 2).padding(
-                                            .trailing, 20)
+                                            .trailing, 20
+                                        )
                                 }
 
                                 if task.name.isEmpty {
@@ -136,7 +136,8 @@ struct TaskapeWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: Provider()) { entry in
             TaskapeWidgetEntryView(entry: entry).containerBackground(
-                .windowBackground, for: .widget)
+                .windowBackground, for: .widget
+            )
         }.contentMarginsDisabled()
             .configurationDisplayName("taskape")
             .description("view your tasks at a glance")
@@ -148,13 +149,16 @@ struct TaskapeWidget: Widget {
 let sampleTasks: [WidgetTaskModel] = [
     WidgetTaskModel(
         id: "1", name: "finish the project", isCompleted: false, flagColor: nil,
-        flagName: nil),
+        flagName: nil
+    ),
     WidgetTaskModel(
         id: "2", name: "buy groceries", isCompleted: false,
-        flagColor: "#FF6B6B", flagName: "important"),
+        flagColor: "#FF6B6B", flagName: "important"
+    ),
     WidgetTaskModel(
         id: "3", name: "call mom", isCompleted: true, flagColor: nil,
-        flagName: nil),
+        flagName: nil
+    ),
 ]
 extension Color {
     static var taskapeOrange: Color {
