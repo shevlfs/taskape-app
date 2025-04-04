@@ -116,7 +116,9 @@ extension View {
 struct MainMenuTabBarView: View {
     @Binding var tabBarItems: [tabBarItem]
     @Binding var tabBarViewIndex: Int
+    @State var inviteCount = 0
     var separatorIndex: Int = 1
+    @Binding var showGroupSheet: Bool
 
     var body: some View {
         ScrollViewReader { scrollView in
@@ -155,8 +157,32 @@ struct MainMenuTabBarView: View {
                             }
                         }
                     }
+
+                    Button(action: {
+                     showGroupSheet = true
+                    }) {
+                        HStack(spacing: 12) {
+                            Text("\(Image(systemName: "plus"))")
+                                .foregroundColor(.primary)
+                                .font(.system(size: 18,weight: .bold))
+
+                                .padding(.horizontal, 2)
+                                .overlay(alignment: .topTrailing) {
+                                    if inviteCount > 0
+                                    {
+                                        NotificationBadge(
+                                            badgeCount: $inviteCount
+                                        )
+                                        .offset(x: 10, y: -10)
+                                    }
+                                }
+                                .padding(.vertical, 2)
+                        }
+                    }.buttonStyle(PlainButtonStyle())
                 }
                 .padding(.horizontal, 16)
+
+                
             }.onChange(
                 of: tabBarViewIndex
             ) { _, newValue in

@@ -27,6 +27,8 @@ struct MainNavigationView: View {
 
     @Binding var fullyLoaded: Bool
 
+    @State var showGroupSheet: Bool = false
+
     var body: some View {
         NavigationStack(path: $mainNavigationPath) {
             VStack {
@@ -35,9 +37,10 @@ struct MainNavigationView: View {
                 ).modelContext(modelContext).padding(.horizontal).padding(
                     .top, 10
                 ).padding(.bottom, 10)
-                TabBarView(
+                MainMenuTabBarView(
                     tabBarItems: $mainTabBarItems,
-                    tabBarViewIndex: $selectedTabIndex
+                    tabBarViewIndex: $selectedTabIndex,
+                    showGroupSheet: $showGroupSheet
                 ).ignoresSafeArea(.all)
                     .edgesIgnoringSafeArea(.all)
                     .toolbar(.hidden)
@@ -110,7 +113,10 @@ struct MainNavigationView: View {
                 Spacer()
             }
             .edgesIgnoringSafeArea(.bottom)
-            .toolbar(.hidden)
+            .toolbar(.hidden).sheet(isPresented: $showGroupSheet, content: {
+
+                GroupCreationView().modelContext(modelContext)
+            })
         }
         .onAppear {
             print($mainNavigationPath)
