@@ -53,14 +53,7 @@ struct GroupCreationView: View {
                             .foregroundColor(.secondary)
                             .padding(.horizontal)
 
-                        TextEditor(text: $groupDescription)
-                            .placeholder(when: groupDescription.isEmpty) {
-                                Text("describe your group")
-                                    .foregroundColor(.gray)
-                                    .font(.pathway(16))
-                                    .padding(.leading, 5)
-                                    .padding(.top, 8)
-                            }
+                        TextEditor(text: $groupDescription).scrollContentBackground(.hidden)
                             .font(.pathway(16))
                             .padding()
                             .frame(height: 120)
@@ -132,8 +125,6 @@ struct GroupCreationView: View {
                 }
                 .padding(.top, 20)
             }
-            .navigationTitle("create group")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
@@ -143,19 +134,15 @@ struct GroupCreationView: View {
                             .foregroundColor(.primary)
                     }
                 }
+
+                ToolbarItem(placement: .principal) {
+                    Text("create group").font(.pathway(16))
+                }
             }
             .alert("error", isPresented: $showError) {
                 Button("ok", role: .cancel) {}
             } message: {
                 Text(errorMessage ?? "an error occurred")
-            }
-            .navigationDestination(item: $createdGroup) { group in
-                GroupDetailView(group: group)
-                    .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            dismiss()
-                        }
-                    }
             }
         }
     }

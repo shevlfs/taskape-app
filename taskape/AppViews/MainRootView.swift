@@ -1,5 +1,3 @@
-
-
 import CachedAsyncImage
 import SwiftData
 import SwiftUI
@@ -15,6 +13,8 @@ struct MainRootView: View {
 
     @State var animationAppeared: Bool = false
     @State private var isVisible = false
+
+    @StateObject private var groupManager = GroupManager.shared
 
     var body: some View {
         ZStack {
@@ -82,8 +82,9 @@ struct MainRootView: View {
                     }
 
                     let user = await fetchUser(userId: userId)
-
                     let tasks = await fetchTasks(userId: userId)
+
+                    await fetchUserGroups(userId: userId)
 
                     await MainActor.run {
                         if let user {
@@ -131,7 +132,10 @@ struct MainRootView: View {
     private func loadData() {
         _ = UserManager.shared.getCurrentUser(
             context: modelContext)
+
         Task {
+            groupManager.loadUserGroups(context: modelContext)
+
             if let remoteTasks = await UserManager.shared
                 .fetchCurrentUserTasks()
             {
@@ -141,13 +145,15 @@ struct MainRootView: View {
                         remoteTasks: remoteTasks,
                         modelContext: modelContext
                     )
-                    updateWidgetWithTasks(
-                        userId: UserManager.shared.currentUserId,
-                        modelContext: modelContext
-                    )
                 }
             }
+
+            await fetchUserGroups(userId: UserManager.shared.currentUserId)
         }
+    }
+
+    private func fetchUserGroups(userId _: String) async {
+        await groupManager.fetchUserGroups(context: modelContext)
     }
 }
 

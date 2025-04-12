@@ -296,3 +296,146 @@ func kickUserFromGroup(groupId: String, adminId: String, userId: String) async
         }
     }
 }
+
+struct GroupResponse: Codable {
+    let id: String
+    let name: String
+    let description: String
+    let color: String
+    let creator_id: String
+    let created_at: String
+    let members: [String]
+    let admins: [String]
+}
+
+struct GetUserGroupsResponse: Codable {
+    let success: Bool
+    let groups: [GroupResponse]
+    let message: String?
+}
+
+func getUserGroups(userId: String) async -> [taskapeGroup]? {
+    guard let token = UserDefaults.standard.string(forKey: "authToken") else {
+        print("No auth token found")
+        return nil
+    }
+
+    do {
+        let headers: HTTPHeaders = [
+            "Authorization": token,
+        ]
+
+        let result = await AF.request(
+            "\(Dotenv["RESTAPIENDPOINT"]!.stringValue)/users/\(userId)/groups",
+            method: .get,
+            headers: headers
+        )
+        .validate()
+        .serializingDecodable(GetUserGroupsResponse.self)
+        .response
+
+        switch result.result {
+        case let .success(response):
+            if response.success {
+                return convertToLocalGroups(response.groups)
+            } else {
+                print(
+                    "Failed to fetch user groups: \(response.message ?? "unknown error")"
+                )
+                return nil
+            }
+        case let .failure(error):
+            print("Failed to fetch user groups: \(error.localizedDescription)")
+            return nil
+        }
+    }
+}
+
+func convertToLocalGroups(_ apiGroups: [GroupResponse]) -> [taskapeGroup] {
+    apiGroups.map { group in
+        let newGroup = taskapeGroup(
+            id: group.id,
+            name: group.name,
+            group_description: group.description,
+            color: group.color,
+            creatorId: group.creator_id,
+            createdAt: ISO8601DateFormatter().date(from: group.created_at)
+                ?? Date()
+        )
+
+        newGroup.members = group.members
+        newGroup.admins = group.admins
+
+        return newGroup
+    }
+}
+
+extension taskapeTask {
+    func belongsToGroup() -> Bool {
+        group_id != nil && !group_id!.isEmpty
+    }
+
+    func moveToGroup(_ group: taskapeGroup?) {
+        if let group {
+            group_id = group.id
+            self.group = group.name
+        } else {
+            group_id = nil
+            self.group = nil
+        }
+    }
+
+    var displayName: String {
+        if belongsToGroup() {
+            "\(name) (in \(group ?? "group"))"
+        } else {
+            name
+        }
+    }
+}
+
+extension taskapeUser {
+    func getGroups(context: ModelContext) -> [taskapeGroup] {
+        let sid = id
+        let descriptor = FetchDescriptor<taskapeGroup>(
+            predicate: #Predicate<taskapeGroup> { group in
+                group.members.contains(sid)
+            }
+        )
+
+        do {
+            return try context.fetch(descriptor)
+        } catch {
+            print("Error fetching user groups: \(error)")
+            return []
+        }
+    }
+
+    func isGroupAdmin(groupId: String, context: ModelContext) -> Bool {
+        let sid = id
+        let descriptor = FetchDescriptor<taskapeGroup>(
+            predicate: #Predicate<taskapeGroup> { group in
+                group.id == groupId && group.admins.contains(sid)
+            }
+        )
+
+        do {
+            let groups = try context.fetch(descriptor)
+            return !groups.isEmpty
+        } catch {
+            print("Error checking if user is group admin: \(error)")
+            return false
+        }
+    }
+
+    func getGroupTasks(context: ModelContext) -> [taskapeTask] {
+        let groups = getGroups(context: context)
+        var groupTasks: [taskapeTask] = []
+
+        for group in groups {
+            groupTasks.append(contentsOf: group.tasks)
+        }
+
+        return groupTasks
+    }
+}

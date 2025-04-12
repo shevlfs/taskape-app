@@ -116,27 +116,39 @@ extension View {
 struct MainMenuTabBarView: View {
     @Binding var tabBarItems: [tabBarItem]
     @Binding var tabBarViewIndex: Int
-    @State var inviteCount = 0
-    var separatorIndex: Int = 1
     @Binding var showGroupSheet: Bool
+    var separatorIndex: Int = 1
+
+    @ObservedObject private var groupManager = GroupManager.shared
+
+    private enum TabID: Hashable {
+        case mainTab(Int)
+        case groupTab(String)
+    }
+
+    private var currentTabID: TabID {
+        if let selectedGroup = groupManager.selectedGroup {
+            .groupTab(selectedGroup.id)
+        } else {
+            .mainTab(tabBarViewIndex)
+        }
+    }
 
     var body: some View {
         ScrollViewReader { scrollView in
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    ForEach(tabBarItems.indices, id: \.self) { index in
+                    ForEach(0 ..< tabBarItems.count, id: \.self) { index in
                         HStack(spacing: 12) {
                             Text(tabBarItems[index].title).kerning(1)
                                 .font(.pathwaySemiBold(18))
                                 .foregroundColor(
-                                    tabBarViewIndex == index
+                                    (tabBarViewIndex == index && groupManager.selectedGroup == nil)
                                         ? .primary : Color(.systemGray2)
                                 )
                                 .padding(.horizontal, 2)
                                 .overlay(alignment: .topTrailing) {
-                                    if let badgeCount = tabBarItems[index]
-                                        .badgeCount
-                                    {
+                                    if let badgeCount = tabBarItems[index].badgeCount {
                                         NotificationBadge(
                                             badgeCount: .constant(badgeCount)
                                         )
@@ -144,9 +156,11 @@ struct MainMenuTabBarView: View {
                                     }
                                 }
                                 .padding(.vertical, 2)
+                                .id(TabID.mainTab(index))
                                 .onTapGesture {
                                     withAnimation(.easeInOut) {
                                         tabBarViewIndex = index
+                                        groupManager.selectedGroup = nil
                                     }
                                 }
 
@@ -158,33 +172,41 @@ struct MainMenuTabBarView: View {
                         }
                     }
 
+                    ForEach(groupManager.groups) { group in
+                        HStack(spacing: 6) {
+                            Text(group.name).kerning(1)
+                                .font(.pathwaySemiBold(18))
+                                .foregroundColor(
+                                    groupManager.selectedGroup?.id == group.id
+                                        ? .primary : Color(.systemGray2)
+                                )
+                                .padding(.horizontal, 2)
+                                .padding(.vertical, 2)
+                                .id(TabID.groupTab(group.id))
+                                .onTapGesture {
+                                    withAnimation(.easeInOut) {
+                                        groupManager.selectedGroup = group
+                                        tabBarViewIndex = tabBarItems.count
+                                    }
+                                }
+                        }
+                    }
+
                     Button(action: {
                         showGroupSheet = true
                     }) {
-                        HStack(spacing: 12) {
-                            Text("\(Image(systemName: "plus"))")
-                                .foregroundColor(.primary)
-                                .font(.system(size: 18, weight: .bold))
-                                .padding(.horizontal, 2)
-                                .overlay(alignment: .topTrailing) {
-                                    if inviteCount > 0 {
-                                        NotificationBadge(
-                                            badgeCount: $inviteCount
-                                        )
-                                        .offset(x: 10, y: -10)
-                                    }
-                                }
-                                .padding(.vertical, 2)
-                        }
-                    }.buttonStyle(PlainButtonStyle())
+                        Image(systemName: "plus.circle")
+                            .font(.system(size: 20))
+                            .foregroundColor(Color(.systemGray2))
+                            .padding(.horizontal, 4)
+                    }
                 }
                 .padding(.horizontal, 16)
+            }
 
-            }.onChange(
-                of: tabBarViewIndex
-            ) { _, newValue in
+            .onChange(of: currentTabID) { _, newTabID in
                 withAnimation {
-                    scrollView.scrollTo(newValue, anchor: .center)
+                    scrollView.scrollTo(newTabID, anchor: .center)
                 }
             }
         }

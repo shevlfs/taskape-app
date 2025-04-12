@@ -14,6 +14,7 @@ final class taskapeGroup: Identifiable {
     var admins: [String] = []
 
     @Relationship var tasks: [taskapeTask] = []
+    @Relationship var users: [taskapeUser] = []
 
     init(
         id: String = UUID().uuidString,
@@ -54,5 +55,14 @@ final class taskapeGroup: Identifiable {
     func removeMember(userId: String) {
         members.removeAll { $0 == userId }
         admins.removeAll { $0 == userId }
+        users.removeAll { $0.id == userId }
+    }
+
+    func hasUserRelationship(userId: String) -> Bool {
+        users.contains { $0.id == userId }
+    }
+
+    func getUser(userId: String) -> taskapeUser? {
+        users.first { $0.id == userId }
     }
 }
