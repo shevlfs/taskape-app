@@ -140,6 +140,8 @@ struct MainRootView: View {
                 .fetchCurrentUserTasks()
             {
                 await MainActor.run {
+                    NotificationStore.shared
+                        .refreshNotifications(modelContext: modelContext)
                     syncUserTasks(
                         userId: UserManager.shared.currentUserId,
                         remoteTasks: remoteTasks,

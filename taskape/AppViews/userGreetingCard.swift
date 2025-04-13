@@ -5,6 +5,7 @@ import SwiftUI
 struct UserGreetingCard: View {
     @Environment(\.modelContext) private var modelContext
     @ObservedObject private var friendManager = FriendManager.shared
+    @ObservedObject private var notificationStore = NotificationStore.shared
     @Binding var user: taskapeUser?
     @Namespace var namespace
 
@@ -79,14 +80,14 @@ struct UserGreetingCard: View {
                                     id: "friendSearch", in: namespace
                                 )
 
-                            if friendManager.incomingRequests.count > 0 {
+                            if friendManager.incomingRequests.count > 0 || notificationStore.unreadCount > 0 {
                                 ZStack {
                                     Circle()
                                         .fill(Color.red)
                                         .frame(width: 24 - 4, height: 24 - 4)
 
                                     Text(
-                                        "\(friendManager.incomingRequests.count)"
+                                        "\(friendManager.incomingRequests.count + notificationStore.unreadCount)"
                                     )
                                     .font(.system(size: 14 - 2, weight: .bold))
                                     .foregroundColor(.white)
