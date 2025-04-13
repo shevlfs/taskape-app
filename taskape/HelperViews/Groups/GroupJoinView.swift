@@ -1,5 +1,3 @@
-
-
 import SwiftData
 import SwiftUI
 
@@ -76,7 +74,9 @@ struct GroupJoinView: View {
                 .padding()
                 .background(
                     RoundedRectangle(cornerRadius: 30)
-                        .fill(inviteCode.isEmpty ? Color.gray : Color.taskapeOrange)
+                        .fill(
+                            inviteCode.isEmpty
+                                ? Color.gray : Color.taskapeOrange)
                 )
                 .padding(.horizontal)
                 .disabled(isJoining || inviteCode.isEmpty)
@@ -115,7 +115,8 @@ struct GroupJoinView: View {
         isJoining = true
 
         Task {
-            let success = await groupManager.acceptGroupInvitation(inviteId: inviteCode)
+            let success = await groupManager.acceptGroupInvitation(
+                inviteId: inviteCode)
 
             await MainActor.run {
                 isJoining = false
@@ -124,7 +125,8 @@ struct GroupJoinView: View {
                     groupManager.loadUserGroups(context: modelContext)
                     joinedGroup = true
                 } else {
-                    errorMessage = "failed to join group. please check the invite code and try again"
+                    errorMessage =
+                        "failed to join group. please check the invite code and try again"
                     showError = true
                 }
             }

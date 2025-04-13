@@ -393,27 +393,34 @@ struct OtherUserProfileView: View {
 }
 
 struct TaskListItem: View {
-    @State var task: taskapeTask
+    @Bindable var task: taskapeTask
+    var onToggleCompletion: (() -> Void)? = nil
 
     var body: some View {
         VStack {
             HStack(spacing: 12) {
-                if task.completion.isCompleted {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.green)
-                        .frame(width: 16, height: 16).background(
-                            Circle().stroke(style: StrokeStyle(lineWidth: 0.5))
-                                .foregroundColor(.gray)
-                                .frame(width: 20, height: 20))
-                } else if task.completion.requiresConfirmation {
-                    Circle().stroke(style: StrokeStyle(lineWidth: 0.5))
-                        .foregroundColor(.yellow)
-                        .frame(width: 20, height: 20)
-                } else {
-                    Circle().stroke(style: StrokeStyle(lineWidth: 0.5))
-                        .foregroundColor(.gray)
-                        .frame(width: 20, height: 20)
+                ZStack {
+                    Circle()
+                        .stroke(
+                            task.completion.isCompleted ? Color.green :
+                                task.completion.requiresConfirmation ? Color.yellow : Color.gray,
+                            lineWidth: 1.5
+                        )
+                        .frame(width: 24, height: 24)
+
+                    if task.completion.isCompleted {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.green)
+                    }
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    withAnimation(.spring(response: 0.2, dampingFraction: 0.6)) {
+                        task.completion.isCompleted.toggle()
+                    }
+
+                    onToggleCompletion?()
                 }
 
                 if task.name.isEmpty {

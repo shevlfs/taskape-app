@@ -137,11 +137,18 @@ struct MainNavigationView: View {
 struct GroupContentView: View {
     let group: taskapeGroup
     @Environment(\.modelContext) private var modelContext
-    @State private var groupTasks: [taskapeTask] = []
+    @State private var userTasks: [taskapeTask] = []
+    @State private var otherMemberTasks: [taskapeTask] = []
     @State private var isLoading: Bool = false
 
     @State private var showAddTaskSheet = false
     @State private var showMembersSheet = false
+    @State private var showInviteSheet = false
+    @State private var updatingTaskIds: Set<String> = []
+
+    private var currentUserId: String {
+        UserManager.shared.currentUserId
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -161,6 +168,21 @@ struct GroupContentView: View {
                     .cornerRadius(20)
                 }
 
+                Button(action: {
+                    showInviteSheet = true
+                }) {
+                    HStack {
+                        Image(systemName: "person.badge.plus")
+                        Text("Invite")
+                    }
+                    .font(.pathway(14))
+                    .foregroundColor(.white)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 16)
+                    .background(Color.taskapeOrange)
+                    .cornerRadius(20)
+                }
+
                 Spacer()
 
                 Button(action: {
@@ -176,13 +198,13 @@ struct GroupContentView: View {
             if isLoading {
                 ProgressView("Loading group tasks...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if groupTasks.isEmpty {
+            } else if userTasks.isEmpty, otherMemberTasks.isEmpty {
                 VStack(spacing: 16) {
                     Spacer()
 
                     Image(systemName: "tray")
                         .font(.system(size: 48))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.gray)
 
                     Text("No tasks yet")
                         .font(.pathway(18))
@@ -207,9 +229,58 @@ struct GroupContentView: View {
             } else {
                 ScrollView {
                     LazyVStack(spacing: 12) {
-                        ForEach(groupTasks) { task in
-                            TaskListItem(task: task)
-                                .padding(.horizontal)
+                        if !userTasks.isEmpty {
+                            VStack(alignment: .leading) {
+                                Text("Your Tasks")
+                                    .font(.pathwayBold(18))
+                                    .padding(.horizontal)
+                                    .padding(.top, 8)
+
+                                ForEach(userTasks) { task in
+                                    TaskListItem(task: task, onToggleCompletion: {
+                                        print("Task toggle called for: \(task.id), new state: \(task.completion.isCompleted)")
+                                        updateTaskCompletion(task)
+                                    })
+                                    .padding(.horizontal)
+                                    .overlay(
+                                        updatingTaskIds.contains(task.id) ?
+                                            ProgressView()
+                                            .frame(width: 24, height: 24)
+                                            .padding()
+                                            : nil,
+                                        alignment: .trailing
+                                    )
+                                }
+                            }
+                        }
+
+                        if !otherMemberTasks.isEmpty {
+                            VStack(alignment: .leading) {
+                                Divider()
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal)
+
+                                Text("Other Member Tasks")
+                                    .font(.pathwayBold(18))
+                                    .padding(.horizontal)
+                                    .padding(.top, 8)
+
+                                ForEach(otherMemberTasks) { task in
+                                    TaskListItem(task: task, onToggleCompletion: {
+                                        print("Task toggle called for: \(task.id), new state: \(task.completion.isCompleted)")
+                                        updateTaskCompletion(task)
+                                    })
+                                    .padding(.horizontal)
+                                    .overlay(
+                                        updatingTaskIds.contains(task.id) ?
+                                            ProgressView()
+                                            .frame(width: 24, height: 24)
+                                            .padding()
+                                            : nil,
+                                        alignment: .trailing
+                                    )
+                                }
+                            }
                         }
                     }
                     .padding(.top, 8)
@@ -234,19 +305,27 @@ struct GroupContentView: View {
         .onAppear {
             loadGroupTasks()
         }
-
         .sheet(isPresented: $showAddTaskSheet) {
             GroupTaskCreationView(
                 group: group,
                 onTaskCreated: { newTask in
-                    groupTasks.append(newTask)
-                    loadGroupTasks()
+
+                    if newTask.user_id == currentUserId {
+                        userTasks.append(newTask)
+                    } else {
+                        otherMemberTasks.append(newTask)
+                    }
                 }
             )
+            .modelContext(modelContext)
         }
-
         .sheet(isPresented: $showMembersSheet) {
             GroupMembersView(group: group)
+                .modelContext(modelContext)
+        }
+        .sheet(isPresented: $showInviteSheet) {
+            GroupInviteView(group: group)
+                .modelContext(modelContext)
         }
     }
 
@@ -260,10 +339,48 @@ struct GroupContentView: View {
             )
 
             await MainActor.run {
-                groupTasks = tasks
+                userTasks = tasks.filter { $0.user_id == currentUserId }
+                otherMemberTasks = tasks.filter { $0.user_id != currentUserId }
                 isLoading = false
             }
         }
+    }
+
+    private func updateTaskCompletion(_ task: taskapeTask) {
+        print("Updating task completion for task: \(task.id), isCompleted: \(task.completion.isCompleted)")
+
+        updatingTaskIds.insert(task.id)
+
+        Task {
+            let success = await syncTaskChanges(task: task)
+
+            await MainActor.run {
+                updatingTaskIds.remove(task.id)
+
+                if !success {
+                    print("Task update failed, reverting: \(task.id)")
+                    withAnimation {
+                        task.completion.isCompleted.toggle()
+                    }
+                } else {
+                    print("Task update succeeded: \(task.id)")
+
+                    try? modelContext.save()
+
+                    if let index = userTasks.firstIndex(where: { $0.id == task.id }) {
+                        let updatedTask = task
+                        userTasks[index] = updatedTask
+                    } else if let index = otherMemberTasks.firstIndex(where: { $0.id == task.id }) {
+                        let updatedTask = task
+                        otherMemberTasks[index] = updatedTask
+                    }
+                }
+            }
+        }
+    }
+
+    private func syncTaskChanges(task: taskapeTask) async -> Bool {
+        await updateTask(task: task)
     }
 }
 
@@ -721,6 +838,7 @@ struct GroupMembersView: View {
             VStack {
                 if isLoading {
                     ProgressView("Loading members...")
+                        .font(.pathway(16))
                 } else if members.isEmpty {
                     VStack(spacing: 16) {
                         Image(systemName: "person.slash")
@@ -749,8 +867,11 @@ struct GroupMembersView: View {
                                         Text(member.handle)
                                             .font(.pathwayBold(16))
 
-                                        let taskCount = memberTasks[member.id]?.count ?? 0
-                                        Text("\(taskCount) task\(taskCount == 1 ? "" : "s")")
+                                        let taskCount = (memberTasks[member.id] ?? [])
+                                            .filter { $0.group_id == group.id }
+                                            .count
+
+                                        Text("\(taskCount) group task\(taskCount == 1 ? "" : "s")")
                                             .font(.pathway(14))
                                             .foregroundColor(.secondary)
                                     }
@@ -764,8 +885,10 @@ struct GroupMembersView: View {
                             .buttonStyle(PlainButtonStyle())
                         }
                     }
+                    .listStyle(PlainListStyle())
                 }
-            }.toolbar {
+            }
+            .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("group members")
                         .font(.pathway(16))
@@ -781,8 +904,10 @@ struct GroupMembersView: View {
             .sheet(item: $selectedMember) { member in
                 MemberTasksView(
                     member: member,
-                    tasks: memberTasks[member.id] ?? []
+                    tasks: memberTasks[member.id] ?? [],
+                    group: group
                 )
+                .modelContext(modelContext)
             }
             .onAppear {
                 loadGroupMembers()
@@ -820,37 +945,78 @@ struct GroupMembersView: View {
 struct MemberTasksView: View {
     let member: taskapeUser
     let tasks: [taskapeTask]
+    let group: taskapeGroup
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @State private var updatingTaskIds: Set<String> = []
+
+    private var groupTasks: [taskapeTask] {
+        tasks.filter { $0.group_id == group.id }
+    }
 
     var body: some View {
         NavigationView {
             VStack {
-                if tasks.isEmpty {
+                if groupTasks.isEmpty {
                     VStack(spacing: 16) {
                         Image(systemName: "tray")
                             .font(.system(size: 48))
                             .foregroundColor(.secondary)
 
-                        Text("No tasks assigned")
+                        Text("No group tasks assigned")
                             .font(.pathway(18))
                             .foregroundColor(.secondary)
+
+                        Text("This member doesn't have any tasks in this group")
+                            .font(.pathwayItalic(14))
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
                     }
                     .frame(maxHeight: .infinity)
                 } else {
                     List {
-                        ForEach(tasks) { task in
-                            TaskListItem(task: task)
+                        ForEach(groupTasks) { task in
+                            TaskListItem(task: task, onToggleCompletion: {
+                                print("Member task toggle called for: \(task.id), new state: \(task.completion.isCompleted)")
+                                updateTaskCompletion(task)
+                            })
+                            .overlay(
+                                updatingTaskIds.contains(task.id) ?
+                                    ProgressView()
+                                    .frame(width: 24, height: 24)
+                                    .padding()
+                                    : nil,
+                                alignment: .trailing
+                            )
                         }
                     }
+                    .listStyle(PlainListStyle())
                 }
             }
-            .navigationBarTitle("@\(member.handle)'s Tasks", displayMode: .inline)
+            .navigationBarTitle("@\(member.handle)'s Group Tasks", displayMode: .inline)
             .navigationBarItems(
                 leading: Button("Back") {
                     dismiss()
                 }
             )
+        }
+    }
+
+    private func updateTaskCompletion(_ task: taskapeTask) {
+        updatingTaskIds.insert(task.id)
+
+        Task {
+            let success = await updateTask(task: task)
+
+            await MainActor.run {
+                updatingTaskIds.remove(task.id)
+
+                if !success {
+                    task.completion.isCompleted.toggle()
+                }
+            }
         }
     }
 }

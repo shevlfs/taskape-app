@@ -122,7 +122,7 @@ struct GroupDetailView: View {
                 .modelContext(modelContext)
         }
         .sheet(isPresented: $showingCreateTaskSheet) {
-            CreateGroupTaskView(group: group)
+            GroupTaskCreationView(group: group, onTaskCreated: { _ in })
                 .modelContext(modelContext)
         }
         .onAppear {
