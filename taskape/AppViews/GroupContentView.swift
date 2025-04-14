@@ -1,3 +1,10 @@
+
+
+import Alamofire
+import SwiftData
+import SwiftDotenv
+import SwiftUI
+
 struct GroupContentView: View {
     let group: taskapeGroup
     @Environment(\.modelContext) private var modelContext
@@ -10,6 +17,8 @@ struct GroupContentView: View {
     @State private var showInviteSheet = false
     @State private var updatingTaskIds: Set<String> = []
 
+    @Namespace var namespace
+
     private var currentUserId: String {
         UserManager.shared.currentUserId
     }
@@ -17,50 +26,32 @@ struct GroupContentView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Button(action: {
-                    showMembersSheet = true
+                NavigationLink(destination: {
+                    GroupMembersView(group: group)
+                        .modelContext(modelContext).toolbar(.hidden)
+                        .navigationTransition(
+                            .zoom(sourceID: "memberView", in: namespace))
                 }) {
                     HStack {
                         Image(systemName: "person.2.fill")
-                        Text("Members")
+                        Text("members")
                     }
                     .font(.pathway(14))
-                    .foregroundColor(.white)
                     .padding(.vertical, 8)
                     .padding(.horizontal, 16)
-                    .background(Color(hex: group.color))
-                    .cornerRadius(20)
-                }
-
-                Button(action: {
-                    showInviteSheet = true
-                }) {
-                    HStack {
-                        Image(systemName: "person.badge.plus")
-                        Text("Invite")
-                    }
-                    .font(.pathway(14))
-                    .foregroundColor(.white)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 16)
-                    .background(Color.taskapeOrange)
-                    .cornerRadius(20)
-                }
-
-                Spacer()
-
-                Button(action: {
-                    loadGroupTasks()
-                }) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 18))
-                        .foregroundColor(.primary)
-                }
+                    .matchedTransitionSource(id: "memberView", in: namespace)
+                    .background(Color(uiColor: UIColor.systemBackground))
+                }.buttonStyle(PlainButtonStyle())
+                    .cornerRadius(24)
+                    .shadow(
+                        color: Color.primary.opacity(0.08), radius: 8, x: 0,
+                        y: 2
+                    )
             }
             .padding(.horizontal)
 
             if isLoading {
-                ProgressView("Loading group tasks...")
+                ProgressView("loading group tasks...")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if userTasks.isEmpty, otherMemberTasks.isEmpty {
                 VStack(spacing: 16) {
@@ -70,14 +61,14 @@ struct GroupContentView: View {
                         .font(.system(size: 48))
                         .foregroundColor(.gray)
 
-                    Text("No tasks yet")
+                    Text("no tasks yet")
                         .font(.pathway(18))
                         .foregroundColor(.secondary)
 
                     Button(action: {
                         showAddTaskSheet = true
                     }) {
-                        Text("Add a task")
+                        Text("add a task")
                             .font(.pathway(16))
                             .foregroundColor(.white)
                             .padding(.vertical, 12)
@@ -95,20 +86,25 @@ struct GroupContentView: View {
                     LazyVStack(spacing: 12) {
                         if !userTasks.isEmpty {
                             VStack(alignment: .leading) {
-                                Text("Your Tasks")
+                                Text("tasks assigned to you")
                                     .font(.pathwayBold(18))
                                     .padding(.horizontal)
                                     .padding(.top, 8)
 
                                 ForEach(userTasks) { task in
-                                    TaskListItem(task: task, onToggleCompletion: {
-                                        print("Task toggle called for: \(task.id), new state: \(task.completion.isCompleted)")
-                                        updateTaskCompletion(task)
-                                    })
+                                    TaskListItem(
+                                        task: task,
+                                        onToggleCompletion: {
+                                            print(
+                                                "Task toggle called for: \(task.id), new state: \(task.completion.isCompleted)"
+                                            )
+                                            updateTaskCompletion(task)
+                                        }
+                                    )
                                     .padding(.horizontal)
                                     .overlay(
-                                        updatingTaskIds.contains(task.id) ?
-                                            ProgressView()
+                                        updatingTaskIds.contains(task.id)
+                                            ? ProgressView()
                                             .frame(width: 24, height: 24)
                                             .padding()
                                             : nil,
@@ -124,20 +120,25 @@ struct GroupContentView: View {
                                     .padding(.vertical, 8)
                                     .padding(.horizontal)
 
-                                Text("Other Member Tasks")
+                                Text("other members' tasks")
                                     .font(.pathwayBold(18))
                                     .padding(.horizontal)
                                     .padding(.top, 8)
 
                                 ForEach(otherMemberTasks) { task in
-                                    TaskListItem(task: task, onToggleCompletion: {
-                                        print("Task toggle called for: \(task.id), new state: \(task.completion.isCompleted)")
-                                        updateTaskCompletion(task)
-                                    })
+                                    TaskListItem(
+                                        task: task,
+                                        onToggleCompletion: {
+                                            print(
+                                                "Task toggle called for: \(task.id), new state: \(task.completion.isCompleted)"
+                                            )
+                                            updateTaskCompletion(task)
+                                        }
+                                    )
                                     .padding(.horizontal)
                                     .overlay(
-                                        updatingTaskIds.contains(task.id) ?
-                                            ProgressView()
+                                        updatingTaskIds.contains(task.id)
+                                            ? ProgressView()
                                             .frame(width: 24, height: 24)
                                             .padding()
                                             : nil,
@@ -159,10 +160,13 @@ struct GroupContentView: View {
                         .frame(width: 56, height: 56)
                         .background(Color.taskapeOrange)
                         .clipShape(Circle())
-                        .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
+                        .shadow(
+                            color: Color.black.opacity(0.2), radius: 4, x: 0,
+                            y: 2
+                        )
                 }
-                .padding(.bottom, 16)
-                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.bottom, 25)
+                .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
         .padding(.top, 16)
@@ -173,9 +177,13 @@ struct GroupContentView: View {
             GroupTaskCreationView(
                 group: group,
                 onTaskCreated: { newTask in
-
-                    if newTask.user_id == currentUserId {
+                    if newTask.assignedToTask.contains(currentUserId) {
+                        if newTask.assignedToTask.count == 1 {
+                            userTasks.append(newTask)
+                            return
+                        }
                         userTasks.append(newTask)
+                        otherMemberTasks.append(newTask)
                     } else {
                         otherMemberTasks.append(newTask)
                     }
@@ -203,15 +211,25 @@ struct GroupContentView: View {
             )
 
             await MainActor.run {
-                userTasks = tasks.filter { $0.user_id == currentUserId }
-                otherMemberTasks = tasks.filter { $0.user_id != currentUserId }
+                userTasks = tasks.filter { task in
+                    task.user_id == currentUserId
+                        || task.assignedToTask.contains(currentUserId)
+                }
+
+                otherMemberTasks = tasks.filter { task in
+                    !(task.user_id == currentUserId
+                        || task.assignedToTask.contains(currentUserId))
+                }
+
                 isLoading = false
             }
         }
     }
 
     private func updateTaskCompletion(_ task: taskapeTask) {
-        print("Updating task completion for task: \(task.id), isCompleted: \(task.completion.isCompleted)")
+        print(
+            "Updating task completion for task: \(task.id), isCompleted: \(task.completion.isCompleted)"
+        )
 
         updatingTaskIds.insert(task.id)
 
@@ -231,10 +249,14 @@ struct GroupContentView: View {
 
                     try? modelContext.save()
 
-                    if let index = userTasks.firstIndex(where: { $0.id == task.id }) {
+                    if let index = userTasks.firstIndex(where: {
+                        $0.id == task.id
+                    }) {
                         let updatedTask = task
                         userTasks[index] = updatedTask
-                    } else if let index = otherMemberTasks.firstIndex(where: { $0.id == task.id }) {
+                    } else if let index = otherMemberTasks.firstIndex(where: {
+                        $0.id == task.id
+                    }) {
                         let updatedTask = task
                         otherMemberTasks[index] = updatedTask
                     }
@@ -426,6 +448,7 @@ struct GroupTaskCreationView: View {
             group_id: group.id,
             assignedToTask: selectedMembers
         )
+        print("SELECTED MEMBERRSSSSSS \(selectedMembers)")
 
         if let deadline {
             newTask.deadline = deadline
@@ -496,11 +519,15 @@ struct GroupMemberAssigneeSelector: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(selectedMembers, id: \.self) { memberId in
-                            if let member = groupMembers.first(where: { $0.id == memberId }) {
+                            if let member = groupMembers.first(where: {
+                                $0.id == memberId
+                            }) {
                                 SelectedMemberTag(
                                     member: member,
                                     onRemove: {
-                                        selectedMembers.removeAll { $0 == memberId }
+                                        selectedMembers.removeAll {
+                                            $0 == memberId
+                                        }
                                     }
                                 )
                             }
@@ -623,7 +650,9 @@ struct GroupMemberPickerView: View {
                                             selectedMembers.append(member.id)
                                         }
                                     } else {
-                                        selectedMembers.removeAll { $0 == member.id }
+                                        selectedMembers.removeAll {
+                                            $0 == member.id
+                                        }
                                     }
                                 }
                             )
@@ -667,7 +696,8 @@ struct MemberSelectRow: View {
                 ZStack {
                     Circle()
                         .stroke(
-                            isSelected ? Color.taskapeOrange : Color.gray.opacity(0.5),
+                            isSelected
+                                ? Color.taskapeOrange : Color.gray.opacity(0.5),
                             lineWidth: 2
                         )
                         .frame(width: 24, height: 24)
@@ -731,13 +761,16 @@ struct GroupMembersView: View {
                                         Text(member.handle)
                                             .font(.pathwayBold(16))
 
-                                        let taskCount = (memberTasks[member.id] ?? [])
-                                            .filter { $0.group_id == group.id }
-                                            .count
+                                        let taskCount =
+                                            (memberTasks[member.id] ?? [])
+                                                .filter { $0.group_id == group.id }
+                                                .count
 
-                                        Text("\(taskCount) group task\(taskCount == 1 ? "" : "s")")
-                                            .font(.pathway(14))
-                                            .foregroundColor(.secondary)
+                                        Text(
+                                            "\(taskCount) group task\(taskCount == 1 ? "" : "s")"
+                                        )
+                                        .font(.pathway(14))
+                                        .foregroundColor(.secondary)
                                     }
 
                                     Spacer()
@@ -755,14 +788,14 @@ struct GroupMembersView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("group members")
-                        .font(.pathway(16))
+                        .font(.pathwayBold(16))
                 }
             }
             .navigationBarItems(
                 leading: Button(action: {
                     dismiss()
                 }) {
-                    Image(systemName: "xmark")
+                    Image(systemName: "chevron.left")
                 }.buttonStyle(PlainButtonStyle())
             )
             .sheet(item: $selectedMember) { member in
@@ -784,9 +817,10 @@ struct GroupMembersView: View {
 
         Task {
             if let users = await getUsersBatch(userIds: group.members) {
-                let tasksBatch = await BatchTaskManager.shared.fetchTasksForUsers(
-                    userIds: group.members
-                )
+                let tasksBatch = await BatchTaskManager.shared
+                    .fetchTasksForUsers(
+                        userIds: group.members
+                    )
 
                 await MainActor.run {
                     members = users
@@ -828,11 +862,11 @@ struct MemberTasksView: View {
                             .font(.system(size: 48))
                             .foregroundColor(.secondary)
 
-                        Text("No group tasks assigned")
+                        Text("no group tasks assigned")
                             .font(.pathway(18))
                             .foregroundColor(.secondary)
 
-                        Text("This member doesn't have any tasks in this group")
+                        Text("this member doesn't have any tasks in this group")
                             .font(.pathwayItalic(14))
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -842,13 +876,18 @@ struct MemberTasksView: View {
                 } else {
                     List {
                         ForEach(groupTasks) { task in
-                            TaskListItem(task: task, onToggleCompletion: {
-                                print("Member task toggle called for: \(task.id), new state: \(task.completion.isCompleted)")
-                                updateTaskCompletion(task)
-                            })
+                            TaskListItem(
+                                task: task,
+                                onToggleCompletion: {
+                                    print(
+                                        "Member task toggle called for: \(task.id), new state: \(task.completion.isCompleted)"
+                                    )
+                                    updateTaskCompletion(task)
+                                }
+                            )
                             .overlay(
-                                updatingTaskIds.contains(task.id) ?
-                                    ProgressView()
+                                updatingTaskIds.contains(task.id)
+                                    ? ProgressView()
                                     .frame(width: 24, height: 24)
                                     .padding()
                                     : nil,
@@ -858,13 +897,17 @@ struct MemberTasksView: View {
                     }
                     .listStyle(PlainListStyle())
                 }
-            }
-            .navigationBarTitle("@\(member.handle)'s Group Tasks", displayMode: .inline)
-            .navigationBarItems(
-                leading: Button("Back") {
-                    dismiss()
+            }.toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("@\(member.handle)'s group tasks").font(
+                        .pathwayBold(18))
                 }
-            )
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "chevron.left")
+                    }
+                }
+            }
         }
     }
 

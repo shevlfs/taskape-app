@@ -10,6 +10,7 @@ struct SocialSheet: View {
     @State var separatorIndex: Int = 12
 
     @Environment(\.dismiss) var dismiss
+    @StateObject private var notificationStore = NotificationStore.shared
 
     @State var tabBarViewIndex = 0
     var body: some View {
@@ -35,11 +36,9 @@ struct SocialSheet: View {
                             )
                             .padding(.horizontal, 2)
                             .overlay(alignment: .topTrailing) {
-                                if let badgeCount = tabBarItems[0]
-                                    .badgeCount
-                                {
+                                if notificationStore.unreadCount > 0 {
                                     NotificationBadge(
-                                        badgeCount: .constant(badgeCount)
+                                        badgeCount: .constant(notificationStore.unreadCount)
                                     )
                                     .offset(x: 10, y: -10)
                                 }
@@ -99,7 +98,14 @@ struct SocialSheet: View {
 
             switch tabBarViewIndex {
             case 0:
-                NotificationView().modelContext(modelContext)
+                NotificationView().onDisappear {
+                    NotificationStore.shared.markAllAsRead()
+                }.modelContext(modelContext)
+                    .onDisappear {
+                        if tabBarViewIndex == 0 {
+                            notificationStore.markAllAsRead()
+                        }
+                    }
             case 1:
                 FriendSearchView().modelContext(modelContext)
             default:
@@ -108,9 +114,24 @@ struct SocialSheet: View {
 
             Spacer()
         }
+        .onDisappear {
+            if tabBarViewIndex == 0 {
+                notificationStore.markAllAsRead()
+            }
+        }
+        .onAppear {
+            NotificationManager.shared.requestNotificationPermission()
 
+            if notificationStore.shouldRefreshNotifications() {
+                notificationStore.refreshNotifications(modelContext: modelContext)
+            }
+        }
         .toolbar(.hidden).navigationBarBackButtonHidden(true)
     }
+}
+
+#Preview {
+    SocialSheet()
 }
 
 #Preview {

@@ -12,18 +12,6 @@ class GroupManager: ObservableObject {
     @Published var selectedGroup: taskapeGroup? = nil
     @Published var groupInvitations: [GroupInvitation] = []
 
-    func loadUserGroups(context _: ModelContext) {
-        isLoading = true
-
-        let userId = UserManager.shared.currentUserId
-        let descriptor = FetchDescriptor<taskapeGroup>(
-            predicate: #Predicate<taskapeGroup> { group in
-                group.members.contains(userId)
-            }
-        )
-        isLoading = false
-    }
-
     func createGroup(
         name: String, description: String, color: String, context: ModelContext
     ) async -> taskapeGroup? {

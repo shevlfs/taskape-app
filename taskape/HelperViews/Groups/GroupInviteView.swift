@@ -132,8 +132,6 @@ struct GroupInviteView: View {
                 .padding()
                 .disabled(isSending || selectedFriends.isEmpty)
             }
-            .navigationTitle("invite to group")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
@@ -142,6 +140,9 @@ struct GroupInviteView: View {
                         Image(systemName: "xmark")
                             .foregroundColor(.primary)
                     }
+                }
+                ToolbarItem(placement: .principal) {
+                    Text("invite people").font(.pathway(18))
                 }
             }
             .alert("invitations sent", isPresented: $showingSuccessAlert) {

@@ -8,6 +8,7 @@ struct MainRootView: View {
 
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var appState: AppStateManager
+    @StateObject private var notificationStore = NotificationStore.shared
 
     @State var fullyLoaded = false
 
@@ -52,6 +53,8 @@ struct MainRootView: View {
             }
         }
         .onAppear {
+            NotificationManager.shared.requestNotificationPermission()
+
             Task {
                 if !appState.isLoggedIn {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
@@ -68,9 +71,6 @@ struct MainRootView: View {
                 if !userId.isEmpty {
                     print("Loading profile for user ID: \(userId)")
 
-                    let existingUser = UserManager.shared.getCurrentUser(
-                        context: modelContext)
-
                     loadData()
 
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
@@ -84,8 +84,6 @@ struct MainRootView: View {
                     let user = await fetchUser(userId: userId)
                     let tasks = await fetchTasks(userId: userId)
 
-                    await fetchUserGroups(userId: userId)
-
                     await MainActor.run {
                         if let user {
                             print("User fetched from server: \(user.id)")
@@ -96,10 +94,6 @@ struct MainRootView: View {
                                     userId: userId,
                                     remoteTasks: tasks,
                                     modelContext: modelContext
-                                )
-
-                                updateWidgetWithTasks(
-                                    userId: userId, modelContext: modelContext
                                 )
                             }
 
@@ -127,21 +121,44 @@ struct MainRootView: View {
                 }
             }
         }
+        .onChange(of: appState.isLoggedIn) { _, isLoggedIn in
+            if isLoggedIn {
+                UIApplication.shared.applicationIconBadgeNumber = 0
+
+                notificationStore.refreshNotifications(modelContext: modelContext)
+            }
+        }
     }
 
     private func loadData() {
         _ = UserManager.shared.getCurrentUser(
             context: modelContext)
 
-        Task {
-            groupManager.loadUserGroups(context: modelContext)
+        Task { @MainActor in
+
+            var groups: [taskapeGroup] = []
+            Task { @MainActor in
+                groups = await getUserGroups(
+                    userId: UserManager.shared.currentUserId
+                ) ?? []
+            }
+            print("GROOOOOOOOOUPSSSS", groups)
+            groupManager.groups = groups
+            Task {
+                for group in groupManager.groups {
+                    group.tasks = await getGroupTasks(
+                        groupId: group.id,
+                        requesterId: UserManager.shared.currentUserId
+                    ) ?? []
+                }
+            }
 
             if let remoteTasks = await UserManager.shared
                 .fetchCurrentUserTasks()
             {
                 await MainActor.run {
-                    NotificationStore.shared
-                        .refreshNotifications(modelContext: modelContext)
+                    notificationStore.refreshNotifications(modelContext: modelContext)
+
                     syncUserTasks(
                         userId: UserManager.shared.currentUserId,
                         remoteTasks: remoteTasks,
@@ -149,14 +166,22 @@ struct MainRootView: View {
                     )
                 }
             }
-
-            await fetchUserGroups(userId: UserManager.shared.currentUserId)
         }
     }
+}
 
-    private func fetchUserGroups(userId _: String) async {
-        await groupManager.fetchUserGroups(context: modelContext)
-    }
+#Preview {
+    var user = taskapeUser(
+        id: UUID().uuidString,
+        handle: "shevlfs",
+        bio: "i am shevlfs",
+        profileImage:
+        "https://static.wikia.nocookie.net/character-stats-and-profiles/images/c/c7/DZuvg1d.png/revision/latest?cb=20181120135131",
+        profileColor: "blue"
+    )
+
+    return MainRootView()
+        .environmentObject(AppStateManager())
 }
 
 #Preview {

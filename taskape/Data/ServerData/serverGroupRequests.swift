@@ -337,6 +337,8 @@ func getUserGroups(userId: String) async -> [taskapeGroup]? {
         switch result.result {
         case let .success(response):
             if response.success {
+                let out = convertToLocalGroups(response.groups)
+
                 return convertToLocalGroups(response.groups)
             } else {
                 print(

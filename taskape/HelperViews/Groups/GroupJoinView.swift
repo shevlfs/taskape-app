@@ -122,7 +122,9 @@ struct GroupJoinView: View {
                 isJoining = false
 
                 if success {
-                    groupManager.loadUserGroups(context: modelContext)
+                    Task { await
+                        groupManager.fetchUserGroups(context: modelContext)
+                    }
                     joinedGroup = true
                 } else {
                     errorMessage =

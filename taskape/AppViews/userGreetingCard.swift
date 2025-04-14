@@ -80,17 +80,16 @@ struct UserGreetingCard: View {
                                     id: "friendSearch", in: namespace
                                 )
 
-                            if friendManager.incomingRequests.count > 0 || notificationStore.unreadCount > 0 {
+                            let totalUnreadCount = notificationStore.unreadCount + friendManager.incomingRequestCount
+                            if totalUnreadCount > 0 {
                                 ZStack {
                                     Circle()
                                         .fill(Color.red)
                                         .frame(width: 24 - 4, height: 24 - 4)
 
-                                    Text(
-                                        "\(friendManager.incomingRequests.count + notificationStore.unreadCount)"
-                                    )
-                                    .font(.system(size: 14 - 2, weight: .bold))
-                                    .foregroundColor(.white)
+                                    Text("\(totalUnreadCount)")
+                                        .font(.system(size: 14 - 2, weight: .bold))
+                                        .foregroundColor(.white)
                                 }
                                 .offset(x: 2, y: -2)
                             }
@@ -111,6 +110,10 @@ struct UserGreetingCard: View {
         .shadow(color: Color.primary.opacity(0.08), radius: 8, x: 0, y: 2)
         .onAppear {
             user = UserManager.shared.getCurrentUser(context: modelContext)
+
+            if notificationStore.shouldRefreshNotifications() {
+                notificationStore.refreshNotifications(modelContext: modelContext)
+            }
         }
     }
 }

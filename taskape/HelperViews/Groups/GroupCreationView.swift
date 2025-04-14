@@ -64,40 +64,6 @@ struct GroupCreationView: View {
                             .padding(.horizontal)
                     }
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("group color")
-                            .font(.pathway(14))
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal)
-
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 15) {
-                                ForEach(colorOptions, id: \.self) { color in
-                                    Circle()
-                                        .fill(color)
-                                        .frame(width: 40, height: 40)
-                                        .overlay(
-                                            Circle()
-                                                .stroke(
-                                                    Color.white,
-                                                    lineWidth: groupColor == color ? 3 : 0
-                                                )
-                                        )
-                                        .shadow(radius: 2)
-                                        .onTapGesture {
-                                            groupColor = color
-                                        }
-                                }
-                            }
-                            .padding()
-                        }
-                        .background(
-                            RoundedRectangle(cornerRadius: 30)
-                                .fill(Color(UIColor.secondarySystemBackground))
-                        )
-                        .padding(.horizontal)
-                    }
-
                     Spacer()
 
                     Button(action: {
