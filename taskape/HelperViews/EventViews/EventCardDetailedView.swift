@@ -63,7 +63,9 @@ struct EventCardDetailedView: View {
                                 .modelContext(
                                     modelContext
                                 ).navigationTransition(
-                                    .zoom(sourceID: "eventOwner", in: namespace)).navigationBarBackButtonHidden(true).toolbar(.hidden)
+                                    .zoom(sourceID: "eventOwner", in: namespace)
+                                ).navigationBarBackButtonHidden(true).toolbar(
+                                    .hidden)
                         }) {
                             Group {
                                 CachedAsyncImage(url: URL(string: userImage)) {
@@ -131,24 +133,20 @@ struct EventCardDetailedView: View {
                         VStack(alignment: .center, spacing: 12) {
                             if let task = event.relatedTasks.first {
                                 ProofView(task: task)
-                            }
-
-                            ConfirmationButtons(
-                                isConfirming: $isConfirming,
-                                showAlert: $showConfirmationAlert,
-                                alertType: $confirmationAlertType,
-                                onConfirm: {
-                                    confirmTask(isConfirmed: true)
-                                },
-                                onReject: {
-                                    confirmTask(isConfirmed: false)
+                                if !task.completion.isConfirmed{
+                                    ConfirmationButtons(
+                                        isConfirming: $isConfirming,
+                                        showAlert: $showConfirmationAlert,
+                                        alertType: $confirmationAlertType,
+                                        onConfirm: {
+                                            confirmTask(isConfirmed: true)
+                                        },
+                                        onReject: {
+                                            confirmTask(isConfirmed: false)
+                                        }
+                                    ).frame(maxWidth: .infinity)
                                 }
-                            ).frame(maxWidth: .infinity).disabled(
-                                UserManager.shared
-                                    .isCurrentUser(
-                                        userId: event.userId
-                                    ) || confirmationSuccess
-                            )
+                            }
                         }
                     }
 
@@ -298,7 +296,8 @@ struct EventCardDetailedView: View {
         isLoadingComments = true
 
         Task {
-            if let fetchedComments = await fetchEventComments(eventId: event.id) {
+            if let fetchedComments = await fetchEventComments(eventId: event.id)
+            {
                 await MainActor.run {
                     comments = fetchedComments
                     isLoadingComments = false
@@ -344,15 +343,18 @@ struct EventCardDetailedView: View {
         likesCount += isLiked ? 1 : -1
 
         Task {
-            let success: Bool = if isLiked {
-                await likeEvent(
-                    eventId: event.id, userId: UserManager.shared.currentUserId
-                )
-            } else {
-                await unlikeEvent(
-                    eventId: event.id, userId: UserManager.shared.currentUserId
-                )
-            }
+            let success: Bool =
+                if isLiked {
+                    await likeEvent(
+                        eventId: event.id,
+                        userId: UserManager.shared.currentUserId
+                    )
+                } else {
+                    await unlikeEvent(
+                        eventId: event.id,
+                        userId: UserManager.shared.currentUserId
+                    )
+                }
 
             if !success {
                 await MainActor.run {
@@ -438,7 +440,7 @@ struct ProofView: View {
         VStack(alignment: .leading) {
             VStack(alignment: .leading, spacing: 12) {
                 if let proofDescription = task.proofDescription,
-                   !proofDescription.isEmpty
+                    !proofDescription.isEmpty
                 {
                     Text("proof description:")
                         .font(.pathwayBold(16))
@@ -633,7 +635,8 @@ struct CommentRow: View {
             NavigationLink(destination: {
                 OtherUserProfileView(userId: comment.userId)
                     .modelContext(modelContext).navigationTransition(
-                        .zoom(sourceID: "comment_\(comment.id)", in: namespace)).navigationBarBackButtonHidden(true).toolbar(.hidden)
+                        .zoom(sourceID: "comment_\(comment.id)", in: namespace)
+                    ).navigationBarBackButtonHidden(true).toolbar(.hidden)
             }) {
                 Group {
                     CachedAsyncImage(url: URL(string: userImage)) { phase in
@@ -753,7 +756,7 @@ func createPreviewEvent() -> taskapeEvent {
         handle: "demouser",
         bio: "this is a demo user",
         profileImage:
-        "https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg",
+            "https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg",
         profileColor: "FF9500"
     )
 

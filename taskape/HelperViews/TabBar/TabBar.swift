@@ -195,7 +195,7 @@ struct MainMenuTabBarView: View {
                     Button(action: {
                         showGroupSheet = true
                     }) {
-                        Image(systemName: "plus.circle")
+                        Image(systemName: "plus")
                             .font(.system(size: 20))
                             .foregroundColor(Color(.systemGray2))
                             .padding(.horizontal, 4)

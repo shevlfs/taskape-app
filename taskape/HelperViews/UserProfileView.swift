@@ -203,17 +203,17 @@ struct UserSelfProfileView: View {
                         }
 
                         if !user.tasks.isEmpty {
-                            Text("to-do's")
-                                .font(.pathwayBold(18))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal)
-                                .padding(.top, 15)
-                                .padding(.bottom, 5)
+//                            Text("to-do's")
+//                                .font(.pathwayBold(18))
+//                                .frame(maxWidth: .infinity, alignment: .leading)
+//                                .padding(.horizontal)
+//                                .padding(.top, 15)
+//                                .padding(.bottom, 5)
 
                             LazyVStack(spacing: 12) {
-                                ForEach(user.tasks) { task in
-                                    TaskListItem(task: task)
-                                }
+//                                ForEach(user.tasks) { task in
+//                                    TaskListItem(task: task)
+//                                }
                             }
                             .padding(.horizontal)
                             .padding(.top, 8)

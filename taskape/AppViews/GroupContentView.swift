@@ -158,7 +158,7 @@ struct GroupContentView: View {
                     showAddTaskSheet = true
                 }) {
                     Image(systemName: "plus")
-                        .font(.system(size: 22, weight: .bold))
+                        .font(.system(size: 22))
                         .foregroundColor(.white)
                         .frame(width: 56, height: 56)
                         .background(Color.taskapeOrange)
@@ -168,7 +168,7 @@ struct GroupContentView: View {
                             y: 2
                         )
                 }
-                .padding(.bottom, 25).padding(.trailing)
+                .padding(.bottom, 30).padding(.trailing,30)
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
