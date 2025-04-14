@@ -1,5 +1,3 @@
-
-
 import Alamofire
 import SwiftData
 import SwiftDotenv
@@ -47,8 +45,13 @@ struct GroupContentView: View {
                         color: Color.primary.opacity(0.08), radius: 8, x: 0,
                         y: 2
                     )
+
+                Spacer()
+                Button(action: { showInviteSheet = true }) {
+                    Image(systemName: "plus").padding(.trailing)
+                }.buttonStyle(PlainButtonStyle())
             }
-            .padding(.horizontal)
+            .padding(.horizontal).onAppear {}
 
             if isLoading {
                 ProgressView("loading group tasks...")
@@ -165,7 +168,7 @@ struct GroupContentView: View {
                             y: 2
                         )
                 }
-                .padding(.bottom, 25)
+                .padding(.bottom, 25).padding(.trailing)
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
@@ -204,7 +207,7 @@ struct GroupContentView: View {
     private func loadGroupTasks() {
         isLoading = true
 
-        Task {
+        Task { @MainActor in
             let tasks = await GroupManager.shared.loadGroupTasks(
                 groupId: group.id,
                 context: modelContext
@@ -212,13 +215,11 @@ struct GroupContentView: View {
 
             await MainActor.run {
                 userTasks = tasks.filter { task in
-                    task.user_id == currentUserId
-                        || task.assignedToTask.contains(currentUserId)
+                    task.assignedToTask.contains(currentUserId)
                 }
 
                 otherMemberTasks = tasks.filter { task in
-                    !(task.user_id == currentUserId
-                        || task.assignedToTask.contains(currentUserId))
+                    !(task.assignedToTask.contains(currentUserId))
                 }
 
                 isLoading = false
@@ -905,7 +906,7 @@ struct MemberTasksView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
-                    }
+                    }.buttonStyle(PlainButtonStyle())
                 }
             }
         }

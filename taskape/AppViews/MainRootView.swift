@@ -131,31 +131,29 @@ struct MainRootView: View {
     }
 
     private func loadData() {
-        _ = UserManager.shared.getCurrentUser(
-            context: modelContext)
+        _ = UserManager.shared.getCurrentUser(context: modelContext)
 
-        Task { @MainActor in
-
-            var groups: [taskapeGroup] = []
-            Task { @MainActor in
-                groups = await getUserGroups(
-                    userId: UserManager.shared.currentUserId
-                ) ?? []
+        Task {
+            await groupManager.fetchUserGroups(context: modelContext)
+            for group in groupManager.groups {
+                await groupManager.loadGroupTasks(groupId: group.id, context: modelContext)
             }
-            print("GROOOOOOOOOUPSSSS", groups)
-            groupManager.groups = groups
-            Task {
-                for group in groupManager.groups {
-                    group.tasks = await getGroupTasks(
-                        groupId: group.id,
-                        requesterId: UserManager.shared.currentUserId
-                    ) ?? []
+
+            for group in groupManager.groups {
+                print("Preloading tasks for all members in group: \(group.name)")
+
+                let allMemberIds = group.members
+                if !allMemberIds.isEmpty {
+                    if let memberTasks = await BatchTaskManager.shared.fetchTasksForUsers(userIds: allMemberIds) {
+                        await MainActor.run {
+                            BatchTaskManager.shared.saveUsersTasks(userTasksMap: memberTasks, context: modelContext)
+                            print("Preloaded tasks for \(memberTasks.count) members in group: \(group.name)")
+                        }
+                    }
                 }
             }
 
-            if let remoteTasks = await UserManager.shared
-                .fetchCurrentUserTasks()
-            {
+            if let remoteTasks = await UserManager.shared.fetchCurrentUserTasks() {
                 await MainActor.run {
                     notificationStore.refreshNotifications(modelContext: modelContext)
 
@@ -164,8 +162,12 @@ struct MainRootView: View {
                         remoteTasks: remoteTasks,
                         modelContext: modelContext
                     )
+
+                    print("User tasks synced: \(remoteTasks.count) tasks")
                 }
             }
+
+            print("All tasks for all groups and their members have been preloaded")
         }
     }
 }

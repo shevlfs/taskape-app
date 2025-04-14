@@ -98,31 +98,6 @@ struct MainNavigationView: View {
             print($mainNavigationPath)
             currentUser = UserManager.shared.getCurrentUser(
                 context: modelContext)
-            var groups: [taskapeGroup] = []
-            Task { @MainActor in
-                groups =
-                    await getUserGroups(
-                        userId: UserManager.shared.currentUserId
-                    ) ?? []
-                GroupManager.shared.groups = groups
-                for group in groups {
-                    if let users = await getUsersBatch(userIds: group.members) {
-                        await MainActor.run {
-                            group.users = users
-                            Task {
-                                group.tasks = await getGroupTasks(groupId: group.id, requesterId: UserManager.shared.currentUserId) ?? []
-                            }
-
-                            isLoading = false
-                        }
-                    } else {
-                        await MainActor.run {
-                            isLoading = false
-                        }
-                    }
-                }
-                try modelContext.save()
-            }
         }
     }
 

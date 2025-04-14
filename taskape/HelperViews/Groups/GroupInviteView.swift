@@ -1,5 +1,3 @@
-
-
 import SwiftData
 import SwiftUI
 
@@ -28,138 +26,140 @@ struct GroupInviteView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.gray)
-                        .padding(.leading, 10)
+        VStack(spacing: 0) {
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.gray)
+                    .padding(.leading, 10)
 
-                    TextField("", text: $searchQuery)
-                        .placeholder(when: searchQuery.isEmpty) {
-                            Text("search friends")
-                                .foregroundColor(.gray)
-                                .font(.pathway(16))
-                        }
-                        .font(.pathway(16))
-                        .autocorrectionDisabled()
-                        .autocapitalization(.none)
-                        .padding(10)
-
-                    if !searchQuery.isEmpty {
-                        Button(action: {
-                            searchQuery = ""
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.gray)
-                        }
-                        .padding(.trailing, 10)
-                        .buttonStyle(PlainButtonStyle())
+                TextField("", text: $searchQuery)
+                    .placeholder(when: searchQuery.isEmpty) {
+                        Text("search friends")
+                            .foregroundColor(.gray)
+                            .font(.pathway(16))
                     }
-                }
-                .background(
-                    RoundedRectangle(cornerRadius: 30)
-                        .fill(Color(UIColor.secondarySystemBackground))
-                        .stroke(.regularMaterial, lineWidth: 1)
-                )
-                .padding()
+                    .font(.pathway(16))
+                    .autocorrectionDisabled()
+                    .autocapitalization(.none)
+                    .padding(10)
 
-                if !selectedFriends.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 10) {
-                            ForEach(selectedFriends, id: \.self) { friendId in
-                                SelectedFriendChip(
-                                    friendId: friendId,
-                                    onRemove: {
-                                        selectedFriends.removeAll { $0 == friendId }
-                                    }
-                                )
-                            }
-                        }
-                        .padding(.horizontal)
+                if !searchQuery.isEmpty {
+                    Button(action: {
+                        searchQuery = ""
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.gray)
                     }
-                    .frame(height: 40)
-                    .padding(.bottom, 10)
+                    .padding(.trailing, 10)
+                    .buttonStyle(PlainButtonStyle())
                 }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 30)
+                    .fill(Color(UIColor.secondarySystemBackground))
+                    .stroke(.regularMaterial, lineWidth: 1)
+            )
+            .padding()
 
-                if isLoading {
-                    Spacer()
-                    ProgressView()
-                        .scaleEffect(1.5)
-                    Spacer()
-                } else if friendManager.friends.isEmpty {
-                    Spacer()
-                    Text("no friends to invite")
-                        .font(.pathway(18))
-                        .foregroundColor(.secondary)
-                    Spacer()
-                } else {
-                    List {
-                        ForEach(filteredFriends, id: \.id) { friend in
-                            FriendSelectionRow(
-                                friend: friend,
-                                isSelected: selectedFriends.contains(friend.id),
-                                isPending: pendingInvitations.contains(friend.id),
-                                isAlreadyMember: group.members.contains(friend.id),
-                                onToggle: { selected in
-                                    toggleFriendSelection(friend.id, selected: selected)
+            if !selectedFriends.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(selectedFriends, id: \.self) { friendId in
+                            SelectedFriendChip(
+                                friendId: friendId,
+                                onRemove: {
+                                    selectedFriends.removeAll { $0 == friendId }
                                 }
                             )
                         }
                     }
-                    .listStyle(.plain)
+                    .padding(.horizontal)
                 }
+                .frame(height: 40)
+                .padding(.bottom, 10)
+            }
 
+            if isLoading {
+                Spacer()
+                ProgressView()
+                    .scaleEffect(1.5)
+                Spacer()
+            } else if friendManager.friends.isEmpty {
+                Spacer()
+                Text("no friends to invite")
+                    .font(.pathway(18))
+                    .foregroundColor(.secondary)
+                Spacer()
+            } else {
+                List {
+                    ForEach(filteredFriends, id: \.id) { friend in
+                        FriendSelectionRow(
+                            friend: friend,
+                            isSelected: selectedFriends.contains(friend.id),
+                            isPending: pendingInvitations.contains(friend.id),
+                            isAlreadyMember: group.members.contains(friend.id),
+                            onToggle: { selected in
+                                toggleFriendSelection(
+                                    friend.id, selected: selected
+                                )
+                            }
+                        )
+                    }
+                }
+                .listStyle(.plain)
+            }
+
+            Button(action: {
+                sendInvites()
+            }) {
+                if isSending {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
+                        .tint(.white)
+                } else {
+                    Text("invite \(selectedFriends.count) friends")
+                        .font(.pathway(18))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 30)
+                    .fill(
+                        selectedFriends.isEmpty
+                            ? Color.gray : Color.taskapeOrange)
+            )
+            .padding()
+            .disabled(isSending || selectedFriends.isEmpty)
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: {
-                    sendInvites()
-                }) {
-                    if isSending {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle())
-                            .tint(.white)
-                    } else {
-                        Text("invite \(selectedFriends.count) friends")
-                            .font(.pathway(18))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                    }
-                }
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 30)
-                        .fill(selectedFriends.isEmpty ? Color.gray : Color.taskapeOrange)
-                )
-                .padding()
-                .disabled(isSending || selectedFriends.isEmpty)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "xmark")
-                            .foregroundColor(.primary)
-                    }
-                }
-                ToolbarItem(placement: .principal) {
-                    Text("invite people").font(.pathway(18))
-                }
-            }
-            .alert("invitations sent", isPresented: $showingSuccessAlert) {
-                Button("ok", role: .cancel) {
                     dismiss()
+                }) {
+                    Image(systemName: "xmark")
+                        .foregroundColor(.primary)
                 }
-            } message: {
-                Text("your friends have been invited to join the group")
             }
-            .onAppear {
-                if friendManager.friends.isEmpty {
-                    isLoading = true
-                    Task {
-                        await friendManager.refreshFriendDataBatched()
-                        await MainActor.run {
-                            isLoading = false
-                        }
+            ToolbarItem(placement: .principal) {
+                Text("invite people").font(.pathway(18))
+            }
+        }
+        .alert("invitations sent", isPresented: $showingSuccessAlert) {
+            Button("ok", role: .cancel) {
+                dismiss()
+            }
+        } message: {
+            Text("your friends have been invited to join the group")
+        }
+        .onAppear {
+            if friendManager.friends.isEmpty {
+                isLoading = true
+                Task {
+                    await friendManager.refreshFriendDataBatched()
+                    await MainActor.run {
+                        isLoading = false
                     }
                 }
             }
@@ -185,12 +185,18 @@ struct GroupInviteView: View {
             for friendId in selectedFriends {
                 pendingInvitations.append(friendId)
 
-                let success = await groupManager.inviteUserToGroup(groupId: group.id, inviteeId: friendId)
+                let success = await groupManager.inviteUserToGroup(
+                    groupId: group.id, inviteeId: friendId
+                )
 
                 if success {
-                    print("Successfully invited user \(friendId) to group \(group.id)")
+                    print(
+                        "Successfully invited user \(friendId) to group \(group.id)"
+                    )
                 } else {
-                    print("Failed to invite user \(friendId) to group \(group.id)")
+                    print(
+                        "Failed to invite user \(friendId) to group \(group.id)"
+                    )
                 }
             }
 
@@ -209,7 +215,8 @@ struct SelectedFriendChip: View {
     @ObservedObject private var friendManager = FriendManager.shared
 
     private var friendName: String {
-        friendManager.friends.first(where: { $0.id == friendId })?.handle ?? "unknown"
+        friendManager.friends.first(where: { $0.id == friendId })?.handle
+            ?? "unknown"
     }
 
     var body: some View {
@@ -269,7 +276,9 @@ struct FriendSelectionRow: View {
                     ZStack {
                         Circle()
                             .stroke(
-                                isSelected ? Color.taskapeOrange : Color.gray.opacity(0.5),
+                                isSelected
+                                    ? Color.taskapeOrange
+                                    : Color.gray.opacity(0.5),
                                 lineWidth: 2
                             )
                             .frame(width: 24, height: 24)
